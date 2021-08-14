@@ -1,0 +1,74 @@
+package Analizador;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.XMLElement;
+
+parser code
+{:
+
+    public void syntax_error(Symbol cur_token) {
+        System.out.println(" Se esperaban: ");
+        String esperados = "";
+        for (int i = 0; i < expected_token_ids().size(); i++){
+            esperados += symbl_name_from_id(expected_token_ids().get(i))+"-";
+        }
+        System.out.print(esperados+", pero se encontro "+cur_token.value+" en la linea"+cur_token.right+" y en la columna"+cur_token.left);
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        System.out.println("reportfatal "+message+info);
+    }
+    
+    public void report_fatal_error(Symbol cur) {
+        System.out.println("unrecovered_syntax_error");
+    }
+
+    public void imp(String texto){
+        System.out.println(texto);
+    }
+
+:};
+
+terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, VAR,
+    SI, SINO, SWITCH, CASO, SALIR, CONT, DEFAULT, PARA, MIENTRAS, HACER, RETORNA, REPRODUCIR,
+    NOTAS, ESPERAR, ORDENAR, ASC, DESC, PAR, IMPAR, PRIMOS, SUMARIZAR, LONG, MSG, PRINCIPAL,
+    IGUAL, DIFF, MAYOR, MENOR, MAYOR_I, MENOR_I, NULO, AND, NAND, OR, XOR, NOR, NOT, SUMA, RESTA,
+    POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL,
+    ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT;
+
+non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, instruccion_condicional, sinosi, condicion;
+
+precedence left SUMA, RESTA;
+precedence left POR, ENTRE;
+precedence left MOD, POT;
+
+start with inicio;
+
+inicio::=
+    instrucciones {: imp("todo bien carnalin"); :}
+;
+
+instrucciones::=
+|   instrucciones instruccion
+;
+
+instruccion::=
+   ID NUMERO
+|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT
+|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
+|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO instruccion 
+|   error
+;
+
+
+condicion::=
+    TRUE
+|   FALSE
+;
+
+
+
+
+
+
+
+
