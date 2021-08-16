@@ -33,18 +33,42 @@ terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, 
     NOTAS, ESPERAR, ORDENAR, ASC, DESC, PAR, IMPAR, PRIMOS, SUMARIZAR, LONG, MSG, PRINCIPAL,
     IGUAL, DIFF, MAYOR, MENOR, MAYOR_I, MENOR_I, NULO, AND, NAND, OR, XOR, NOR, NOT, SUMA, RESTA,
     POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL,
-    ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT;
+    ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS;
 
-non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, instruccion_condicional, sinosi, condicion;
+non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, instruccion_condicional, sinosi, condicion,
+    switch, pista, pistas, extiende, padres, valor_puntual, expresion, booleano, comparador, binario, default, casos, caso;
 
 precedence left SUMA, RESTA;
-precedence left POR, ENTRE;
-precedence left MOD, POT;
+precedence left POR, ENTRE, MOD;
+precedence left POT;
+precedence right UMINUS;
+precedence left OR;
+precedence left AND;
+precedence right NOT;
+precedence left IGUAL, DIFF, MENOR, MENOR_I, MAYOR, MAYOR_I;
 
 start with inicio;
 
 inicio::=
-    instrucciones {: imp("todo bien carnalin"); :}
+    pistas {: imp("todo bien carnalin"); :}
+;
+
+pistas::=
+    pistas pista
+|   pista
+;
+
+pista::=
+    PISTA ID extiende INDENT instrucciones DEDENT
+;
+
+extiende::=
+|   EXT padres
+;
+
+padres::=
+    padres COMA ID
+|   ID
 ;
 
 instrucciones::=
@@ -56,15 +80,51 @@ instruccion::=
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO instruccion 
+|   switch
 |   error
 ;
 
+switch::=
+    SWITCH PAR_A ID PAR_C INDENT casos DEDENT
+|   SWITCH PAR_A ID PAR_C INDENT casos default DEDENT
+|   SWITCH PAR_A ID PAR_C INDENT default DEDENT
+;
+
+casos::=
+    casos caso
+|   caso
+;
+
+caso::=
+    CASO valor_puntual INDENT instrucciones DEDENT
+;
+
+default::=
+    DEFAULT INDENT instrucciones DEDENT
+;
+
+valor_puntual::=
+    NUMERO
+|   STRING
+|   CARACTER
+;
 
 condicion::=
+    booleano
+|   PAR_A condicion PAR_C
+|   expresion comparador expresion
+|   NOT condicion
+|   condicion binario condicion
+;
+
+booleano::=
     TRUE
 |   FALSE
 ;
 
+expresion::=
+    NUMERO
+;
 
 
 

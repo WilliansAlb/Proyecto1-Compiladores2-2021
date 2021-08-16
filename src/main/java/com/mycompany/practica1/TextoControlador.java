@@ -75,6 +75,8 @@ public class TextoControlador implements Initializable {
             ,"primos","Primos","PRIMOS","Sumarizar","sumarizar","SUMARIZAR","Longitud","LONGITUD"
             ,"longitud","Mensaje","MENSAJE","mensaje","Principal","PRINCIPAL","principal"
     };
+    
+    private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6"; 
 
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
@@ -122,7 +124,7 @@ public class TextoControlador implements Initializable {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
         String loop = "";
-        codeArea.replaceText(0, 0, loop);
+        codeArea.replaceText(0, 0, SI_PRUEBA);
         //codeArea.replaceText("");
         //codeArea.setPrefSize(1000, 600);
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
@@ -190,15 +192,18 @@ public class TextoControlador implements Initializable {
         parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
         
         par.parse();
-        /**Lexer n = new Lexer(new StringReader(codeArea.getText()));
+        for (int i = 0; i < 10; i++) {
+            System.out.println("-----------");
+        }
+        Lexer n = new Lexer(new StringReader(codeArea.getText()));
         while(true){
             Symbol s = n.next_token();
             if (s.value==null){
                 return;
             }
-            System.out.println("T: "+s.value.toString()+" -");
+            System.out.println(s.value.toString());
         }
-        * **/
+        
     }
 
     private class DefaultContextMenu extends ContextMenu {

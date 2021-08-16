@@ -16,7 +16,7 @@ ID = ([aA-zZ]|"_")([aA-zZ]|"_"|[0-9])*
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
-%state STRING, CHAR, COMMENT_L, COMMENT_M
+%state STRING, CHAR, COMMENT_L, COMMENT_M, SALTO
 %{
     StringBuffer string = new StringBuffer();
     int indentados = 0;
@@ -26,27 +26,61 @@ sal = [\n]+
     private Symbol symbol(int type){
         return new Symbol(type, yyline, yycolumn, yytext());
     }
-    public Symbol indent(String analizar){
-        System.out.println("El numero de tabulaciones es " + analizar.length() + " y empieza en " + yycolumn);
-        int espacios = 0;
-        for (int i = 0; i < analizar.length(); i++){
-            if (analizar.charAt(i)=='\t'){
-                espacios++;
+    public Symbol indent(String analizar, boolean tieneTab, boolean esEOF) {
+        if (!esEOF){
+        if (tieneTab) {
+            int espacios = 0;
+            for (int i = 0; i < analizar.length(); i++) {
+                if (analizar.charAt(i) == '\t') {
+                    espacios++;
+                }
+            }
+            System.out.println("Entra acá en el metodo");
+            System.out.println("Indentados " + indentados + " Espacios " + espacios);
+            if (espacios == 0 && indentados > 1) {
+                indentados--;
+                yypushback(1);
+                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
+                return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+            } else {
+                yybegin(YYINITIAL);
+                if (espacios == (indentados + 1)) {
+                    indentados++;
+                    System.out.println("Se encuentra indentado");
+                    return new Symbol(sym.INDENT, yyline, yycolumn, yytext());
+                } else if (espacios == (indentados - 1)) {
+                    indentados--;
+                    System.out.println("Se encuentra dedentado");
+                    return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+                } else if (espacios == indentados) {
+                    System.out.println("salto");
+                    return new Symbol(sym.SAL, yyline, yycolumn, "\n");
+                } else {
+                    System.out.println("otra cosa");
+                    return null;
+                }
+            }
+        } else {
+            if (indentados > 0) {
+
+                indentados--;
+                yypushback(1);
+                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
+                return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+            } else {
+                yybegin(YYINITIAL);
+                yypushback(1);
+                return null;
             }
         }
-        if (espacios == (indentados+1)) {
-            indentados++;
-            System.out.println("Se encuentra indentado");
-            return new Symbol(sym.INDENT, yyline, yycolumn, yytext());
-        } else if (espacios == (indentados-1)) {
-            indentados--;
-            System.out.println("Se encuentra dedentado");
-            return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
-        } else if (espacios == indentados) {
-            return null;
         } else {
-            System.out.println("mal indentado");
-            return null;
+            if (indentados > 0) {
+                indentados--;
+                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
+                return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+            } else {
+                return new java_cup.runtime.Symbol(sym.EOF);
+            }
         }
     }
 %}
@@ -54,7 +88,7 @@ sal = [\n]+
 /*Palabras reservadas*/
 <YYINITIAL> {
     ("Pista"|"PISTA"|"pista")               { return symbol(sym.PISTA); }
-    ("Extiende"|"EXTIENDE"|"extiende")      { return symbol(sym.PISTA); }
+    ("Extiende"|"EXTIENDE"|"extiende")      { return symbol(sym.EXT); }
     ("Entero"|"ENTERO"|"entero")            { return symbol(sym.ENTERO); }
     ("Doble"|"DOBLE"|"doble")               { return symbol(sym.DECIMAL); }
     ("Boolean"|"BOOLEAN"|"boolean")         { return symbol(sym.BOOLEAN); }
@@ -125,7 +159,12 @@ sal = [\n]+
     {ID}                                    { return symbol(sym.ID); }
     "\""                                    { yybegin(STRING);}
     "'"                                     { yybegin(CHAR);}
-    {sal}{tab}                              { Symbol retorno = indent(yytext()); if (retorno!=null) {return retorno; } ; }
+    {sal}                                   { yybegin(SALTO); }   
+}
+
+<SALTO>{
+    [^"\t"]                                { Symbol retorno = indent(yytext(),false,false); if (retorno!=null) {return retorno; }; }
+    {tab}                                   { Symbol retorno = indent(yytext(),true,false); if (retorno!=null) {return retorno; }; }
 }
 
 <STRING>{

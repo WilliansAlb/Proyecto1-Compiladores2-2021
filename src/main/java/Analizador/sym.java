@@ -82,6 +82,7 @@ public class sym {
   public static final int CADENA = 8;
   public static final int STRING = 67;
   public static final int AND = 44;
+  public static final int UMINUS = 77;
   public static final int ASIGNAR = 73;
   public static final int NAND = 45;
   public static final int XOR = 47;
@@ -162,7 +163,8 @@ public class sym {
   "ASIGNAR",
   "ERRORLEX",
   "INDENT",
-  "DEDENT"
+  "DEDENT",
+  "UMINUS"
   };
 }
 
