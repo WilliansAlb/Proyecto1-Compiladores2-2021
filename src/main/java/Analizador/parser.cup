@@ -33,10 +33,11 @@ terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, 
     NOTAS, ESPERAR, ORDENAR, ASC, DESC, PAR, IMPAR, PRIMOS, SUMARIZAR, LONG, MSG, PRINCIPAL,
     IGUAL, DIFF, MAYOR, MENOR, MAYOR_I, MENOR_I, NULO, AND, NAND, OR, XOR, NOR, NOT, SUMA, RESTA,
     POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL,
-    ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS;
+    ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS, PUNTOC;
 
 non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, instruccion_condicional, sinosi, condicion,
-    switch, pista, pistas, extiende, padres, valor_puntual, expresion, booleano, comparador, binario, default, casos, caso;
+    switch, pista, pistas, extiende, ids, valor_puntual, expresion, booleano, comparador, binario, default, casos, caso, tipo,
+    asignacion, asignar, asigna, para, paso;
 
 precedence left SUMA, RESTA;
 precedence left POR, ENTRE, MOD;
@@ -63,11 +64,11 @@ pista::=
 ;
 
 extiende::=
-|   EXT padres
+|   EXT ids
 ;
 
-padres::=
-    padres COMA ID
+ids::=
+    ids COMA ID
 |   ID
 ;
 
@@ -76,12 +77,50 @@ instrucciones::=
 ;
 
 instruccion::=
-   ID NUMERO
+   declaracion
+|   asignacion
+|   para
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
 |   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO instruccion 
 |   switch
 |   error
+;
+
+declaracion::=
+   KEEP VAR tipo ids asignar
+|   VAR tipo ids asignar
+;
+
+para::=
+    PARA PAR_A asigna PUNTOC condicion PUNTOC NUMERO paso PAR_C INDENT instrucciones DEDENT
+;
+
+paso::=
+    INC
+|   DEC
+;
+
+asigna::=
+    ID ASIGNAR NUMERO
+|   ID
+;
+
+
+asignar::=
+|   ASIGNAR ID
+;
+
+asignacion::=
+    ID ASIGNAR NUMERO
+;
+
+tipo::=
+    ENTERO
+|   DECIMAL
+|   CADENA
+|   BOOLEAN 
+|   CHAR
 ;
 
 switch::=

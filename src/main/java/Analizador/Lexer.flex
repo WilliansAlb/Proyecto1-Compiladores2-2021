@@ -16,7 +16,7 @@ ID = ([aA-zZ]|"_")([aA-zZ]|"_"|[0-9])*
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
-%state STRING, CHAR, COMMENT_L, COMMENT_M, SALTO
+%state STRING, CHAR, COMMENT_L, COMMENT_L2, COMMENT_M, SALTO
 %{
     StringBuffer string = new StringBuffer();
     int indentados = 0;
@@ -27,56 +27,47 @@ sal = [\n]+
         return new Symbol(type, yyline, yycolumn, yytext());
     }
     public Symbol indent(String analizar, boolean tieneTab, boolean esEOF) {
-        if (!esEOF){
-        if (tieneTab) {
-            int espacios = 0;
-            for (int i = 0; i < analizar.length(); i++) {
-                if (analizar.charAt(i) == '\t') {
-                    espacios++;
+        if (!esEOF) {
+            if (tieneTab) {
+                int espacios = 0;
+                for (int i = 0; i < analizar.length(); i++) {
+                    if (analizar.charAt(i) == '\t') {
+                        espacios++;
+                    }
                 }
-            }
-            System.out.println("Entra acá en el metodo");
-            System.out.println("Indentados " + indentados + " Espacios " + espacios);
-            if (espacios == 0 && indentados > 1) {
-                indentados--;
-                yypushback(1);
-                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
-                return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
-            } else {
-                yybegin(YYINITIAL);
-                if (espacios == (indentados + 1)) {
+                if ((indentados - espacios) > 0) {
+                    indentados--;
+                    yypushback(espacios);
+                    System.out.println("Se encuentra dedentado no1");
+                    return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+                } else if ((indentados - espacios)==0) {
+                    yybegin(YYINITIAL);
+                    return null;
+                } else if ((indentados - espacios) < 0) {
                     indentados++;
+                    yypushback(espacios);
                     System.out.println("Se encuentra indentado");
                     return new Symbol(sym.INDENT, yyline, yycolumn, yytext());
-                } else if (espacios == (indentados - 1)) {
-                    indentados--;
-                    System.out.println("Se encuentra dedentado");
-                    return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
-                } else if (espacios == indentados) {
-                    System.out.println("salto");
-                    return new Symbol(sym.SAL, yyline, yycolumn, "\n");
                 } else {
-                    System.out.println("otra cosa");
+                    System.out.println("No sé como entró acá");
+                    return null;
+                }
+            } else {
+                if (indentados > 0) {
+                    indentados--;
+                    yypushback(1);
+                    System.out.println("Se encuentra dedentado no2");
+                    return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
+                } else {
+                    yybegin(YYINITIAL);
+                    yypushback(1);
                     return null;
                 }
             }
         } else {
             if (indentados > 0) {
-
                 indentados--;
-                yypushback(1);
-                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
-                return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
-            } else {
-                yybegin(YYINITIAL);
-                yypushback(1);
-                return null;
-            }
-        }
-        } else {
-            if (indentados > 0) {
-                indentados--;
-                System.out.println("Se encuentra dedentado y retorna pa equilibrar");
+                System.out.println("Se encuentra dedentado no3");
                 return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
             } else {
                 return new java_cup.runtime.Symbol(sym.EOF);
@@ -126,7 +117,7 @@ sal = [\n]+
     (">")                                   { return symbol(sym.MAYOR); }
     ("<")                                   { return symbol(sym.MENOR); }
     ("<-")                                  { yybegin(COMMENT_M); }
-    ("<<")                                  { yybegin(COMMENT_L); }
+    (">>")                                  { yybegin(COMMENT_L); }
     (">=")                                  { return symbol(sym.MAYOR_I); }
     ("<=")                                  { return symbol(sym.MENOR_I); }
     ("!!")                                  { return symbol(sym.NULO); }
@@ -154,6 +145,7 @@ sal = [\n]+
     (",")                                   { return symbol(sym.COMA); }
     ("{")                                   { return symbol(sym.LLAVE_A); }
     ("}")                                   { return symbol(sym.LLAVE_C); }
+    (";")                                   { return symbol(sym.PUNTOC); }
     {D}                                     { return symbol(sym.NUMERO); }
     {DEC}                                   { return symbol(sym.NUMERO_D); }
     {ID}                                    { return symbol(sym.ID); }
@@ -163,8 +155,10 @@ sal = [\n]+
 }
 
 <SALTO>{
-    [^"\t"]                                { Symbol retorno = indent(yytext(),false,false); if (retorno!=null) {return retorno; }; }
+    [^"\t"">>""<-"]                                { Symbol retorno = indent(yytext(),false,false); if (retorno!=null) {return retorno; }; }
     {tab}                                   { Symbol retorno = indent(yytext(),true,false); if (retorno!=null) {return retorno; }; }
+    {tab}">>"                                    { yybegin(COMMENT_L2); }
+    {tab}"<-"                                    { yybegin(COMMENT_M); }
 }
 
 <STRING>{
@@ -191,12 +185,16 @@ sal = [\n]+
     [^"'"]+                          { return symbol(sym.STRING); }
 }
 <COMMENT_L>{
-    \n                              { yybegin(YYINITIAL); }
+    {sal}                    { yybegin(YYINITIAL); }
     [^\n]                               {}
 }
 <COMMENT_M>{
     "->"                              { yybegin(YYINITIAL); }
     [^"->"]                               {}
+}
+<COMMENT_L2>{
+    {sal}                             { yybegin(SALTO); }
+    [^\n]                               {}
 }
 {esp} {/*ignore*/}
 {espacio}           {/*Ignore*/}

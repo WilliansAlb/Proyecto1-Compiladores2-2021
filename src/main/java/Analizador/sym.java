@@ -57,6 +57,7 @@ public class sym {
   public static final int NULO = 43;
   public static final int EOF = 0;
   public static final int MIENTRAS = 21;
+  public static final int PUNTOC = 78;
   public static final int DEFAULT = 19;
   public static final int SUMA = 50;
   public static final int SUMARIZAR = 33;
@@ -164,7 +165,8 @@ public class sym {
   "ERRORLEX",
   "INDENT",
   "DEDENT",
-  "UMINUS"
+  "UMINUS",
+  "PUNTOC"
   };
 }
 

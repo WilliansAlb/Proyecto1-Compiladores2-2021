@@ -77,7 +77,30 @@ public class TextoControlador implements Initializable {
     };
     
     private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6"; 
-
+    private static final String COMENTARIOS = ">>prueba comentario de linea\n" +
+">>prueba comentario de linea\n" +
+"<- prueba comentario\n" +
+"de lineas a ver si funciona\n" +
+"->\n" +
+"PISTA komm EXTIENDE Neon, Genesis\n" +
+"	si (verdadero)\n" +
+"		var boolean a1 = a23\n" +
+"		a3 = 10\n" +
+"<- prueba comentario\n" +
+"		de lineas a ver si funciona\n" +
+"->\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"		keep var entero a2, a3, a4 = a34\n" +
+"		>>hola tu\n" +
+"\n" +
+"\n" +
+"\n" +
+"		a5 = 20\n" +
+"	sino\n" +
+"		var entero a2 = a45 >>probando";
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
     private static final String NUMBER_PATTERN = "[0-9]+\\.?[0-9]*";
@@ -124,7 +147,7 @@ public class TextoControlador implements Initializable {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
         String loop = "";
-        codeArea.replaceText(0, 0, SI_PRUEBA);
+        codeArea.replaceText(0, 0, COMENTARIOS);
         //codeArea.replaceText("");
         //codeArea.setPrefSize(1000, 600);
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());

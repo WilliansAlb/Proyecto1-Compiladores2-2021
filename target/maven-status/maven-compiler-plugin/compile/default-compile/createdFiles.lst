@@ -12,4 +12,5 @@ Analizador\parser$CUP$parser$actions.class
 com\mycompany\practica1\ArrowFactory.class
 com\mycompany\practica1\Task.class
 com\mycompany\practica1\ShowLineDemo$1.class
+Analizador\Lexer.class
 com\mycompany\practica1\MainFX.class
