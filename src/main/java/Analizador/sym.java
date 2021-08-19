@@ -15,20 +15,20 @@ public class sym {
   public static final int EXT = 3;
   public static final int ASC = 28;
   public static final int MAYOR = 39;
-  public static final int NUMERO_D = 72;
+  public static final int NUMERO_D = 73;
   public static final int SI = 13;
-  public static final int INDENT = 75;
+  public static final int INDENT = 76;
   public static final int CONT = 18;
   public static final int KEEP = 11;
-  public static final int DEDENT = 76;
+  public static final int DEDENT = 77;
   public static final int POT = 55;
   public static final int PRIMOS = 32;
   public static final int POR = 52;
-  public static final int NUMERO = 71;
+  public static final int NUMERO = 72;
   public static final int PISTA = 2;
-  public static final int PAR_C = 70;
+  public static final int PAR_C = 71;
   public static final int FALSE = 10;
-  public static final int PAR_A = 69;
+  public static final int PAR_A = 70;
   public static final int NOT = 49;
   public static final int NOR = 48;
   public static final int ORDENAR = 27;
@@ -51,18 +51,19 @@ public class sym {
   public static final int DECIMAL = 5;
   public static final int CHAR = 7;
   public static final int BOOLEAN = 6;
-  public static final int ERRORLEX = 74;
+  public static final int ERRORLEX = 75;
   public static final int SWITCH = 15;
   public static final int MENOR = 40;
   public static final int NULO = 43;
+  public static final int ARREGLO = 66;
   public static final int EOF = 0;
   public static final int MIENTRAS = 21;
-  public static final int PUNTOC = 78;
+  public static final int PUNTOC = 79;
   public static final int DEFAULT = 19;
   public static final int SUMA = 50;
   public static final int SUMARIZAR = 33;
   public static final int INC = 57;
-  public static final int CARACTER = 68;
+  public static final int CARACTER = 69;
   public static final int ENTRE = 53;
   public static final int PRINCIPAL = 36;
   public static final int MSG = 35;
@@ -74,17 +75,17 @@ public class sym {
   public static final int IMPAR = 31;
   public static final int RESTA = 51;
   public static final int DESC = 29;
-  public static final int ID = 66;
+  public static final int ID = 67;
   public static final int DOS_P = 61;
   public static final int SINO = 14;
   public static final int CASO = 16;
   public static final int ESPERAR = 26;
   public static final int RETORNA = 23;
   public static final int CADENA = 8;
-  public static final int STRING = 67;
+  public static final int STRING = 68;
   public static final int AND = 44;
-  public static final int UMINUS = 77;
-  public static final int ASIGNAR = 73;
+  public static final int UMINUS = 78;
+  public static final int ASIGNAR = 74;
   public static final int NAND = 45;
   public static final int XOR = 47;
   public static final String[] terminalNames = new String[] {
@@ -154,6 +155,7 @@ public class sym {
   "LLAVE_A",
   "LLAVE_C",
   "SAL",
+  "ARREGLO",
   "ID",
   "STRING",
   "CARACTER",

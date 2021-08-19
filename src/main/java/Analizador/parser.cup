@@ -32,19 +32,21 @@ terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, 
     SI, SINO, SWITCH, CASO, SALIR, CONT, DEFAULT, PARA, MIENTRAS, HACER, RETORNA, REPRODUCIR,
     NOTAS, ESPERAR, ORDENAR, ASC, DESC, PAR, IMPAR, PRIMOS, SUMARIZAR, LONG, MSG, PRINCIPAL,
     IGUAL, DIFF, MAYOR, MENOR, MAYOR_I, MENOR_I, NULO, AND, NAND, OR, XOR, NOR, NOT, SUMA, RESTA,
-    POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL,
+    POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL, ARREGLO,
     ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS, PUNTOC;
 
-non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, instruccion_condicional, sinosi, condicion,
+non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, declaraciones, sinosi, condicion,
     switch, pista, pistas, extiende, ids, valor_puntual, expresion, booleano, comparador, binario, default, casos, caso, tipo,
-    asignacion, asignar, asigna, para, paso;
+    asignacion, asignar, asigna, para, paso, hacer, mientras, reproducir, esperar, mensaje, lista_declaracion,
+    metodo, parametros, parametro, llamada, texto, param, condicional, tipo_retorno, dimensiones, dimension, items, item, 
+    asignar_arreglo;
 
 precedence left SUMA, RESTA;
 precedence left POR, ENTRE, MOD;
 precedence left POT;
 precedence right UMINUS;
-precedence left OR;
-precedence left AND;
+precedence left OR, NOR, XOR;
+precedence left AND, NAND;
 precedence right NOT;
 precedence left IGUAL, DIFF, MENOR, MENOR_I, MAYOR, MAYOR_I;
 
@@ -60,7 +62,37 @@ pistas::=
 ;
 
 pista::=
-    PISTA ID extiende INDENT instrucciones DEDENT
+    PISTA ID extiende INDENT lista_declaracion DEDENT
+;
+
+lista_declaracion::=
+    lista_declaracion declaraciones
+|   declaraciones
+;
+
+declaraciones::=
+    declaracion
+|   metodo
+;
+
+metodo::=
+    KEEP tipo ID PAR_A param PAR_C INDENT instrucciones DEDENT
+|   tipo ID PAR_A param PAR_C INDENT instrucciones DEDENT
+|   ID PAR_A param PAR_C INDENT instrucciones DEDENT
+|   KEEP ID PAR_A param PAR_C INDENT instrucciones DEDENT
+;
+
+param::=
+|   parametros
+;
+
+parametros::=
+    parametros COMA parametro
+|   parametro
+;
+
+parametro::=
+    tipo ID
 ;
 
 extiende::=
@@ -79,21 +111,63 @@ instrucciones::=
 instruccion::=
    declaracion
 |   asignacion
+|   CONT
+|   SALIR
+|   RETORNA tipo_retorno
 |   para
-|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT
-|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
-|   SI PAR_A condicion PAR_C INDENT instrucciones DEDENT SINO instruccion 
+|   si
+|   mientras
+|   hacer
 |   switch
+|   reproducir
+|   esperar
 |   error
+|   mensaje
+;
+
+tipo_retorno::=
+    condicion
+|   expresion
+;
+
+si::=
+    SI PAR_A condicional PAR_C INDENT instrucciones DEDENT
+|   SI PAR_A condicional PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
+|   SI PAR_A condicional PAR_C INDENT instrucciones DEDENT SINO si 
 ;
 
 declaracion::=
    KEEP VAR tipo ids asignar
 |   VAR tipo ids asignar
+|   KEEP VAR tipo ARREGLO ids dimensiones asignar_arreglo
+|   VAR tipo ARREGLO ids dimensiones asignar_arreglo
+;
+
+asignar_arreglo::=
+|   ASIGNAR LLAVE_A items LLAVE_C
+;
+
+items::=
+    items COMA item
+|   item
+;
+
+item::=
+    expresion
+|   LLAVE_A items LLAVE_C
+;
+
+dimensiones::=
+    dimensiones dimension
+|   dimension
+;
+
+dimension::=
+    COR_A expresion COR_C
 ;
 
 para::=
-    PARA PAR_A asigna PUNTOC condicion PUNTOC NUMERO paso PAR_C INDENT instrucciones DEDENT
+    PARA PAR_A asigna PUNTOC condicional PUNTOC NUMERO paso PAR_C INDENT instrucciones DEDENT
 ;
 
 paso::=
@@ -102,17 +176,18 @@ paso::=
 ;
 
 asigna::=
-    ID ASIGNAR NUMERO
+    ENTERO ID ASIGNAR NUMERO
 |   ID
 ;
 
 
 asignar::=
-|   ASIGNAR ID
+|   ASIGNAR expresion
 ;
 
 asignacion::=
-    ID ASIGNAR NUMERO
+    ID ASIGNAR expresion
+|    ID dimensiones ASIGNAR tipo_retorno
 ;
 
 tipo::=
@@ -146,14 +221,25 @@ valor_puntual::=
     NUMERO
 |   STRING
 |   CARACTER
+|   booleano
+|   NUMERO_D
 ;
 
 condicion::=
-    booleano
-|   PAR_A condicion PAR_C
-|   expresion comparador expresion
+   PAR_A condicion PAR_C
+|   expresion MAYOR expresion
+|   expresion MENOR expresion
+|   expresion MENOR_I expresion
+|   expresion MAYOR_I expresion
+|   expresion IGUAL expresion
+|   expresion DIFF expresion
 |   NOT condicion
-|   condicion binario condicion
+|   NULO ID
+|   condicion AND condicion
+|   condicion OR condicion
+|   condicion XOR condicion
+|   condicion NAND condicion
+|   condicion NOR condicion
 ;
 
 booleano::=
@@ -162,12 +248,51 @@ booleano::=
 ;
 
 expresion::=
-    NUMERO
+   expresion SUMA expresion {: imp("Encuentra suma"); :}
+|   expresion RESTA expresion {: imp("Encuentra menos"); :}
+|   expresion POR expresion {: imp("Encuentra por"); :}
+|   expresion ENTRE expresion {: imp("Encuentra division"); :}
+|   expresion POT expresion {: imp("Encuentra potencia"); :}
+|   expresion MOD expresion {: imp("Encuentra modulo"); :}
+|   RESTA expresion {: imp("Encuentra simbolo menos"); :}
+%prec UMINUS
+|   valor_puntual {: imp("Encuentra valor"); :}
+|   PAR_A expresion PAR_C {: imp("Encuentra parentesis"); :}
+|   ID {: imp("Encuentra variable"); :}
+|   llamada {: imp("Encuentra llamada"); :}
 ;
 
+llamada::=
+    ID PAR_A parametros PAR_C
+;
 
+mientras::=
+    MIENTRAS PAR_A condicional PAR_C INDENT instrucciones DEDENT
+;
 
+hacer::=
+    HACER INDENT instrucciones DEDENT MIENTRAS PAR_A condicional PAR_C
+;
 
+reproducir::=
+    REPRODUCIR PAR_A NOTAS COMA expresion COMA expresion COMA expresion PAR_C
+;
 
+esperar::=
+    ESPERAR PAR_A expresion COMA expresion PAR_C
+;
 
+mensaje::=
+    MSG PAR_A texto PAR_C 
+;
+
+texto::=
+    texto SUMA valor_puntual
+|   valor_puntual
+;
+
+condicional::=
+    condicion
+|   booleano
+;
 

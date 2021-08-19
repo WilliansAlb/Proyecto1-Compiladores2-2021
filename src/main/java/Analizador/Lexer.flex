@@ -12,7 +12,7 @@ import java_cup.runtime.Symbol;
 D= [0-9]+
 espacio=[\r]+
 DEC = [0-9]+\.[0-9]+
-ID = ([aA-zZ]|"_")([aA-zZ]|"_"|[0-9])*
+ID = [a-zA-Z$_][a-zA-Z0-9$_]*
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
@@ -112,6 +112,7 @@ sal = [\n]+
     ("LONGITUD"|"Longitud"|"longitud")      { return symbol(sym.LONG); }
     ("MENSAJE"|"Mensaje"|"mensaje")         { return symbol(sym.MSG); }
     ("PRINCIPAL"|"Principal"|"principal")   { return symbol(sym.PRINCIPAL); }
+    ("ARREGLO"|"Arreglo"|"arreglo")         { return symbol(sym.ARREGLO); }
     ("!")                                   { return symbol(sym.NOT); }
     ("!=")                                  { return symbol(sym.DIFF); }
     (">")                                   { return symbol(sym.MAYOR); }
@@ -137,8 +138,8 @@ sal = [\n]+
     ("+=")                                  { return symbol(sym.SUMA_S); }
     ("--")                                  { return symbol(sym.DEC); }
     ("++")                                  { return symbol(sym.INC); }
-    ("[")                                   { return symbol(sym.COR_A); }
-    ("]")                                   { return symbol(sym.COR_C); }
+    \[                                   { return symbol(sym.COR_A); }
+    \]                                   { return symbol(sym.COR_C); }
     ("(")                                   { return symbol(sym.PAR_A); }
     (")")                                   { return symbol(sym.PAR_C); }
     (":")                                   { return symbol(sym.DOS_P); }

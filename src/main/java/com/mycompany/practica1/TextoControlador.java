@@ -224,7 +224,7 @@ public class TextoControlador implements Initializable {
             if (s.value==null){
                 return;
             }
-            System.out.println(s.value.toString());
+            System.out.println(s.value.toString()+" - "+s.sym);
         }
         
     }
