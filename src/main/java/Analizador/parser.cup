@@ -1,9 +1,12 @@
 package Analizador;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.XMLElement;
+import Interprete.*;
 
 parser code
 {:
+
+    public Expresion sumando;
 
     public void syntax_error(Symbol cur_token) {
         System.out.println(" Se esperaban: ");
@@ -35,11 +38,15 @@ terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, 
     POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL, ARREGLO,
     ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS, PUNTOC;
 
-non terminal inicio, si, sino, bloque, op, op2, instrucciones, instruccion, declaracion, declaraciones, sinosi, condicion,
-    switch, pista, pistas, extiende, ids, valor_puntual, expresion, booleano, comparador, binario, default, casos, caso, tipo,
+non terminal inicio, si, instrucciones, instruccion, declaracion, declaraciones, condicion, param2, parametros2,
+    switch, pista, pistas, extiende, ids, expresion, booleano, default, casos, caso, tipo,
     asignacion, asignar, asigna, para, paso, hacer, mientras, reproducir, esperar, mensaje, lista_declaracion,
     metodo, parametros, parametro, llamada, texto, param, condicional, tipo_retorno, dimensiones, dimension, items, item, 
-    asignar_arreglo;
+    asignar_arreglo, metodos_retorno, forma_ordenar, arreglo_cadena, arreglo_ordenar, incremento, decremento, suma_simplificada;
+
+non terminal Expresion expresion2;
+non terminal Primitivo valor_puntual;
+
 
 precedence left SUMA, RESTA;
 precedence left POR, ENTRE, MOD;
@@ -49,6 +56,7 @@ precedence left OR, NOR, XOR;
 precedence left AND, NAND;
 precedence right NOT;
 precedence left IGUAL, DIFF, MENOR, MENOR_I, MAYOR, MAYOR_I;
+precedence right NULO;
 
 start with inicio;
 
@@ -80,7 +88,9 @@ metodo::=
 |   tipo ID PAR_A param PAR_C INDENT instrucciones DEDENT
 |   ID PAR_A param PAR_C INDENT instrucciones DEDENT
 |   KEEP ID PAR_A param PAR_C INDENT instrucciones DEDENT
-;
+|   KEEP PRINCIPAL PAR_A param PAR_C INDENT instrucciones DEDENT
+|   PRINCIPAL PAR_A param PAR_C INDENT instrucciones DEDENT
+; 
 
 param::=
 |   parametros
@@ -110,10 +120,15 @@ instrucciones::=
 
 instruccion::=
    declaracion
+|   metodos_retorno
+|   suma_simplificada
+|   incremento
+|   decremento
+|   llamada
 |   asignacion
 |   CONT
 |   SALIR
-|   RETORNA tipo_retorno
+|   RETORNA expresion2
 |   para
 |   si
 |   mientras
@@ -125,15 +140,27 @@ instruccion::=
 |   mensaje
 ;
 
+suma_simplificada::=
+    ID SUMA_S expresion
+;
+
+incremento::=
+    ID INC
+;
+
+decremento::=
+    ID DEC
+;
+
 tipo_retorno::=
     condicion
 |   expresion
 ;
 
 si::=
-    SI PAR_A condicional PAR_C INDENT instrucciones DEDENT
-|   SI PAR_A condicional PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
-|   SI PAR_A condicional PAR_C INDENT instrucciones DEDENT SINO si 
+    SI PAR_A expresion2 PAR_C INDENT instrucciones DEDENT
+|   SI PAR_A expresion2 PAR_C INDENT instrucciones DEDENT SINO INDENT instrucciones DEDENT
+|   SI PAR_A expresion2 PAR_C INDENT instrucciones DEDENT SINO si 
 ;
 
 declaracion::=
@@ -167,7 +194,7 @@ dimension::=
 ;
 
 para::=
-    PARA PAR_A asigna PUNTOC condicional PUNTOC NUMERO paso PAR_C INDENT instrucciones DEDENT
+    PARA PAR_A asigna PUNTOC expresion2 PUNTOC NUMERO paso PAR_C INDENT instrucciones DEDENT
 ;
 
 paso::=
@@ -182,12 +209,12 @@ asigna::=
 
 
 asignar::=
-|   ASIGNAR expresion
+|   ASIGNAR expresion2
 ;
 
 asignacion::=
-    ID ASIGNAR expresion
-|    ID dimensiones ASIGNAR tipo_retorno
+    ID ASIGNAR expresion2:e1 {: sumando = e1; :}
+|    ID dimensiones ASIGNAR expresion2:e1 {: sumando = e1; :}
 ;
 
 tipo::=
@@ -218,29 +245,36 @@ default::=
 ;
 
 valor_puntual::=
-    NUMERO
-|   STRING
-|   CARACTER
-|   booleano
-|   NUMERO_D
+    NUMERO:e1 {: RESULT = new Primitivo("numero",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),Integer.parseInt(e1.toString())); :}
+|   STRING:e1 {: RESULT = new Primitivo("string",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),e1.toString()); :}
+|   CARACTER:e1 {: RESULT = new Primitivo("caracter",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),e1.toString().charAt(0)); :}
+|   TRUE:e1 {: RESULT = new Primitivo("boolean",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),true); :}
+|   FALSE:e1 {: RESULT = new Primitivo("boolean",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),false); :}
+|   NUMERO_D:e1 {: RESULT = new Primitivo("decimal",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),Double.parseDouble(e1.toString())); :}
 ;
 
 condicion::=
-   PAR_A condicion PAR_C
-|   expresion MAYOR expresion
-|   expresion MENOR expresion
-|   expresion MENOR_I expresion
-|   expresion MAYOR_I expresion
-|   expresion IGUAL expresion
-|   expresion DIFF expresion
-|   NOT condicion
-|   NULO ID
-|   condicion AND condicion
-|   condicion OR condicion
-|   condicion XOR condicion
-|   condicion NAND condicion
-|   condicion NOR condicion
+   PAR_A condicion PAR_C {: imp("Encuentra parentesis"); :}
+|   expresion MAYOR expresion {: imp("Encuentra mayor"); :}
+|   expresion MENOR expresion {: imp("Encuentra menor"); :}
+|   expresion MENOR_I expresion {: imp("Encuentra menor igual"); :}
+|   expresion MAYOR_I expresion {: imp("Encuentra mayor igual"); :}
+|   expresion IGUAL expresion {: imp("Encuentra igual"); :}
+|   expresion DIFF expresion {: imp("Encuentra diferente"); :}
+|   expresion IGUAL condicion {: imp("Encuentra igual"); :}
+|   expresion DIFF condicion {: imp("Encuentra diferente"); :}
+|   condicion DIFF expresion {: imp("Encuentra diferente"); :}
+|   condicion IGUAL expresion {: imp("Encuentra diferente"); :}
+|   NOT condicion {: imp("Encuentra not"); :}
+|   NOT expresion {: imp("NOT expresion"); :}
+|   NULO ID {: imp("Encuentra nulo"); :}
+|   condicion AND condicion {: imp("Encuentra and"); :}
+|   condicion OR condicion {: imp("Encuentra or"); :}
+|   condicion XOR condicion {: imp("Encuentra xor"); :}
+|   condicion NAND condicion {: imp("Encuentra nand"); :}
+|   condicion NOR condicion {: imp("Encuentra nor"); :}
 ;
+
 
 booleano::=
     TRUE
@@ -260,18 +294,184 @@ expresion::=
 |   PAR_A expresion PAR_C {: imp("Encuentra parentesis"); :}
 |   ID {: imp("Encuentra variable"); :}
 |   llamada {: imp("Encuentra llamada"); :}
+|   ID dimensiones {: imp("Encuentra valor de arreglo"); :}
+|   metodos_retorno
+;
+
+expresion2::=
+   expresion2:e1 SUMA expresion2:e2 
+        {: 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.SUMA);
+        :}
+|   expresion2:e1 RESTA expresion2:e2 {:
+            imp("Encuentra menos"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.RESTA);
+        :}
+|   expresion2:e1 POR expresion2:e2 {: 
+            imp("Encuentra por");
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.POR);
+        :}
+|   expresion2:e1 ENTRE expresion2:e2
+        {: 
+            imp("Encuentra division"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.ENTRE);
+        :}
+|   expresion2:e1 POT expresion2:e2
+        {: 
+            imp("Encuentra potencia"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.POT);
+        :}
+|   expresion2:e1 MOD expresion2:e2 
+        {: 
+            imp("Encuentra modulo"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.MOD);
+        :}
+|   RESTA expresion2:e1 
+        {: 
+            imp("Encuentra negativo"); 
+            RESULT = new Expresion(e1,Expresion.Tipo_operacion.NEGATIVO);
+        :}
+%prec UMINUS
+|   expresion2:e1 MAYOR expresion2:e2
+        {: 
+            imp("Encuentra mayor"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.MAYOR);
+        :}
+|   expresion2:e1 MENOR expresion2:e2 
+        {: 
+            imp("Encuentra menor"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.MENOR);
+        :}
+|   expresion2:e1 MENOR_I expresion2:e2 
+        {: 
+            imp("Encuentra menor igual"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.MENOR_I);
+        :}
+|   expresion2:e1 MAYOR_I expresion2:e2 
+        {: 
+            imp("Encuentra mayor igual"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.MAYOR_I);
+        :}
+|   expresion2:e1 IGUAL expresion2:e2 
+        {: 
+            imp("Encuentra igual"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.IGUAL);
+        :}
+|   expresion2:e1 DIFF expresion2:e2 
+        {: 
+            imp("Encuentra diferente"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.DIFF);
+        :}
+|   expresion2:e1 AND expresion2:e2
+        {: 
+            imp("Encuentra and"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.AND);
+        :}
+|   expresion2:e1 OR expresion2:e2 
+        {: 
+            imp("Encuentra or"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.OR);
+        :}
+|   expresion2:e1 XOR expresion2:e2 
+        {: 
+            imp("Encuentra xor"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.XOR);
+        :}
+|   expresion2:e1 NAND expresion2:e2 
+        {: 
+            imp("Encuentra nand"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.NAND);
+        :}
+|   expresion2:e1 NOR expresion2:e2 
+        {: 
+            imp("Encuentra nor"); 
+            RESULT = new Expresion(e1,e2,Expresion.Tipo_operacion.NOR);
+        :}
+|   valor_puntual:e1 
+        {: 
+            imp("Encuentra valor"); 
+            RESULT = new Expresion(e1,Expresion.Tipo_operacion.PRIMITIVO);
+        :}
+|   PAR_A expresion2:e1 PAR_C
+        {: 
+            imp("Encuentra parentesis"); 
+            RESULT = e1;
+        :}
+|   ID:e1 
+        {: 
+            imp("Encuentra identificador"); 
+            RESULT = new Expresion(new Variable(e1.toString(),null,null,null,e1right),Expresion.Tipo_operacion.VARIABLE);
+        :}
+|   llamada
+        {: 
+            imp("Encuentra llamada"); 
+            RESULT = new Expresion(new Variable("Llamada",null,null,null,-1),Expresion.Tipo_operacion.LLAMADA);
+        :}
+|   ID:e1 dimensiones 
+        {: 
+            imp("Encuentra arreglo"); 
+            RESULT = new Expresion(new Variable(e1.toString(),null,null,null,e1right),Expresion.Tipo_operacion.VARIABLE);
+        :}
+|   NOT expresion2:e1 
+        {: 
+            imp("Encuentra not"); 
+            RESULT = new Expresion(e1,Expresion.Tipo_operacion.NOT);
+        :}
+|   NULO ID:e1
+        {: 
+            imp("Encuentra nulo"); 
+            RESULT = new Expresion(new Variable(e1.toString(),null,null,null,e1right),Expresion.Tipo_operacion.NULO);
+        :}
+|   metodos_retorno 
+        {: 
+            imp("Encuentra metodo retorno"); 
+            RESULT = new Expresion(new Variable("Metodo retorno",null,null,null,e1right),Expresion.Tipo_operacion.METODO_RETORNO);
+        :}
+;
+
+metodos_retorno::=
+    ORDENAR PAR_A arreglo_ordenar COMA forma_ordenar PAR_C
+|   SUMARIZAR PAR_A arreglo_ordenar PAR_C
+|   LONG PAR_A arreglo_cadena PAR_C
+;
+
+forma_ordenar::=
+    ASC
+|   DESC
+|   PAR
+|   IMPAR
+|   PRIMOS
+;
+
+arreglo_cadena::=
+    STRING
+|   arreglo_ordenar
+;
+
+arreglo_ordenar::=
+    ID
+|   LLAVE_A items LLAVE_C
 ;
 
 llamada::=
-    ID PAR_A parametros PAR_C
+    ID PAR_A param2 PAR_C
+;
+
+param2::=
+|   parametros2
+;
+
+parametros2::=
+    parametros2 COMA tipo_retorno
+|   tipo_retorno
 ;
 
 mientras::=
-    MIENTRAS PAR_A condicional PAR_C INDENT instrucciones DEDENT
+    MIENTRAS PAR_A expresion2 PAR_C INDENT instrucciones DEDENT
 ;
 
 hacer::=
-    HACER INDENT instrucciones DEDENT MIENTRAS PAR_A condicional PAR_C
+    HACER INDENT instrucciones DEDENT MIENTRAS PAR_A expresion2 PAR_C
 ;
 
 reproducir::=

@@ -7,6 +7,9 @@ package com.mycompany.practica1;
 
 import Analizador.Lexer;
 import Analizador.parser;
+import Interprete.Expresion;
+import Interprete.Primitivo;
+import Interprete.Termino;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -49,6 +52,7 @@ import org.reactfx.collection.ListModification;
  * @author willi
  */
 public class TextoControlador implements Initializable {
+
     CodeArea codeArea;
     @FXML
     public LineChart myChart;
@@ -56,51 +60,65 @@ public class TextoControlador implements Initializable {
     public StackPane area;
     @FXML
     public Button btn_revisar;
-    
+
     public TextField donde;
-    
+
     Task nuevo;
 
     private static final String[] KEYWORDS = new String[]{
-        "Pista","PISTA","pista","extiende","EXTIENDE","Extiende","Entero","entero","ENTERO"
-            ,"doble","DOBLE","Doble","Boolean","boolean","BOOLEAN","Caracter","CARACTER","caracter"
-            ,"cadena","CADENA","Cadena","verdadero","Verdadero","VERDADERO","True","true","TRUE"
-            ,"False","false","FALSE","falso","Falso","FALSO","Keep","keep","KEEP","var","VAR","Var"
-            ,"Si","SI","si","Sino","SINO","sino","Salir","SALIR","Salir","Continuar","continuar"
-            ,"CONTINUAR","Switch","switch","SWITCH","Caso","CASO","caso","default","Default","DEFAULT"
-            ,"Para","para","PARA","Mientras","mientras","MIENTRAS","hacer","HACER","Hacer","retorna"
-            ,"Retorna","RETORNA","Reproducir","reproducir","REPRODUCIR","Esperar","ESPERAR","esperar"
-            ,"Ordenar","ORDENAR","ordenar","Ascendente","ASCENDENTE","ascendente","DESCENDENTE"
-            ,"descendente","Descendente","Pares","pares","PARES","impares","IMPARES","Impares"
-            ,"primos","Primos","PRIMOS","Sumarizar","sumarizar","SUMARIZAR","Longitud","LONGITUD"
-            ,"longitud","Mensaje","MENSAJE","mensaje","Principal","PRINCIPAL","principal"
+        "Pista", "PISTA", "pista", "extiende", "EXTIENDE", "Extiende", "Entero", "entero", "ENTERO",
+         "doble", "DOBLE", "Doble", "Boolean", "boolean", "BOOLEAN", "Caracter", "CARACTER", "caracter",
+         "cadena", "CADENA", "Cadena", "verdadero", "Verdadero", "VERDADERO", "True", "true", "TRUE",
+         "False", "false", "FALSE", "falso", "Falso", "FALSO", "Keep", "keep", "KEEP", "var", "VAR", "Var",
+         "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "Salir", "Continuar", "continuar",
+         "CONTINUAR", "Switch", "switch", "SWITCH", "Caso", "CASO", "caso", "default", "Default", "DEFAULT",
+         "Para", "para", "PARA", "Mientras", "mientras", "MIENTRAS", "hacer", "HACER", "Hacer", "retorna",
+         "Retorna", "RETORNA", "Reproducir", "reproducir", "REPRODUCIR", "Esperar", "ESPERAR", "esperar",
+         "Ordenar", "ORDENAR", "ordenar", "Ascendente", "ASCENDENTE", "ascendente", "DESCENDENTE",
+         "descendente", "Descendente", "Pares", "pares", "PARES", "impares", "IMPARES", "Impares",
+         "primos", "Primos", "PRIMOS", "Sumarizar", "sumarizar", "SUMARIZAR", "Longitud", "LONGITUD",
+         "longitud", "Mensaje", "MENSAJE", "mensaje", "Principal", "PRINCIPAL", "principal"
     };
-    
-    private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6"; 
-    private static final String COMENTARIOS = ">>prueba comentario de linea\n" +
+
+    private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6";
+    private static final String COMENTARIOS = ">>prueba comentario de linea\n"
+            + ">>prueba comentario de linea\n"
+            + "<- prueba comentario\n"
+            + "de lineas a ver si funciona\n"
+            + "->\n"
+            + "PISTA komm EXTIENDE Neon, Genesis\n"
+            + "	si (verdadero)\n"
+            + "		var boolean a1 = a23\n"
+            + "		a3 = 10\n"
+            + "<- prueba comentario\n"
+            + "		de lineas a ver si funciona\n"
+            + "->\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "		keep var entero a2, a3, a4 = a34\n"
+            + "		>>hola tu\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "		a5 = 20\n"
+            + "	sino\n"
+            + "		var entero a2 = a45 >>probando";
+    private static final String PRUEBA1 = ">>prueba comentario de linea\n" +
 ">>prueba comentario de linea\n" +
 "<- prueba comentario\n" +
 "de lineas a ver si funciona\n" +
 "->\n" +
 "PISTA komm EXTIENDE Neon, Genesis\n" +
-"	si (verdadero)\n" +
-"		var boolean a1 = a23\n" +
-"		a3 = 10\n" +
-"<- prueba comentario\n" +
-"		de lineas a ver si funciona\n" +
-"->\n" +
-"\n" +
-"\n" +
-"\n" +
-"\n" +
-"		keep var entero a2, a3, a4 = a34\n" +
-"		>>hola tu\n" +
-"\n" +
-"\n" +
-"\n" +
-"		a5 = 20\n" +
-"	sino\n" +
-"		var entero a2 = a45 >>probando";
+"	Metodo1()\n" +
+"		si (((a2+a3)>3)||a>9)\n" +
+"			var entero a3 = 20+10\n" +
+"			var entero a4 = 2\n" +
+"			var entero a5 = 5\n" +
+"		sino si (falso)\n" +
+"			var entero a34 = 34\n" +
+"			var entero arreglo a3 [2][3] = {{1+2,3+2,33},{1,3,4}}";
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
     private static final String NUMBER_PATTERN = "[0-9]+\\.?[0-9]*";
@@ -147,7 +165,7 @@ public class TextoControlador implements Initializable {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
         String loop = "";
-        codeArea.replaceText(0, 0, COMENTARIOS);
+        codeArea.replaceText(0, 0, PRUEBA1);
         //codeArea.replaceText("");
         //codeArea.setPrefSize(1000, 600);
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
@@ -208,25 +226,33 @@ public class TextoControlador implements Initializable {
             }
         }
     }
-    
+
     @FXML
     private void revisar() throws IOException, Exception {
-        System.out.println(codeArea.getText());
+        //System.out.println(codeArea.getText());
         parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
-        
         par.parse();
-        for (int i = 0; i < 10; i++) {
-            System.out.println("-----------");
-        }
+        leer(par.sumando);
         Lexer n = new Lexer(new StringReader(codeArea.getText()));
-        while(true){
+        escribir(n);
+    }
+    
+    private void leer(Expresion s){
+        Termino t = s.ejecutar();
+        if (t instanceof Primitivo){
+            Primitivo st = (Primitivo)t;
+            System.out.println(st.getValor());
+        }
+    }
+    
+    private void escribir(Lexer n) throws IOException{
+        while (true) {
             Symbol s = n.next_token();
-            if (s.value==null){
+            if (s.value == null) {
                 return;
             }
-            System.out.println(s.value.toString()+" - "+s.sym);
+            System.out.println(s.value.toString() + " - " + s.sym);
         }
-        
     }
 
     private class DefaultContextMenu extends ContextMenu {
@@ -275,15 +301,17 @@ public class TextoControlador implements Initializable {
             System.out.println(((CodeArea) getOwnerNode()).getText());
         }
     }
+
     @FXML
-    private void iniciar(){
+    private void iniciar() {
         System.out.println("inicia");
         myChart.getData().clear();
         nuevo = new Task(myChart);
         nuevo.start();
     }
+
     @FXML
-    private void parar(){
+    private void parar() {
         System.out.println("para");
         nuevo.kill();
     }

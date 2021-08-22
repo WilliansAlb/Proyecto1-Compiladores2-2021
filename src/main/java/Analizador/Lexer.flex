@@ -16,9 +16,9 @@ ID = [a-zA-Z$_][a-zA-Z0-9$_]*
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
-%state STRING, CHAR, COMMENT_L, COMMENT_L2, COMMENT_M, SALTO
+%state STRING, CHAR, COMMENT_L, COMMENT_L2, COMMENT_M, SALTO, ESPECIAL
 %{
-    StringBuffer string = new StringBuffer();
+    String str = "";
     int indentados = 0;
     private Symbol symbol(int type, Object value){
         return new Symbol(type, yyline, yycolumn, value);
@@ -150,7 +150,7 @@ sal = [\n]+
     {D}                                     { return symbol(sym.NUMERO); }
     {DEC}                                   { return symbol(sym.NUMERO_D); }
     {ID}                                    { return symbol(sym.ID); }
-    "\""                                    { yybegin(STRING);}
+    "\""                                    { str = ""; yybegin(STRING);}
     "'"                                     { yybegin(CHAR);}
     {sal}                                   { yybegin(SALTO); }   
 }
@@ -165,19 +165,55 @@ sal = [\n]+
 <STRING>{
     \"                              { yybegin(YYINITIAL);
                                        return symbol(sym.STRING,
-                                       string.toString()); }
-    [^\""#\"""##""#t""#n""#r""#\""]+ { string.append( yytext() ); }
-    "#t"                            { string.append('\t'); }
-    "#n"                            { string.append('\n'); }
-    "#r"                            { string.append('\r'); }
-    "#\""                           { string.append('\"'); }
-    "#\\"                           { string.append('\\'); }
-    "##"                            { string.append('#'); }
+                                       str); }
+    [^\""#"]+                      { str+=yytext(); }
+    "#"                            { yybegin(ESPECIAL); }
+}
+
+<ESPECIAL>{
+    \"                              { 
+                                        str+="\""; 
+                                        yybegin(STRING);
+                                    }
+    \\                              {
+                                        str+="\\"; 
+                                        yybegin(STRING);
+                                    }
+    \'                              {
+                                        str+="'"; 
+                                        yybegin(STRING);
+                                    }
+    "n"                              {
+                                        str+="\n"; 
+                                        yybegin(STRING);
+                                    }
+    "r"                              {
+                                        str+="\r"; 
+                                        yybegin(STRING);
+                                    }
+    "t"                              {
+                                        str+="\t"; 
+                                        yybegin(STRING);
+                                    }
+    "#"                              {
+                                        str+="#"; 
+                                        yybegin(STRING);
+                                    }
+    \"\"                            {
+                                        str+="\"";
+                                        yybegin(YYINITIAL);
+                                        return symbol(sym.STRING,str);
+                                    }
+    [^]                             {
+                                        yybegin(STRING);
+                                        yypushback(1);
+                                    }
 }
 <CHAR>{
     "'"                              { yybegin(YYINITIAL);}
     "##"                             { return symbol(sym.CARACTER,"#"); }
     "#'"                             { return symbol(sym.CARACTER,"'"); }
+    "#\""                             { return symbol(sym.CARACTER,"\""); }
     "#\\"                            { return symbol(sym.CARACTER,"\\"); }
     "#t"                             { return symbol(sym.CARACTER,"\t"); }
     "#n"                             { return symbol(sym.CARACTER,"\n"); }

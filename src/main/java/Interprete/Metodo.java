@@ -15,7 +15,7 @@ import java.util.List;
 public class Metodo {
     List<Instruccion> instrucciones;
     Simbolos tabla;
-    //List<Token>
+    List<Variable> parametros;
     String id;
     boolean retorno;
     String tipo;
@@ -32,8 +32,89 @@ public class Metodo {
         this.retornando = retornando;
     }
     
-    public void interpretar(){
-        
+    public boolean interpretar(Simbolos tabla){
+        for (Instruccion instruccione : instrucciones) {
+            if (instruccione instanceof Declaracion){
+                
+            } else if (instruccione instanceof Asignacion){
+                
+            } else if (instruccione instanceof Si){
+                Si condicional = (Si)instruccione;
+                condicional.interpretar(tabla);
+            }
+        }
+        return true;
+    }
+
+    public List<Instruccion> getInstrucciones() {
+        return instrucciones;
+    }
+
+    public void setInstrucciones(List<Instruccion> instrucciones) {
+        this.instrucciones = instrucciones;
+    }
+
+    public Simbolos getTabla() {
+        return tabla;
+    }
+
+    public void setTabla(Simbolos tabla) {
+        this.tabla = tabla;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isRetorno() {
+        return retorno;
+    }
+
+    public void setRetorno(boolean retorno) {
+        this.retorno = retorno;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public boolean isKeep() {
+        return keep;
+    }
+
+    public void setKeep(boolean keep) {
+        this.keep = keep;
+    }
+
+    public Tipo getRetornando() {
+        return retornando;
+    }
+
+    public void setRetornando(Tipo retornando) {
+        this.retornando = retornando;
+    }
+
+    public List<Variable> getParametros() {
+        return parametros;
+    }
+
+    public void setParametros(List<Variable> parametros) {
+        this.parametros = parametros;
     }
     
+    public String acepta(){
+        String retorno = "(";
+        for (Variable parametro : parametros) {
+            retorno+=parametro.getTipo()+",";
+        }
+        return retorno+")";
+    }
 }
