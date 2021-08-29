@@ -23,5 +23,5 @@ public abstract class Termino {
     
     public abstract String getTipo();
     
-    public abstract Symbol getSymbol();
+    public abstract Termino getValor2();
 }

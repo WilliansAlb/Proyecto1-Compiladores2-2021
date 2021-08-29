@@ -5,6 +5,7 @@
  */
 package Interprete;
 
+import Tablas.Simbolo;
 import Tablas.Simbolos;
 import java.util.List;
 
@@ -13,37 +14,45 @@ import java.util.List;
  * @author willi
  */
 public class Metodo {
-    List<Instruccion> instrucciones;
-    Simbolos tabla;
-    List<Variable> parametros;
-    String id;
-    boolean retorno;
-    String tipo;
-    boolean keep;
-    Tipo retornando;
 
-    public Metodo(List<Instruccion> instrucciones, Simbolos tabla, String id, boolean retorno, String tipo, boolean keep, Tipo retornando) {
-        this.instrucciones = instrucciones;
-        this.tabla = tabla;
+    String id;
+    String tipo;
+    List<Parametro> parametros;
+    List<Instruccion> instrucciones;
+    boolean retorno;
+    boolean keep;
+    boolean principal;
+
+    public Metodo(String id, String tipo, List<Parametro> parametros, List<Instruccion> instrucciones, boolean retorno, boolean keep, boolean principal) {
         this.id = id;
-        this.retorno = retorno;
         this.tipo = tipo;
+        this.parametros = parametros;
+        this.instrucciones = instrucciones;
+        this.retorno = retorno;
         this.keep = keep;
-        this.retornando = retornando;
+        this.principal = principal;
     }
-    
-    public boolean interpretar(Simbolos tabla){
-        for (Instruccion instruccione : instrucciones) {
-            if (instruccione instanceof Declaracion){
-                
-            } else if (instruccione instanceof Asignacion){
-                
-            } else if (instruccione instanceof Si){
-                Si condicional = (Si)instruccione;
-                condicional.interpretar(tabla);
+
+    public Metodo() {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void interpretar(Simbolos tabla, List<Metodo> metodos, List<Expresion> param) {
+        tabla.ambitos++;
+        if (param == null) {
+            for (Instruccion instruccion : instrucciones) {
+                instruccion.interpretar(tabla);
+            }
+        } else {
+            System.out.println("codigo cuando si hay parametros");
+        }
+        for (Simbolo tabla1 : tabla) {
+            if (tabla1.getDatos() != null) {
+                System.out.println("id: " + tabla1.getId() + " valor: " + tabla1.getDatos().get(0));
+            } else {
+                System.out.println("id: " + tabla1.getId() + " valor: null");
             }
         }
-        return true;
     }
 
     public List<Instruccion> getInstrucciones() {
@@ -52,14 +61,6 @@ public class Metodo {
 
     public void setInstrucciones(List<Instruccion> instrucciones) {
         this.instrucciones = instrucciones;
-    }
-
-    public Simbolos getTabla() {
-        return tabla;
-    }
-
-    public void setTabla(Simbolos tabla) {
-        this.tabla = tabla;
     }
 
     public String getId() {
@@ -94,27 +95,20 @@ public class Metodo {
         this.keep = keep;
     }
 
-    public Tipo getRetornando() {
-        return retornando;
-    }
-
-    public void setRetornando(Tipo retornando) {
-        this.retornando = retornando;
-    }
-
-    public List<Variable> getParametros() {
+    public List<Parametro> getParametros() {
         return parametros;
     }
 
-    public void setParametros(List<Variable> parametros) {
+    public void setParametros(List<Parametro> parametros) {
         this.parametros = parametros;
     }
-    
-    public String acepta(){
-        String retorno = "(";
-        for (Variable parametro : parametros) {
-            retorno+=parametro.getTipo()+",";
-        }
-        return retorno+")";
+
+    public boolean isPrincipal() {
+        return principal;
     }
+
+    public void setPrincipal(boolean principal) {
+        this.principal = principal;
+    }
+
 }

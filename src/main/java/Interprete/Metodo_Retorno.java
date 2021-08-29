@@ -15,30 +15,12 @@ import java_cup.runtime.Symbol;
  */
 public class Metodo_Retorno extends Termino {
 
-    private String tipo;
+    private Instruccion llamada;
     private String id;
-    private List<Termino> parametros;
-    private int linea;
-
-    public Metodo_Retorno(String tipo, String id, List<Termino> parametros, int linea) {
-        this.tipo = tipo;
-        this.id = id;
-        this.parametros = parametros;
-        this.linea = linea;
-    }
-
+    
     @Override
     public Simbolos interpretar(Simbolos tabla) {
-        for (Metodo metodo : tabla.getMetodos()) {
-            if (metodo.getId().equalsIgnoreCase(id)) {
-                boolean excepcion = false;
-                for (int i = 0; i < metodo.getParametros().size(); i++) {
-                    if (!metodo.getParametros().get(i).getTipo().equalsIgnoreCase(parametros.get(i).getTipo())) {
-                        excepcion = true;
-                    }
-                }
-            }
-        }
+        
         return tabla;
     }
 
@@ -53,11 +35,6 @@ public class Metodo_Retorno extends Termino {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public Symbol getSymbol() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     public String getId() {
         return id;
     }
@@ -66,20 +43,9 @@ public class Metodo_Retorno extends Termino {
         this.id = id;
     }
 
-    public List<Termino> getParametros() {
-        return parametros;
+    @Override
+    public Termino getValor2() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    public void setParametros(List<Termino> parametros) {
-        this.parametros = parametros;
-    }
-
-    public int getLinea() {
-        return linea;
-    }
-
-    public void setLinea(int linea) {
-        this.linea = linea;
-    }
-
+    
 }

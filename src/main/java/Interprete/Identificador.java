@@ -13,20 +13,20 @@ import java_cup.runtime.Symbol;
  *
  * @author willi
  */
-public class Variable extends Termino{
+public class Identificador extends Termino{
 
     private String id;
-    private String tipo;
+    private boolean isArreglo;
     private List<Expresion> dimensiones;
-    private List<Expresion> datos;
     private int linea;
+    private int columna;
 
-    public Variable(String id, String tipo, List<Expresion> dimensiones, List<Expresion> datos, int linea) {
+    public Identificador(String id, List<Expresion> dimensiones, boolean isArreglo, int linea, int columna) {
         this.id = id;
-        this.tipo = tipo;
         this.dimensiones = dimensiones;
-        this.datos = datos;
         this.linea = linea;
+        this.isArreglo = isArreglo;
+        this.columna = columna;
     }
     
 
@@ -45,15 +45,7 @@ public class Variable extends Termino{
     public void setDimensiones(List<Expresion> dimensiones) {
         this.dimensiones = dimensiones;
     }
-
-    public List<Expresion> getDatos() {
-        return datos;
-    }
-
-    public void setDatos(List<Expresion> datos) {
-        this.datos = datos;
-    }
-
+    
     public int getLinea() {
         return linea;
     }
@@ -77,8 +69,25 @@ public class Variable extends Termino{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+
+    public boolean isIsArreglo() {
+        return isArreglo;
+    }
+
+    public void setIsArreglo(boolean isArreglo) {
+        this.isArreglo = isArreglo;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
+
     @Override
-    public Symbol getSymbol() {
+    public Termino getValor2() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

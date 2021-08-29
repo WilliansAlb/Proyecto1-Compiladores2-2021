@@ -16,7 +16,7 @@ ID = [a-zA-Z$_][a-zA-Z0-9$_]*
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
-%state STRING, CHAR, COMMENT_L, COMMENT_L2, COMMENT_M, SALTO, ESPECIAL
+%state STRING, CHAR, COMMENT_L, COMMENT_L2, COMMENT_M, SALTO, ESPECIAL, SALIDA_MULTI
 %{
     String str = "";
     int indentados = 0;
@@ -156,10 +156,10 @@ sal = [\n]+
 }
 
 <SALTO>{
-    [^"\t"">>""<-"]                                { Symbol retorno = indent(yytext(),false,false); if (retorno!=null) {return retorno; }; }
+    [^"\t"">>""<-"]                         { Symbol retorno = indent(yytext(),false,false); if (retorno!=null) {return retorno; }; }
     {tab}                                   { Symbol retorno = indent(yytext(),true,false); if (retorno!=null) {return retorno; }; }
-    {tab}">>"                                    { yybegin(COMMENT_L2); }
-    {tab}"<-"                                    { yybegin(COMMENT_M); }
+    {tab}">>"                               { yybegin(COMMENT_L2); }
+    {tab}"<-"                               { yybegin(COMMENT_M); }
 }
 
 <STRING>{
@@ -226,8 +226,15 @@ sal = [\n]+
     [^\n]                               {}
 }
 <COMMENT_M>{
-    "->"                              { yybegin(YYINITIAL); }
-    [^"->"]                               {}
+    [^"-"]+                               {}
+    "-"                               { yybegin(PRO); }
+}
+
+<SALIDA_MULTI>{
+    ">"                               { yybegin(YYINITIAL); }
+    [^>]                              { 
+                                            yypushback(1); 
+                                            yybegin(COMMENT_M); }
 }
 <COMMENT_L2>{
     {sal}                             { yybegin(SALTO); }

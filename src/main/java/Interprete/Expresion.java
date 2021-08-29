@@ -5,6 +5,7 @@
  */
 package Interprete;
 
+import Tablas.Simbolos;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class Expresion {
 
-    public static enum Tipo_operacion {
+    public static enum Operacion {
         SUMA,
         RESTA,
         POR,
@@ -42,9 +43,9 @@ public class Expresion {
         PRIMITIVO,
         METODO_RETORNO,
         LLAMADA,
-        VARIABLE
+        IDENTIFICADOR
     }
-    private final Tipo_operacion tipo;
+    private final Operacion tipo;
     /**
      * Operador izquierdo de la operación.
      */
@@ -68,7 +69,7 @@ public class Expresion {
      * @param derecha Opeardor derecho de la operación
      * @param tipo Tipo de la operación
      */
-    public Expresion(Expresion izquierda, Expresion derecha, Tipo_operacion tipo) {
+    public Expresion(Expresion izquierda, Expresion derecha, Operacion tipo) {
         this.tipo = tipo;
         this.izquierda = izquierda;
         this.derecha = derecha;
@@ -81,7 +82,7 @@ public class Expresion {
      * @param izquierda Único operador de la operación
      * @param tipo Tipo de operación
      */
-    public Expresion(Expresion izquierda, Tipo_operacion tipo) {
+    public Expresion(Expresion izquierda, Operacion tipo) {
         this.tipo = tipo;
         this.izquierda = izquierda;
     }
@@ -93,7 +94,7 @@ public class Expresion {
      * @param a Cadena que representa la operación a realizar
      * @param tipo Tipo de operación
      */
-    public Expresion(Termino a, Tipo_operacion tipo) {
+    public Expresion(Termino a, Operacion tipo) {
         this.valor = a;
         this.tipo = tipo;
     }
@@ -107,53 +108,85 @@ public class Expresion {
      */
     public Expresion(Termino a) {
         this.valor = a;
-        this.tipo = Tipo_operacion.NUMERO;
+        this.tipo = Operacion.NUMERO;
     }
 
-    public Termino ejecutar() {
-        Termino a = (izquierda == null) ? null : izquierda.ejecutar();
-        Termino b = (derecha == null) ? null : derecha.ejecutar();
-
-        if (tipo == Tipo_operacion.ENTRE) {
+    public Termino ejecutar(Simbolos tabla) {
+        Termino a = (izquierda == null) ? null : izquierda.ejecutar(tabla);
+        Termino b = (derecha == null) ? null : derecha.ejecutar(tabla);
+        if (tipo == Operacion.ENTRE) {
             return dividir(a, b);
-        } else if (tipo == Tipo_operacion.SUMA) {
+        } else if (tipo == Operacion.SUMA) {
             return sumar(a, b);
-        } else if (tipo == Tipo_operacion.POR) {
+        } else if (tipo == Operacion.POR) {
             return multiplicar(a, b);
-        } else if (tipo == Tipo_operacion.PRIMITIVO) {
+        } else if (tipo == Operacion.PRIMITIVO) {
             return (Primitivo) valor;
-        } else if (tipo == Tipo_operacion.MOD) {
+        } else if (tipo == Operacion.MOD) {
             return modulo(a, b);
-        } else if (tipo == Tipo_operacion.POT) {
+        } else if (tipo == Operacion.POT) {
             return potencia(a, b);
-        } else if (tipo == Tipo_operacion.NOT) {
+        } else if (tipo == Operacion.NOT) {
             return not(a);
-        } else if (tipo == Tipo_operacion.NEGATIVO) {
+        } else if (tipo == Operacion.NEGATIVO) {
             return negativo(a);
-        } else if (tipo == Tipo_operacion.RESTA) {
+        } else if (tipo == Operacion.RESTA) {
             return resta(a, b);
-        } else if (tipo == Tipo_operacion.AND) {
+        } else if (tipo == Operacion.AND) {
             return and(a, b);
-        } else if (tipo == Tipo_operacion.NAND) {
+        } else if (tipo == Operacion.NAND) {
             return nand(a, b);
-        } else if (tipo == Tipo_operacion.OR) {
+        } else if (tipo == Operacion.OR) {
             return or(a, b);
-        } else if (tipo == Tipo_operacion.NOR) {
+        } else if (tipo == Operacion.NOR) {
             return nor(a, b);
-        } else if (tipo == Tipo_operacion.XOR) {
+        } else if (tipo == Operacion.XOR) {
             return xor(a, b);
-        } else if (tipo == Tipo_operacion.IGUAL) {
+        } else if (tipo == Operacion.IGUAL) {
             return igual(a, b);
-        } else if (tipo == Tipo_operacion.DIFF) {
+        } else if (tipo == Operacion.DIFF) {
             return diff(a, b);
-        } else if (tipo == Tipo_operacion.MAYOR) {
+        } else if (tipo == Operacion.MAYOR) {
             return mayor(a, b);
-        } else if (tipo == Tipo_operacion.MENOR) {
+        } else if (tipo == Operacion.MENOR) {
             return menor(a, b);
-        } else if (tipo == Tipo_operacion.MAYOR_I) {
+        } else if (tipo == Operacion.MAYOR_I) {
             return mayor_igual(a, b);
-        } else if (tipo == Tipo_operacion.MENOR_I) {
+        } else if (tipo == Operacion.MENOR_I) {
             return menor_igual(a, b);
+        } else if (tipo == Operacion.IDENTIFICADOR) {
+            Identificador id = (Identificador) valor;
+            if (!id.isIsArreglo()) {
+                if (tabla.existe(id.getId())) {
+                    Object valor2 = tabla.getValor(id.getId());
+                    if (!valor2.toString().equalsIgnoreCase("Desconocido")) {
+                        if (valor2 instanceof String) {
+                            return new Primitivo("string", null, valor2);
+                        } else if (valor2 instanceof Integer) {
+                            return new Primitivo("numero", null, valor2);
+                        } else if (valor2 instanceof Double) {
+                            return new Primitivo("decimal", null, valor2);
+                        } else if (valor2 instanceof Boolean) {
+                            return new Primitivo("boolean", null, valor2);
+                        } else {
+                            return new Primitivo("caracter", null, valor2);
+                        }
+                    } else {
+                        return new Primitivo("excepcion", null, "No has inicializado la variable "+id.getId());
+                    }
+                } else {
+                    return new Primitivo("excepcion", null, "No has declarado la variable "+id.getId());
+                }
+            } else {
+                return new Primitivo("excepcion", null, "No has declarado esta variable");
+            }
+        } else if (tipo == Operacion.NULO) {
+            Identificador ide = (Identificador) valor;
+            if (tabla.existe(ide.getId())) {
+                return new Primitivo("boolean", null, tabla.esNull(ide.getId()));
+            } else {
+                return new Primitivo("excepcion", null, "La variable a la que se le intento comprobar su previa inicializacion no existe");
+            }
         } else {
             return new Primitivo("excepcion", null, "Ojala que no llegue acá");
         }
@@ -209,21 +242,21 @@ public class Expresion {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a1.getSymbol(), "No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
@@ -470,7 +503,7 @@ public class Expresion {
             }
         }
     }
-    
+
     public Termino menor_igual(Termino a, Termino b) {
         Primitivo a1 = (Primitivo) a;
         Primitivo b1 = (Primitivo) b;
@@ -687,6 +720,7 @@ public class Expresion {
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
+                System.out.println(n1 + " y " + n2);
                 return new Primitivo("boolean", null, n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();

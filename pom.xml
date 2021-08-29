@@ -28,6 +28,12 @@
             <artifactId>jfreechart</artifactId>
             <version>1.0.18</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.explodingart/jmusic -->
+        <dependency>
+            <groupId>com.explodingart</groupId>
+            <artifactId>jmusic</artifactId>
+            <version>1.6.4</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

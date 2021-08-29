@@ -42,17 +42,17 @@
          <tabs>
             <Tab text="Editor de código">
                <content>
-                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1900.0">
+                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0">
                      <center>
-                        <VBox alignment="CENTER" prefHeight="600.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+                        <VBox alignment="CENTER" prefHeight="600.0" prefWidth="700.0" BorderPane.alignment="CENTER">
                            <children>
-                              <StackPane fx:id="area" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="600.0" prefWidth="500.0" style="-fx-background-color: lightblue;" VBox.vgrow="ALWAYS" />
-                              <TextField fx:id="donde" />
+                              <StackPane fx:id="area" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="500.0" prefWidth="400.0" style="-fx-background-color: lightblue;" VBox.vgrow="ALWAYS" />
+                              <TextField fx:id="donde" VBox.vgrow="ALWAYS" />
                            </children>
                         </VBox>
                      </center>
                      <top>
-                        <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Editor de codigo" textAlignment="CENTER" BorderPane.alignment="CENTER">
+                        <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Editor de codigo" textAlignment="CENTER">
                            <font>
                               <Font name="Arial Black" size="26.0" />
                            </font>

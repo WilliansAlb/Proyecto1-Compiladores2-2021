@@ -9,6 +9,7 @@ import Analizador.Lexer;
 import Analizador.parser;
 import Interprete.Expresion;
 import Interprete.Primitivo;
+import Interprete.Programa;
 import Interprete.Termino;
 import java.io.IOException;
 import java.io.StringReader;
@@ -67,17 +68,17 @@ public class TextoControlador implements Initializable {
 
     private static final String[] KEYWORDS = new String[]{
         "Pista", "PISTA", "pista", "extiende", "EXTIENDE", "Extiende", "Entero", "entero", "ENTERO",
-         "doble", "DOBLE", "Doble", "Boolean", "boolean", "BOOLEAN", "Caracter", "CARACTER", "caracter",
-         "cadena", "CADENA", "Cadena", "verdadero", "Verdadero", "VERDADERO", "True", "true", "TRUE",
-         "False", "false", "FALSE", "falso", "Falso", "FALSO", "Keep", "keep", "KEEP", "var", "VAR", "Var",
-         "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "Salir", "Continuar", "continuar",
-         "CONTINUAR", "Switch", "switch", "SWITCH", "Caso", "CASO", "caso", "default", "Default", "DEFAULT",
-         "Para", "para", "PARA", "Mientras", "mientras", "MIENTRAS", "hacer", "HACER", "Hacer", "retorna",
-         "Retorna", "RETORNA", "Reproducir", "reproducir", "REPRODUCIR", "Esperar", "ESPERAR", "esperar",
-         "Ordenar", "ORDENAR", "ordenar", "Ascendente", "ASCENDENTE", "ascendente", "DESCENDENTE",
-         "descendente", "Descendente", "Pares", "pares", "PARES", "impares", "IMPARES", "Impares",
-         "primos", "Primos", "PRIMOS", "Sumarizar", "sumarizar", "SUMARIZAR", "Longitud", "LONGITUD",
-         "longitud", "Mensaje", "MENSAJE", "mensaje", "Principal", "PRINCIPAL", "principal"
+        "doble", "DOBLE", "Doble", "Boolean", "boolean", "BOOLEAN", "Caracter", "CARACTER", "caracter",
+        "cadena", "CADENA", "Cadena", "verdadero", "Verdadero", "VERDADERO", "True", "true", "TRUE",
+        "False", "false", "FALSE", "falso", "Falso", "FALSO", "Keep", "keep", "KEEP", "var", "VAR", "Var",
+        "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "Salir", "Continuar", "continuar",
+        "CONTINUAR", "Switch", "switch", "SWITCH", "Caso", "CASO", "caso", "default", "Default", "DEFAULT",
+        "Para", "para", "PARA", "Mientras", "mientras", "MIENTRAS", "hacer", "HACER", "Hacer", "retorna",
+        "Retorna", "RETORNA", "Reproducir", "reproducir", "REPRODUCIR", "Esperar", "ESPERAR", "esperar",
+        "Ordenar", "ORDENAR", "ordenar", "Ascendente", "ASCENDENTE", "ascendente", "DESCENDENTE",
+        "descendente", "Descendente", "Pares", "pares", "PARES", "impares", "IMPARES", "Impares",
+        "primos", "Primos", "PRIMOS", "Sumarizar", "sumarizar", "SUMARIZAR", "Longitud", "LONGITUD",
+        "longitud", "Mensaje", "MENSAJE", "mensaje", "Principal", "PRINCIPAL", "principal"
     };
 
     private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6";
@@ -105,20 +106,20 @@ public class TextoControlador implements Initializable {
             + "		a5 = 20\n"
             + "	sino\n"
             + "		var entero a2 = a45 >>probando";
-    private static final String PRUEBA1 = ">>prueba comentario de linea\n" +
-">>prueba comentario de linea\n" +
-"<- prueba comentario\n" +
-"de lineas a ver si funciona\n" +
-"->\n" +
-"PISTA komm EXTIENDE Neon, Genesis\n" +
-"	Metodo1()\n" +
-"		si (((a2+a3)>3)||a>9)\n" +
-"			var entero a3 = 20+10\n" +
-"			var entero a4 = 2\n" +
-"			var entero a5 = 5\n" +
-"		sino si (falso)\n" +
-"			var entero a34 = 34\n" +
-"			var entero arreglo a3 [2][3] = {{1+2,3+2,33},{1,3,4}}";
+    private static final String PRUEBA1 = ">>prueba comentario de linea\n"
+            + ">>prueba comentario de linea\n"
+            + "<- prueba comentario\n"
+            + "de lineas a ver si funciona\n"
+            + "->\n"
+            + "PISTA komm EXTIENDE Neon, Genesis\n"
+            + "	Metodo1()\n"
+            + "		si (((a2+a3)>3)||a>9)\n"
+            + "			var entero a3 = 20+10\n"
+            + "			var entero a4 = 2\n"
+            + "			var entero a5 = 5\n"
+            + "		sino si (falso)\n"
+            + "			var entero a34 = 34\n"
+            + "			var entero arreglo a3 [2][3] = {{1+2,3+2,33},{1,3,4}}";
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
     private static final String NUMBER_PATTERN = "[0-9]+\\.?[0-9]*";
@@ -232,20 +233,18 @@ public class TextoControlador implements Initializable {
         //System.out.println(codeArea.getText());
         parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
         par.parse();
-        leer(par.sumando);
-        Lexer n = new Lexer(new StringReader(codeArea.getText()));
-        escribir(n);
+        Programa program = par.programa;
+        iniciar(program);
+        //leer(par.sumando);
+        //Lexer n = new Lexer(new StringReader(codeArea.getText()));
+        //escribir(n);
     }
     
-    private void leer(Expresion s){
-        Termino t = s.ejecutar();
-        if (t instanceof Primitivo){
-            Primitivo st = (Primitivo)t;
-            System.out.println(st.getValor());
-        }
+    private void iniciar(Programa p){
+        p.interpretar();
     }
-    
-    private void escribir(Lexer n) throws IOException{
+
+    private void escribir(Lexer n) throws IOException {
         while (true) {
             Symbol s = n.next_token();
             if (s.value == null) {

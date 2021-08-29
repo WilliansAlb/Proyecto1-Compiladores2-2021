@@ -5,6 +5,7 @@
  */
 package Interprete;
 
+import Tablas.Simbolos;
 import java.util.List;
 
 /**
@@ -12,19 +13,53 @@ import java.util.List;
  * @author willi
  */
 public class Caso {
-    Tipo valor;
-    List<Instruccion> instrucciones;
-    boolean salir;
-    int linea;
-    int columna;
+    private Primitivo valor;
+    private List<Instruccion> instrucciones;
+    private int linea;
+    private int columna;
 
-    public Caso(Tipo valor, List instrucciones, boolean salir, int linea, int columna) {
+    public Caso(Primitivo valor, List<Instruccion> instrucciones, int linea, int columna) {
         this.valor = valor;
         this.instrucciones = instrucciones;
-        this.salir = salir;
         this.linea = linea;
         this.columna = columna;
     }
     
+    public boolean tieneBreak(Simbolos tabla, Object valor, String tipo){
+        
+        return false;
+    }
+
+    public Primitivo getValor() {
+        return valor;
+    }
+
+    public void setValor(Primitivo valor) {
+        this.valor = valor;
+    }
+
+    public List<Instruccion> getInstrucciones() {
+        return instrucciones;
+    }
+
+    public void setInstrucciones(List<Instruccion> instrucciones) {
+        this.instrucciones = instrucciones;
+    }
+
+    public int getLinea() {
+        return linea;
+    }
+
+    public void setLinea(int linea) {
+        this.linea = linea;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
     
 }

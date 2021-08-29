@@ -14,7 +14,16 @@ import java_cup.runtime.Symbol;
  */
 public class Excepcion extends Termino {
     
-    private String tipo = "Excepcion";
+    private static final String TIPO = "excepcion";
+    private String id;
+    private String razon;
+    private int linea;
+
+    public Excepcion(String id, String razon, int linea) {
+        this.id = id;
+        this.razon = razon;
+        this.linea = linea;
+    }
     
     @Override
     public Simbolos interpretar(Simbolos tabla) {
@@ -28,11 +37,11 @@ public class Excepcion extends Termino {
 
     @Override
     public String getTipo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return TIPO;
     }
 
     @Override
-    public Symbol getSymbol() {
+    public Termino getValor2() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
         
