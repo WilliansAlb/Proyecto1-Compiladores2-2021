@@ -5,19 +5,34 @@
  */
 package Interprete;
 
+import Tablas.Simbolos;
+
 /**
  *
  * @author willi
  */
-public class ContinuarSalir {
+public class ContinuarSalir extends Instruccion {
     private boolean continuar;
+    private String tipo;
     private int linea;
     private int columna;
 
-    public ContinuarSalir(boolean continuar, int linea, int columna) {
+    public ContinuarSalir(boolean continuar, String tipo, int linea, int columna) {
         this.continuar = continuar;
+        this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
+    }
+
+    public ContinuarSalir() {
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 
     public boolean isContinuar() {
@@ -44,7 +59,14 @@ public class ContinuarSalir {
         this.columna = columna;
     }
 
-    
-    
-    
+    @Override
+    public void interpretar(Simbolos tabla) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Simbolos getTabla() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

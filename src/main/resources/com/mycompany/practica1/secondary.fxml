@@ -1,96 +1,273 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.effect.Light.Distant?>
+<?import javafx.scene.effect.Lighting?>
+<?import javafx.scene.effect.Shadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.practica1.TextoControlador">
-   <children>
-      <MenuBar>
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
-      <TabPane>
-         <tabs>
-            <Tab text="Editor de código">
-               <content>
-                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1200.0">
-                     <center>
-                        <VBox alignment="CENTER" prefHeight="600.0" prefWidth="700.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <StackPane fx:id="area" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="500.0" prefWidth="400.0" style="-fx-background-color: lightblue;" VBox.vgrow="ALWAYS" />
-                              <TextField fx:id="donde" VBox.vgrow="ALWAYS" />
-                           </children>
-                        </VBox>
-                     </center>
-                     <top>
-                        <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Editor de codigo" textAlignment="CENTER">
-                           <font>
-                              <Font name="Arial Black" size="26.0" />
-                           </font>
-                        </Label>
-                     </top>
-                     <left>
-                        <Button fx:id="btn_revisar" mnemonicParsing="false" onAction="#revisar" text="REVISAR" BorderPane.alignment="CENTER" />
-                     </left>
-                  </BorderPane>
-               </content>
-            </Tab>
-            <Tab text="Biblioteca">
-               <content>
-                  <SplitPane dividerPositions="0.5" prefHeight="200.0" prefWidth="200.0">
-                     <items>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
-                           <children>
-                              <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#iniciar" text="INICIAR" VBox.vgrow="ALWAYS" />
-                              <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#parar" text="PARAR" VBox.vgrow="ALWAYS" />
-                           </children>
-                        </VBox>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
-                           <children>
-                              <LineChart fx:id="myChart" animated="false" axisSortingPolicy="NONE" createSymbols="false" legendVisible="false" title="Frecuencia">
+    <children>
+        <MenuBar>
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Close" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Delete" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+            <SplitPane dividerPositions="0.5367278797996661" prefHeight="1000.0" prefWidth="1300.0">
+                <items>
+                    <VBox alignment="TOP_CENTER" prefHeight="855.0" prefWidth="696.0">
+               <children>
+                    <TabPane prefHeight="1003.0" prefWidth="693.0">
+                        <tabs>
+                            <Tab closable="false" text="Biblioteca">
+                           <graphic>
+                              <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@biblioteca.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <content>
+                              <SplitPane dividerPositions="0.33910533910533913" prefHeight="200.0" prefWidth="200.0">
+                                 <items>
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                       <children>
+                                          <Label text="LISTAS">
+                                             <font>
+                                                <Font name="Arial Bold" size="26.0" />
+                                             </font>
+                                          </Label>
+                                          <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                          <HBox alignment="CENTER" fillHeight="false" prefHeight="16.0" prefWidth="343.0">
+                                             <children>
+                                                <Button mnemonicParsing="false" text="MODIFICAR" HBox.hgrow="ALWAYS" />
+                                                <Button mnemonicParsing="false" text="ELIMINAR" HBox.hgrow="ALWAYS">
+                                                   <HBox.margin>
+                                                      <Insets left="20.0" />
+                                                   </HBox.margin>
+                                                </Button>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                    <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" />
+                                 </items></SplitPane>
+                           </content>
+                            </Tab>
+                            <Tab closable="false" text="Editor de pistas">
+                                <content>
+                              <VBox alignment="CENTER" prefWidth="693.0">
+                                 <children>
+                                            <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="39.0" prefWidth="240.0" text="Editor de pistas" textAlignment="CENTER">
+                                                <font>
+                                                    <Font name="Arial Bold" size="26.0" />
+                                                </font>
+                                            </Label>
+                                    <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
+                                       <children>
+                                                  <Button fx:id="btn_revisar" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" text="INTERPRETAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@app.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                          <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" text="VER CONSOLA" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fx:id="con" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@ver.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                              <StackPane fx:id="area" prefHeight="645.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
+                                              <TextField fx:id="donde" VBox.vgrow="ALWAYS" />
+                                    <TextArea fx:id="consola" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="192.0" prefWidth="693.0" promptText="Consola" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                                </content>
+                           <graphic>
+                              <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@app.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                            </Tab>
+                        <Tab text="Errores">
+                          <content>
+                              <VBox alignment="TOP_CENTER">
+                                 <children>
+                                    <Label text="Reporte de errores">
+                                       <font>
+                                          <Font name="Arial Bold" size="26.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="CENTER" prefHeight="62.0" prefWidth="693.0">
+                                       <children>
+                                          <Button mnemonicParsing="false" prefHeight="64.0" prefWidth="65.0">
+                                             <graphic>
+                                                <ImageView fitHeight="44.0" fitWidth="44.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@anterior.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                          <TableView prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                            <columns>
+                                              <TableColumn prefWidth="75.0" text="ERROR #" />
+                                              <TableColumn prefWidth="52.000030517578125" text="LINEA" />
+                                                <TableColumn prefWidth="85.0" text="COLUMNA" />
+                                                <TableColumn prefWidth="89.0" text="TIPO" />
+                                                <TableColumn prefWidth="260.0" text="RAZON" />
+                                            </columns>
+                                          </TableView>
+                                          <Button mnemonicParsing="false" prefHeight="64.0" prefWidth="65.0">
+                                             <graphic>
+                                                <ImageView fitHeight="44.0" fitWidth="44.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@siguiente.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <StackPane prefHeight="416.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
+                                    <TextField />
+                                 </children>
+                              </VBox>
+                          </content>
+                           <graphic>
+                              <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@error.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Tab>
+                        </tabs>
+                    </TabPane>
+               </children>
+                    </VBox>
+                    <VBox prefHeight="200.0" prefWidth="683.0">
+                        <children>
+                            <LineChart fx:id="myChart" animated="false" axisSortingPolicy="NONE" createSymbols="false" legendVisible="false" prefHeight="880.0" prefWidth="597.0" title="Frecuencia">
                                 <xAxis>
-                                  <CategoryAxis label="TIEMPO" side="BOTTOM" tickLabelsVisible="false" />
+                                    <CategoryAxis gapStartAndEnd="false" side="BOTTOM" tickLabelsVisible="false" />
                                 </xAxis>
                                 <yAxis>
-                                  <NumberAxis autoRanging="false" label="FRECUENCIA" minorTickLength="100.0" side="LEFT" tickUnit="50.0" upperBound="4000.0" />
+                                    <NumberAxis autoRanging="false" minorTickLength="100.0" side="LEFT" tickUnit="50.0" upperBound="4000.0" />
                                 </yAxis>
-                              </LineChart>
-                           </children>
-                        </VBox>
-                     </items>
-                  </SplitPane>
-               </content>
-            </Tab>
-         </tabs>
-      </TabPane>
-   </children>
+                            </LineChart>
+                            <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="1000.0" text="Canción por defecto" textAlignment="CENTER" />
+                            <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="12.0" prefWidth="668.0">
+                                <children>
+                                    <Label fx:id="pasado" text="0:00" HBox.hgrow="NEVER" />
+                        <ProgressBar fx:id="progreso" prefHeight="23.0" prefWidth="539.0" progress="0.0" HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="faltante" text="0:00" HBox.hgrow="NEVER" />
+                                </children>
+                            </HBox>
+                            <HBox alignment="CENTER" prefHeight="19.0" prefWidth="668.0">
+                                <children>
+                                    <Button fx:id="play" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#iniciar2" prefWidth="1000.0" text="Button" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                                        <graphic>
+                                            <javafx.scene.image.ImageView fx:id="repro" fitWidth="80.0" preserveRatio="true">
+                                                <image>
+                                                    <javafx.scene.image.Image url="@play.png" />
+                                                </image>
+                                 <cursor>
+                                    <Cursor fx:constant="OPEN_HAND" />
+                                 </cursor>
+                                 <effect>
+                                    <Lighting>
+                                       <bumpInput>
+                                          <Shadow />
+                                       </bumpInput>
+                                       <light>
+                                          <Light.Distant />
+                                       </light>
+                                    </Lighting>
+                                 </effect>
+                                            </javafx.scene.image.ImageView>
+                                        </graphic>
+                                        <HBox.margin>
+                                            <Insets />
+                                        </HBox.margin>
+                                    </Button>
+                        <Button fx:id="parar" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#parar" prefWidth="1000.0" text="Button" textAlignment="CENTER">
+                           <graphic>
+                              <ImageView fx:id="parar_img" fitWidth="80.0" preserveRatio="true">
+                                 <image>
+                                    <Image url="@parar.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="OPEN_HAND" />
+                                 </cursor>
+                                 <effect>
+                                    <Lighting>
+                                       <bumpInput>
+                                          <Shadow />
+                                       </bumpInput>
+                                       <light>
+                                          <Light.Distant />
+                                       </light>
+                                    </Lighting>
+                                 </effect>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                                </children>
+                            </HBox>
+                        </children>
+                    </VBox>
+                </items>
+            </SplitPane>
+    </children>
 </VBox>

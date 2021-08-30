@@ -56,9 +56,9 @@ non terminal Pista pista;
 non terminal Declaracion declaracion, declaracion_global;
 non terminal Metodo metodo;
 non terminal Expresion expresion, asignar, dimension;
-non terminal Instruccion instruccion;
+non terminal Instruccion instruccion, instruc;
 non terminal List<Expresion> dimensiones, param2, parametros2;
-non terminal List<Instruccion> default,instrucciones;
+non terminal List<Instruccion> default,instrucciones, inst;
 non terminal Primitivo valor_puntual;
 non terminal List<String> ids, extiende;
 non terminal String tipo;
@@ -270,10 +270,38 @@ instruccion::=
         {:
             RESULT = e1;
         :}
-|   error
+|  error
         {:
             RESULT = null;
         :}
+;
+
+inst::=
+    inst:e1 instruc:e2
+    {:
+        RESULT = e1;
+        RESULT.add(e2);
+    :}
+|   instruc:e1
+    {:
+        RESULT = new LinkedList<>();
+        RESULT.add(e1);
+    :}
+;
+
+instruc::=
+    instruccion:e1
+    {:
+        RESULT = e1;
+    :}
+|   SALIR:e1
+    {:
+        RESULT = new ContinuarSalir(false,"salir",e1right,e1left);
+    :}
+|   CONT:e1
+    {:
+        RESULT = new ContinuarSalir(true,"continuar",e1right,e1left);
+    :}
 ;
 
 
@@ -506,15 +534,15 @@ expresion::=
 ;
 
 si::=
-    SI:e5 PAR_A expresion:e1 PAR_C INDENT instrucciones:e2 DEDENT
+    SI:e5 PAR_A expresion:e1 PAR_C INDENT inst:e2 DEDENT
         {:
             RESULT = new Si(e1, e2, null, null, e5right, e5left);
         :}
-|   SI:e5 PAR_A expresion:e1 PAR_C INDENT instrucciones:e2 DEDENT SINO INDENT instrucciones:e3 DEDENT
+|   SI:e5 PAR_A expresion:e1 PAR_C INDENT inst:e2 DEDENT SINO INDENT inst:e3 DEDENT
         {:
             RESULT = new Si(e1, e2, e3, null, e5right, e5left);
         :}
-|   SI:e5 PAR_A expresion:e1 PAR_C INDENT instrucciones:e2 DEDENT SINO si:e3
+|   SI:e5 PAR_A expresion:e1 PAR_C INDENT inst:e2 DEDENT SINO si:e3
         {:
             RESULT = new Si(e1, e2, null, e3, e5right, e5left);
         :}
@@ -536,14 +564,14 @@ asignacion::=
 ;
 
 hacer::=
-    HACER:e1 INDENT instrucciones:e3 DEDENT MIENTRAS PAR_A expresion:e2 PAR_C
+    HACER:e1 INDENT inst:e3 DEDENT MIENTRAS PAR_A expresion:e2 PAR_C
         {:
             RESULT = new Hacer(e2, e3, e1right, e1left);
         :}
 ;
 
 mientras::=
-    MIENTRAS:e1 PAR_A expresion:e2 PAR_C INDENT instrucciones:e3 DEDENT
+    MIENTRAS:e1 PAR_A expresion:e2 PAR_C INDENT inst:e3 DEDENT
         {:
             RESULT = new Mientras(e2, e3, e1right, e1left);
         :}
@@ -593,14 +621,14 @@ casos::=
 ;
 
 caso::=
-    CASO:e1 valor_puntual:e3 INDENT instrucciones:e2 DEDENT
+    CASO:e1 valor_puntual:e3 INDENT inst:e2 DEDENT
         {:
             RESULT = new Caso(e3, e2, e1right, e1left);
         :}
 ;
 
 default::=
-    DEFAULT INDENT instrucciones:e1 DEDENT
+    DEFAULT INDENT inst:e1 DEDENT
         {:
             RESULT = e1;
         :}

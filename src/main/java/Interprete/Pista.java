@@ -29,8 +29,7 @@ public class Pista {
         this.id = id;
     }
     
-    public void interpretar() {
-        Simbolos tabla = new Simbolos();
+    public void interpretar(Simbolos tabla) {
         tabla.ambitos = 0;
         Reproduccion nuevo = new Reproduccion();
         tabla.agregar_sistema("$reproducir","$reproducir", nuevo);
@@ -50,13 +49,6 @@ public class Pista {
             principal.interpretar(tabla,metodos,null);
         } else {
             System.out.println("tienes muchos Principal, solo puedes tener uno");
-        }
-        Simbolo prueba = tabla.obtener("$reproducir");
-        Reproduccion pru = (Reproduccion)prueba.getDatos().get(0);
-        try {
-            pru.crearCancion();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Pista.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

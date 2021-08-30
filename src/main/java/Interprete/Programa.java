@@ -24,9 +24,9 @@ public class Programa {
         this.pistas = pistas;
     }
    
-    public void interpretar(){
+    public void interpretar(Simbolos tabla){
         for (Pista pista:pistas) {
-            pista.interpretar();
+            pista.interpretar(tabla);
         }
     }
 }

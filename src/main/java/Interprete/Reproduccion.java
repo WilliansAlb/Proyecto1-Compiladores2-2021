@@ -61,7 +61,7 @@ public class Reproduccion {
             }
         }
         Synth s = new Synth();
-        s.setInstrument(12);
+        s.setInstrument(56);
         System.out.println(max);
         for (int i = 0; i < max; i++) {
             ArrayList<Integer> n = new ArrayList<>();
@@ -75,10 +75,20 @@ public class Reproduccion {
                     n.add(0);
                 }
             }
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
         s.allNotesOff();
         System.out.println("termino");
+    }
+    
+    public int max(){
+        int max = 0;
+        for (Canal canale : canales) {
+            if (canale.getTiempo() > max) {
+                max = canale.getTiempo();
+            }
+        }
+        return max;
     }
     
     public void reproducir(){

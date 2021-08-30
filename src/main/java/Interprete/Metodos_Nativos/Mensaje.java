@@ -56,7 +56,7 @@ public class Mensaje extends Instruccion {
         if (a instanceof Primitivo){
             Primitivo s = (Primitivo)a;
             if (!s.getTipo().equalsIgnoreCase("excepcion")){
-                String agregar = (tabla.obtener("$mensaje").getDatos().get(0).toString().isEmpty())?"":"\n";
+                String agregar = (tabla.obtener("$mensaje").getDatos().get(0).toString().isEmpty())?"":tabla.obtener("$mensaje").getDatos().get(0).toString()+"\n";
                 agregar+= s.getValor().toString();
                 tabla.obtener("$mensaje").getDatos().set(0,agregar);
             }

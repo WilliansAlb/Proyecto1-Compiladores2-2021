@@ -35,22 +35,69 @@ public class Switch extends Instruccion {
         if (casos == null) {
             tabla.ambitos++;
             for (Instruccion defecto1 : defecto) {
-                defecto1.interpretar(tabla);
+                if (defecto1 instanceof ContinuarSalir) {
+                    ContinuarSalir cs = (ContinuarSalir) defecto1;
+                    if (!cs.isContinuar()) {
+                        return;
+                    }
+                } else {
+                    defecto1.interpretar(tabla);
+                }
             }
             tabla.eliminar_ambito();
         } else {
+            boolean sale = true;
             for (Caso caso : casos) {
                 Primitivo val = caso.getValor();
-                if (val.asignar(valor.getTipo())) {
-                    if (val.toString().equalsIgnoreCase(valor.getDatos().get(0).toString())){
-                        for (Instruccion inst : caso.getInstrucciones()) {
+                if (sale) {
+                    if (val.asignar(valor.getTipo())) {
+                        if (val.getValor().toString().equalsIgnoreCase(valor.getDatos().get(0).toString())) {
+                            tabla.ambitos++;
+                            for (Instruccion inst : caso.getInstrucciones()) {
+                                if (inst instanceof ContinuarSalir) {
+                                    ContinuarSalir cs = (ContinuarSalir) inst;
+                                    if (!cs.isContinuar()) {
+                                        return;
+                                    }
+                                } else {
+                                    inst.interpretar(tabla);
+                                }
+                            }
+                            sale = false;
+                            tabla.eliminar_ambito();
+                        }
+                    } else {
+                        System.out.println("Problema: no puedes comparar ese tipo de dato");
+                        break;
+                    }
+                } else {
+                    tabla.ambitos++;
+                    for (Instruccion inst : caso.getInstrucciones()) {
+                        if (inst instanceof ContinuarSalir) {
+                            ContinuarSalir cs = (ContinuarSalir) inst;
+                            if (!cs.isContinuar()) {
+                                return;
+                            }
+                        } else {
                             inst.interpretar(tabla);
                         }
                     }
-                } else {
-                    System.out.println("Problema: no puedes comparar ese tipo de dato");
-                    break;
+                    tabla.eliminar_ambito();
                 }
+            }
+            if (defecto != null) {
+                tabla.ambitos++;
+                for (Instruccion defecto1 : defecto) {
+                    if (defecto1 instanceof ContinuarSalir) {
+                        ContinuarSalir cs = (ContinuarSalir) defecto1;
+                        if (!cs.isContinuar()) {
+                            return;
+                        }
+                    } else {
+                        defecto1.interpretar(tabla);
+                    }
+                }
+                tabla.eliminar_ambito();
             }
         }
     }

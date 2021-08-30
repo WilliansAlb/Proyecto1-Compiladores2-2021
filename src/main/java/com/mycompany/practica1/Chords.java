@@ -23,7 +23,7 @@ public final class Chords implements JMC{
 		
 		//choose rootPitch notes around the cycle of fifths
 		int rootPitch = 60; //set start note to middle C
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 2; i++) {
 			secondInversion(rootPitch);
 			rootPitch -= 7;
 			rootPosition(rootPitch);
@@ -32,33 +32,35 @@ public final class Chords implements JMC{
 		
 		//add a final chord
 		ending(rootPitch);
-                Note nota = new Note();
-                nota.setPitch(22);
-                Play.midi(nota);
 		//Play.midi(p);
 		//pack the part into a score
 		s.addPart(p);
 		
 		//display the music
-		View.show(s);
+		//View.show(s);
 		
 		// write the score to a MIDIfile
-		Write.midi(s, "Chords.mid");
+		//Write.midi(s, "Chords.mid");
 	}	
 	
 	private static void rootPosition(int rootPitch) {
 		// build the chord from the rootPitch 
 	 	int[] pitchArray = new int[6];
-	 	pitchArray[0] = rootPitch;
-	 	pitchArray[1] = rootPitch + 4;
-	 	pitchArray[2] = rootPitch + 7;
-	 	pitchArray[3] = rootPitch + 10;
-	 	pitchArray[4] = 100;
-	 	pitchArray[5] = 20;
+	 	pitchArray[0] = 49;
+	 	pitchArray[1] = 29;
+	 	pitchArray[2] = 59;
+	 	pitchArray[3] = 39;
+	 	pitchArray[4] = 69;
+	 	pitchArray[5] = 99;
 	 	//add chord to the part
 		CPhrase chord = new CPhrase();
 		chord.addChord(pitchArray, C);
 		p.addCPhrase(chord);
+                Phrase n = new Phrase();
+                //n.addNote(new Note(99,1));
+                //n.addNote(new Note(69,0.1));
+                n.addChord(pitchArray, 0.5);
+                Play.midi(n);
 	}
 	
 	private static void secondInversion(int rootPitch) {

@@ -39,6 +39,9 @@ public class Metodo {
 
     public void interpretar(Simbolos tabla, List<Metodo> metodos, List<Expresion> param) {
         tabla.ambitos++;
+        if (retorno){
+            tabla.agregar_sistema("$retorno", tipo, null);
+        }
         if (param == null) {
             for (Instruccion instruccion : instrucciones) {
                 instruccion.interpretar(tabla);
@@ -46,13 +49,12 @@ public class Metodo {
         } else {
             System.out.println("codigo cuando si hay parametros");
         }
-        for (Simbolo tabla1 : tabla) {
-            if (tabla1.getDatos() != null) {
-                System.out.println("id: " + tabla1.getId() + " valor: " + tabla1.getDatos().get(0));
-            } else {
-                System.out.println("id: " + tabla1.getId() + " valor: null");
+        if (retorno){
+            if (tabla.obtener("$retorno").getDatos().get(0)==null){
+                System.out.println("falta retorno");
             }
         }
+        tabla.eliminar_ambito();
     }
 
     public List<Instruccion> getInstrucciones() {

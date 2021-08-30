@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="705.0" prefWidth="758.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label text="REPORTE DE ERRORES" />
+      <TableView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+        <columns>
+          <TableColumn prefWidth="75.0" text="#" />
+          <TableColumn prefWidth="75.0" text="LINEA" />
+            <TableColumn prefWidth="84.0" text="COLUMNA" />
+            <TableColumn prefWidth="75.0" text="TIPO" />
+            <TableColumn prefWidth="290.0" resizable="false" text="RAZON" />
+        </columns>
+      </TableView>
+   </children>
+</VBox>

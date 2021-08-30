@@ -10,7 +10,10 @@ import Analizador.parser;
 import Interprete.Expresion;
 import Interprete.Primitivo;
 import Interprete.Programa;
+import Interprete.Reproduccion;
 import Interprete.Termino;
+import Tablas.Simbolo;
+import Tablas.Simbolos;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -23,14 +26,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java_cup.runtime.Symbol;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -54,15 +67,37 @@ import org.reactfx.collection.ListModification;
  */
 public class TextoControlador implements Initializable {
 
+    boolean reproduciendo = true;
     CodeArea codeArea;
     @FXML
     public LineChart myChart;
     @FXML
+    public Button play;
+    @FXML
     public StackPane area;
     @FXML
+    public ProgressBar progreso;
+    @FXML
+    public Label pasado;
+    @FXML
+    public Label faltante;
+    @FXML
     public Button btn_revisar;
+    @FXML
+    public Button btn_consola;
+    @FXML
+    public Button parar;
+    @FXML
+    public TextArea consola;
+    @FXML
+    public ImageView repro;
+    @FXML
+    public ImageView parar_img;
+    @FXML
+    public ImageView con;
 
     public TextField donde;
+    public Reproduccion actual;
 
     Task nuevo;
 
@@ -71,7 +106,7 @@ public class TextoControlador implements Initializable {
         "doble", "DOBLE", "Doble", "Boolean", "boolean", "BOOLEAN", "Caracter", "CARACTER", "caracter",
         "cadena", "CADENA", "Cadena", "verdadero", "Verdadero", "VERDADERO", "True", "true", "TRUE",
         "False", "false", "FALSE", "falso", "Falso", "FALSO", "Keep", "keep", "KEEP", "var", "VAR", "Var",
-        "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "Salir", "Continuar", "continuar",
+        "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "salir", "Continuar", "continuar",
         "CONTINUAR", "Switch", "switch", "SWITCH", "Caso", "CASO", "caso", "default", "Default", "DEFAULT",
         "Para", "para", "PARA", "Mientras", "mientras", "MIENTRAS", "hacer", "HACER", "Hacer", "retorna",
         "Retorna", "RETORNA", "Reproducir", "reproducir", "REPRODUCIR", "Esperar", "ESPERAR", "esperar",
@@ -80,46 +115,44 @@ public class TextoControlador implements Initializable {
         "primos", "Primos", "PRIMOS", "Sumarizar", "sumarizar", "SUMARIZAR", "Longitud", "LONGITUD",
         "longitud", "Mensaje", "MENSAJE", "mensaje", "Principal", "PRINCIPAL", "principal"
     };
-
-    private static final String SI_PRUEBA = "si (verdadero)\n\ta1 10\n\ta3 20\nsino si (falso)\n\ta3 12\nsino\n\ta3 6";
     private static final String COMENTARIOS = ">>prueba comentario de linea\n"
             + ">>prueba comentario de linea\n"
             + "<- prueba comentario\n"
             + "de lineas a ver si funciona\n"
             + "->\n"
             + "PISTA komm EXTIENDE Neon, Genesis\n"
-            + "	si (verdadero)\n"
-            + "		var boolean a1 = a23\n"
-            + "		a3 = 10\n"
-            + "<- prueba comentario\n"
-            + "		de lineas a ver si funciona\n"
-            + "->\n"
-            + "\n"
-            + "\n"
-            + "\n"
-            + "\n"
-            + "		keep var entero a2, a3, a4 = a34\n"
-            + "		>>hola tu\n"
-            + "\n"
-            + "\n"
-            + "\n"
-            + "		a5 = 20\n"
-            + "	sino\n"
-            + "		var entero a2 = a45 >>probando";
-    private static final String PRUEBA1 = ">>prueba comentario de linea\n"
-            + ">>prueba comentario de linea\n"
-            + "<- prueba comentario\n"
-            + "de lineas a ver si funciona\n"
-            + "->\n"
-            + "PISTA komm EXTIENDE Neon, Genesis\n"
-            + "	Metodo1()\n"
-            + "		si (((a2+a3)>3)||a>9)\n"
-            + "			var entero a3 = 20+10\n"
+            + "	var entero a = 10\n"
+            + "	keep var entero a09 = 22\n"
+            + "	var cadena ca = \"hola\"\n"
+            + "	Principal()\n"
+            + "		a = 23\n"
+            + "		si (a<5)\n"
+            + "			var entero a3 = a+10\n"
             + "			var entero a4 = 2\n"
             + "			var entero a5 = 5\n"
-            + "		sino si (falso)\n"
+            + "		sino si (true)\n"
             + "			var entero a34 = 34\n"
-            + "			var entero arreglo a3 [2][3] = {{1+2,3+2,33},{1,3,4}}";
+            + "			var entero a104 = 34\n"
+            + "			var entero a32 = true\n"
+            + "			si (a32>0)\n"
+            + "				var entero a65 = 5\n"
+            + "				a = 25\n"
+            + "				var entero a219 = 10\n"
+            + "			var entero a70 = a65\n"
+            + "		Reproducir(re,2,1000,3)\n"
+            + "		Reproducir(fa,5,2000,2)\n"
+            + "		Reproducir(mi,2,2000,1)\n"
+            + "		switch(ca)\n"
+            + "			caso \"ho\"\n"
+            + "				Mensaje(\"hola perro esto pasa\")\n"
+            + "			caso \"hola\"\n"
+            + "				Mensaje(\"Correcto sin salida\")\n"
+            + "			caso \"hello\"\n"
+            + "				Mensaje(\"Otro más\")\n"
+            + "				salir\n"
+            + "			default\n"
+            + "				Mensaje(\"No tendría que pasar\")\n"
+            + "				Mensaje(\"No tendría que pasar2\")";
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
     private static final String PAREN_PATTERN = "\\(|\\)";
     private static final String NUMBER_PATTERN = "[0-9]+\\.?[0-9]*";
@@ -159,6 +192,14 @@ public class TextoControlador implements Initializable {
         final Pattern whiteSpace = Pattern.compile("^\\s+");
         codeArea.addEventHandler(KeyEvent.KEY_PRESSED, KE
                 -> {
+            if (KE.getCode() == KeyCode.ENTER) {
+                int caretPosition = codeArea.getCaretPosition();
+                int currentParagraph = codeArea.getCurrentParagraph();
+                Matcher m0 = whiteSpace.matcher(codeArea.getParagraph(currentParagraph - 1).getSegments().get(0));
+                if (m0.find()) {
+                    Platform.runLater(() -> codeArea.insertText(caretPosition, m0.group()));
+                }
+            }
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
 
@@ -166,13 +207,17 @@ public class TextoControlador implements Initializable {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
         String loop = "";
-        codeArea.replaceText(0, 0, PRUEBA1);
+        codeArea.replaceText(0, 0, COMENTARIOS);
         //codeArea.replaceText("");
         //codeArea.setPrefSize(1000, 600);
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         donde.setEditable(false);
         area.getChildren().add(new VirtualizedScrollPane<>(codeArea));
         codeArea.setBackground(new Background(new BackgroundFill(Paint.valueOf("#0d0030"), CornerRadii.EMPTY, Insets.EMPTY)));
+        consola.setVisible(false);
+        consola.managedProperty().bind(consola.visibleProperty());
+        parar.setVisible(false);
+        parar.managedProperty().bind(parar.visibleProperty());
     }
 
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
@@ -239,9 +284,37 @@ public class TextoControlador implements Initializable {
         //Lexer n = new Lexer(new StringReader(codeArea.getText()));
         //escribir(n);
     }
-    
-    private void iniciar(Programa p){
-        p.interpretar();
+
+    @FXML
+    private void ver_consola() throws IOException, Exception {
+        if (btn_consola.getText().equalsIgnoreCase("ver consola")) {
+            con.setImage(new Image(App.class.getResource("ocultar.png").toExternalForm()));
+            btn_consola.setText("OCULTAR CONSOLA");
+            consola.setVisible(true);
+        } else {
+            con.setImage(new Image(App.class.getResource("ver.png").toExternalForm()));
+            btn_consola.setText("VER CONSOLA");
+            consola.setVisible(false);
+        }
+    }
+
+    private void iniciar(Programa p) {
+        Simbolos s = new Simbolos();
+        p.interpretar(s);
+        Simbolo rep = s.obtener("$reproducir");
+        if (rep.getDatos().get(0) != null) {
+            actual = (Reproduccion) rep.getDatos().get(0);
+            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+            myChart.getData().clear();
+            int nuevo2 = actual.max()/2;
+            int minutos = (int) (nuevo2/ 120);
+            int sec = (int) (nuevo2 % 120);
+            String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+            faltante.setText(tiempo_pasado);
+            nuevo = new Task(myChart, progreso, pasado, actual);
+            nuevo.start();
+            iniciando = false;
+        }
     }
 
     private void escribir(Lexer n) throws IOException {
@@ -300,18 +373,41 @@ public class TextoControlador implements Initializable {
             System.out.println(((CodeArea) getOwnerNode()).getText());
         }
     }
+    boolean iniciando = true;
 
     @FXML
-    private void iniciar() {
-        System.out.println("inicia");
-        myChart.getData().clear();
-        nuevo = new Task(myChart);
-        nuevo.start();
+    private void iniciar2() {
+        if (iniciando) {
+            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+            myChart.getData().clear();
+            nuevo = new Task(myChart, progreso, pasado);
+            nuevo.start();
+            iniciando = false;
+        } else {
+            if (reproduciendo) {
+                repro.setImage(new Image(App.class.getResource("play.png").toExternalForm()));
+                parar.setVisible(true);
+                nuevo.suspenderhilo();
+                System.out.println("hola");
+                reproduciendo = !reproduciendo;
+            } else {
+                repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+                parar.setVisible(false);
+                nuevo.renaudarhilo();
+                reproduciendo = !reproduciendo;
+            }
+        }
     }
 
     @FXML
     private void parar() {
-        System.out.println("para");
-        nuevo.kill();
+        repro.setImage(new Image(App.class.getResource("play.png").toExternalForm()));
+        nuevo.pausarhilo();
+        iniciando = true;
+        parar.setVisible(false);
+        myChart.getData().removeAll(Collections.singleton(myChart.getData().setAll()));
+        progreso.setProgress(0);
+        pasado.setText("0:00");
     }
+
 }
