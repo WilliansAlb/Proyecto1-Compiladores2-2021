@@ -13,6 +13,9 @@ D= [0-9]+
 espacio=[\r]+
 DEC = [0-9]+\.[0-9]+
 ID = [a-zA-Z$_][a-zA-Z0-9$_]*
+NOTA = ([Dd][Oo]|[Rr][Ee]|[Mm][Ii]|[Ff][Aa]|[Ll][Aa]|[Ss][Oo][Ll])
+SOSTENIDA = [#]?
+SISOS = [Ss][Ii][#]
 esp = [" "]+
 tab = [\t]*
 sal = [\n]+
@@ -101,7 +104,7 @@ sal = [\n]+
     ("HACER"|"Hacer"|"hacer")               { return symbol(sym.HACER); }
     ("RETORNA"|"Retorna"|"retorna")                             { return symbol(sym.RETORNA); }
     ("REPRODUCIR"|"Reproducir"|"reproducir")                    { return symbol(sym.REPRODUCIR); }
-    ("do"|"do#"|"re"|"re#"|"mi"|"mi#"|"fa"|"fa#"|"sol"|"sol#"|"la"|"la#"|"si")  { return symbol(sym.NOTAS); }
+    ({NOTA}{SOSTENIDA}|{SISOS})             { return symbol(sym.NOTAS); }
     ("ESPERAR"|"Esperar"|"esperar")         { return symbol(sym.ESPERAR); }
     ("ORDENAR"|"Ordenar"|"ordenar")         { return symbol(sym.ORDENAR); }
     ("ASCENDENTE"|"Ascendente"|"ascendente")                    { return symbol(sym.ASC); }

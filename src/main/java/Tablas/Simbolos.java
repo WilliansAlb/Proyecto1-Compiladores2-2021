@@ -84,6 +84,7 @@ public class Simbolos extends LinkedList<Simbolo> {
         if (existe) {
             System.out.println("La variable con identificador " + simbolo.getId() + " ya está declarada");
         } else {
+            System.out.println("Declarada "+simbolo.getId());
             this.add(simbolo);
         }
     }

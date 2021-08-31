@@ -14,12 +14,14 @@ import java.util.List;
  */
 public class Llamada extends Instruccion {
     private String id;
-    private List<Expresion> parametros;
+    private String tipo;
+    private List<ParametroEnviar> parametros;
     private int linea;
     private int columna;
 
-    public Llamada(String id, List<Expresion> parametros, int linea, int columna) {
+    public Llamada(String id, String tipo, List<ParametroEnviar> parametros, int linea, int columna) {
         this.id = id;
+        this.tipo = tipo;
         this.parametros = parametros;
         this.linea = linea;
         this.columna = columna;
@@ -43,11 +45,11 @@ public class Llamada extends Instruccion {
         this.id = id;
     }
 
-    public List<Expresion> getParametros() {
+    public List<ParametroEnviar> getParametros() {
         return parametros;
     }
 
-    public void setParametros(List<Expresion> parametros) {
+    public void setParametros(List<ParametroEnviar> parametros) {
         this.parametros = parametros;
     }
 
@@ -65,6 +67,14 @@ public class Llamada extends Instruccion {
 
     public void setColumna(int columna) {
         this.columna = columna;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
     
     

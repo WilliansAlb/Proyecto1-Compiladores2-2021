@@ -302,6 +302,10 @@ public class TextoControlador implements Initializable {
         Simbolos s = new Simbolos();
         p.interpretar(s);
         Simbolo rep = s.obtener("$reproducir");
+        //empezar_reproduccion(rep);
+    }
+    
+    private void empezar_reproduccion(Simbolo rep){
         if (rep.getDatos().get(0) != null) {
             actual = (Reproduccion) rep.getDatos().get(0);
             repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));

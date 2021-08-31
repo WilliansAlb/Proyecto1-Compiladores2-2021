@@ -19,7 +19,9 @@ public class Declaracion extends Instruccion {
     List<String> ids;
     String tipo;
     List<Expresion> dimensiones;
-    List<Expresion> datos;
+    Expresion dato;
+    List<Item> items;
+    boolean esArreglo;
     boolean keep;
     int linea;
     int columna;
@@ -28,17 +30,19 @@ public class Declaracion extends Instruccion {
         this.ids = new LinkedList<>();
         this.tipo = "";
         this.dimensiones = new LinkedList<>();
-        this.datos = new LinkedList<>();
+        this.dato = null;
         this.keep = false;
         this.linea = -1;
         this.columna = -1;
     }
 
-    public Declaracion(List<String> ids, String tipo, List<Expresion> dimensiones, List<Expresion> datos, boolean keep, int linea, int columna) {
+    public Declaracion(List<String> ids, String tipo, List<Expresion> dimensiones, Expresion dato, List<Item> items, boolean esArreglo, boolean keep, int linea, int columna) {
         this.ids = ids;
         this.tipo = tipo;
         this.dimensiones = dimensiones;
-        this.datos = datos;
+        this.dato = dato;
+        this.items = items;
+        this.esArreglo = esArreglo;
         this.keep = keep;
         this.linea = linea;
         this.columna = columna;
@@ -50,7 +54,7 @@ public class Declaracion extends Instruccion {
         List<Object> valores = new LinkedList<>();
         boolean solo_numeros = true;
         boolean solo_valores = true;
-        if (dimensiones != null) {
+        if (esArreglo) {
             for (Expresion dimensione : dimensiones) {
                 Termino ab = dimensione.ejecutar(tabla);
                 if (ab instanceof Primitivo) {
@@ -73,12 +77,27 @@ public class Declaracion extends Instruccion {
                     break;
                 }
             }
+            List<Expresion> lista_datos = new LinkedList<>();
+            if (solo_numeros) {
+                for (Item item : items) {
+                    
+                }
+            }
+            if (solo_numeros && solo_valores) {
+                for (String id : ids) {
+                    if (keep) {
+                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        tabla.agregar(nuevo);
+                    } else {
+                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        tabla.agregar(nuevo);
+                    }
+                }
+            }
         } else {
             dim.add(1);
-        }
-        if (solo_numeros) {
-            if (datos!=null) {
-                for (Expresion dato : datos) {
+            if (solo_numeros) {
+                if (dato != null) {
                     Termino ab = dato.ejecutar(tabla);
                     if (ab instanceof Primitivo) {
                         Primitivo a = (Primitivo) ab;
@@ -87,25 +106,23 @@ public class Declaracion extends Instruccion {
                         } else {
                             System.out.println(a.getValor());
                             solo_valores = false;
-                            break;
                         }
                     } else {
                         solo_valores = false;
-                        break;
                     }
-                }
-            } else {
-                valores.add(null);
-            }
-        }
-        if (solo_numeros && solo_valores) {
-            for (String id : ids) {
-                if (keep) {
-                    Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
-                    tabla.agregar(nuevo);
                 } else {
-                    Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
-                    tabla.agregar(nuevo);
+                    valores.add(null);
+                }
+            }
+            if (solo_numeros && solo_valores) {
+                for (String id : ids) {
+                    if (keep) {
+                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        tabla.agregar(nuevo);
+                    } else {
+                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        tabla.agregar(nuevo);
+                    }
                 }
             }
         }
@@ -140,17 +157,30 @@ public class Declaracion extends Instruccion {
         this.dimensiones = dimensiones;
     }
 
-    public List<Expresion> getDatos() {
-        return datos;
+    public Expresion getDato() {
+        return dato;
     }
 
-    public void setDatos(List<Expresion> datos) {
-        this.datos = datos;
+    public void setDato(Expresion dato) {
+        this.dato = dato;
     }
 
-    public boolean isInicializada() {
-        return this.datos != null;
+    public List<Item> getItems() {
+        return items;
     }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
+    }
+
+    public boolean isEsArreglo() {
+        return esArreglo;
+    }
+
+    public void setEsArreglo(boolean esArreglo) {
+        this.esArreglo = esArreglo;
+    }
+
 
     public boolean isKeep() {
         return keep;
