@@ -13,15 +13,12 @@ import java_cup.runtime.Symbol;
  * @author willi
  */
 public abstract class Termino {
-    private String tipo;
-    private Symbol simbolo;
-    
-    public abstract Simbolos interpretar(Simbolos tabla);
-    
     @Override
     public abstract String toString();
     
     public abstract String getTipo();
     
-    public abstract Termino getValor2();
+    public abstract int getLinea();
+    
+    public abstract int getColumna();
 }

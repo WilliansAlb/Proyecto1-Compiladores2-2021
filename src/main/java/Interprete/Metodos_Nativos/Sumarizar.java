@@ -7,6 +7,7 @@ package Interprete.Metodos_Nativos;
 
 import Interprete.Expresion;
 import Interprete.Instruccion;
+import Interprete.Item;
 import Tablas.Simbolos;
 import java.util.List;
 
@@ -16,11 +17,11 @@ import java.util.List;
  */
 public class Sumarizar extends Instruccion {
     private String id_arreglo;
-    private List<Expresion> arreglo;
+    private Item arreglo;
     private int linea;
     private int columna;
 
-    public Sumarizar(String id_arreglo, List<Expresion> arreglo, int linea, int columna) {
+    public Sumarizar(String id_arreglo, Item arreglo, int linea, int columna) {
         this.id_arreglo = id_arreglo;
         this.arreglo = arreglo;
         this.linea = linea;
@@ -35,11 +36,11 @@ public class Sumarizar extends Instruccion {
         this.id_arreglo = id_arreglo;
     }
 
-    public List<Expresion> getArreglo() {
+    public Item getArreglo() {
         return arreglo;
     }
 
-    public void setArreglo(List<Expresion> arreglo) {
+    public void setArreglo(Item arreglo) {
         this.arreglo = arreglo;
     }
 

@@ -20,17 +20,27 @@ public class ParametroEnviar {
         ORDEN
     }
     private Tipo tipo;
-    private List<Expresion> arreglo;
+    private Item arreglo;
     private Llamada llama;
     private String nota_orden;
+    private Expresion expresion;
 
-    public ParametroEnviar(Tipo tipo, List<Expresion> arreglo, Llamada llama, String nota_orden) {
+    public ParametroEnviar(Tipo tipo, Item arreglo, Llamada llama, String nota_orden, Expresion expresion) {
         this.tipo = tipo;
         this.arreglo = arreglo;
         this.llama = llama;
         this.nota_orden = nota_orden;
+        this.expresion = expresion;
     }
-    
+
+    public Expresion getExpresion() {
+        return expresion;
+    }
+
+    public void setExpresion(Expresion expresion) {
+        this.expresion = expresion;
+    }
+
     public Tipo getTipo() {
         return tipo;
     }
@@ -39,11 +49,11 @@ public class ParametroEnviar {
         this.tipo = tipo;
     }
 
-    public List<Expresion> getArreglo() {
+    public Item getArreglo() {
         return arreglo;
     }
 
-    public void setArreglo(List<Expresion> arreglo) {
+    public void setArreglo(Item arreglo) {
         this.arreglo = arreglo;
     }
 

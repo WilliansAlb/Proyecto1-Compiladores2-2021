@@ -18,6 +18,7 @@ public class Excepcion extends Termino {
     private String id;
     private String razon;
     private int linea;
+    private int columna;
 
     public Excepcion(String id, String razon, int linea) {
         this.id = id;
@@ -25,10 +26,6 @@ public class Excepcion extends Termino {
         this.linea = linea;
     }
     
-    @Override
-    public Simbolos interpretar(Simbolos tabla) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public String toString() {
@@ -41,8 +38,31 @@ public class Excepcion extends Termino {
     }
 
     @Override
-    public Termino getValor2() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getLinea() {
+        return this.linea;
     }
+
+    @Override
+    public int getColumna() {
+        return this.columna;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getRazon() {
+        return razon;
+    }
+
+    public void setRazon(String razon) {
+        this.razon = razon;
+    }
+    
+    
         
 }

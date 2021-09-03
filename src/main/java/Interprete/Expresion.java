@@ -5,7 +5,9 @@
  */
 package Interprete;
 
+import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -161,34 +163,119 @@ public class Expresion {
                     Object valor2 = tabla.getValor(id.getId());
                     if (!valor2.toString().equalsIgnoreCase("Desconocido")) {
                         if (valor2 instanceof String) {
-                            return new Primitivo("string", null, valor2);
+                            return new Primitivo("string", id.getLinea(), id.getColumna(),valor2);
                         } else if (valor2 instanceof Integer) {
-                            return new Primitivo("numero", null, valor2);
+                            return new Primitivo("numero", id.getLinea(), id.getColumna(),valor2);
                         } else if (valor2 instanceof Double) {
-                            return new Primitivo("decimal", null, valor2);
+                            return new Primitivo("decimal", id.getLinea(), id.getColumna(),valor2);
                         } else if (valor2 instanceof Boolean) {
-                            return new Primitivo("boolean", null, valor2);
+                            return new Primitivo("boolean", id.getLinea(), id.getColumna(),valor2);
                         } else {
-                            return new Primitivo("caracter", null, valor2);
+                            return new Primitivo("caracter", id.getLinea(), id.getColumna(),valor2);
                         }
                     } else {
-                        return new Primitivo("excepcion", null, "No has inicializado la variable "+id.getId());
+                        return new Primitivo("excepcion", id.getLinea(),id.getColumna(),"No has inicializado la variable " + id.getId());
                     }
                 } else {
-                    return new Primitivo("excepcion", null, "No has declarado la variable "+id.getId());
+                    return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"No has declarado la variable " + id.getId());
                 }
             } else {
-                return new Primitivo("excepcion", null, "No has declarado esta variable");
+                if (tabla.existe(id.getId())) {
+                    Simbolo s = tabla.obtener(id.getId());
+                    List<Integer> dim = new LinkedList<>();
+                    boolean solo_numeros = true;
+                    for (Expresion dimensione : id.getDimensiones()) {
+                        Termino ab = dimensione.ejecutar(tabla);
+                        if (ab instanceof Primitivo) {
+                            Primitivo abc = (Primitivo) dimensione.ejecutar(tabla);
+                            if (!abc.getTipo().equalsIgnoreCase("excepcion")) {
+                                if (abc.getTipo().equalsIgnoreCase("numero")) {
+                                    dim.add((int) abc.getValor());
+                                } else {
+                                    solo_numeros = false;
+                                    break;
+                                }
+                            } else {
+                                solo_numeros = false;
+                                break;
+                            }
+                        } else {
+                            solo_numeros = false;
+                            break;
+                        }
+                    }
+                    if (solo_numeros) {
+                        List<Integer> di = s.getDimensiones();
+                        if (di.size() == dim.size()) {
+                            boolean correcto = true;
+                            for (int i = 0; i < di.size(); i++) {
+                                if (!(di.get(i) > dim.get(i))) {
+                                    correcto = false;
+                                    break;
+                                }
+                            }
+                            if (correcto) {
+                                int posicion = tabla.obtener(id.getId()).insertarEn(dim, di);
+                                Object objecto = tabla.obtener(id.getId()).getDatos().get(posicion);
+                                return new Primitivo(s.getTipo(), id.getLinea(), id.getColumna(),objecto);
+                            } else {
+                                return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"Excedido el limite del arreglo " + id.getId());
+                            }
+                        } else {
+                            return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"Las dimensiones del arreglo requerido no coinciden con el verdadero " + id.getId());
+                        }
+                    } else {
+                        return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"El arreglo " + id.getId() + " tiene como dimension un valor no entero");
+                    }
+                } else {
+                    return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"No has declarado el arreglo " + id.getId());
+                }
             }
         } else if (tipo == Operacion.NULO) {
             Identificador ide = (Identificador) valor;
             if (tabla.existe(ide.getId())) {
-                return new Primitivo("boolean", null, tabla.esNull(ide.getId()));
+                return new Primitivo("boolean", ide.getLinea(), ide.getColumna(),tabla.esNull(ide.getId()));
             } else {
-                return new Primitivo("excepcion", null, "La variable a la que se le intento comprobar su previa inicializacion no existe");
+                return new Primitivo("excepcion", ide.getLinea(), ide.getColumna(),"La variable a la que se le intento comprobar su previa inicializacion no existe");
+            }
+        } else if (tipo == Operacion.LLAMADA) {
+            return ((Metodo_Retorno) valor).interpretar(tabla);
+        } else if (tipo == Operacion.ARREGLO) {
+            Identificador id = (Identificador) valor;
+            if (id.isIsArreglo()) {
+                Simbolo s = tabla.obtener(id.getId());
+                if (s.getDimensiones() != null) {
+                    ArrayList<Integer> array = new ArrayList<>();
+                    for (Expresion dimension : id.getDimensiones()) {
+                        Termino num = dimension.ejecutar(tabla);
+                        if (num instanceof Primitivo) {
+                            Primitivo ns = (Primitivo) num;
+                            if (ns.asignar("numero")) {
+                                array.add((int) ns.getValor());
+                            } else {
+                                return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"La variable a la que se le intento comprobar su previa inicializacion no existe");
+                            }
+                        }
+                    }
+                    if (s.getDimensiones().size() == array.size()) {
+                        for (int i = 0; i < s.getDimensiones().size(); i++) {
+                            if (s.getDimensiones().get(i)<=array.get(i)){
+                                return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"Excedido el limite del arreglo");
+                            }
+                        }
+                        int posicion = s.insertarEn(array, s.getDimensiones());
+                        return new Primitivo(s.getTipo(), id.getLinea(), id.getColumna(),s.getDatos().get(posicion));
+                    } else {
+                        return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"La variable a la que se le intento comprobar su previa inicializacion no existe");
+                    }
+                } else {
+                    return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"La variable a la que se le intento comprobar su previa inicializacion no existe");
+                }
+            } else {
+                return new Primitivo("excepcion", id.getLinea(), id.getColumna(),"La variable a la que se le intento comprobar su previa inicializacion no existe");
             }
         } else {
-            return new Primitivo("excepcion", null, "Ojala que no llegue acá");
+            return new Primitivo("excepcion",-1, -1,"Ojala que no llegue acá");
         }
     }
 
@@ -200,63 +287,63 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 < n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), n1 < n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", a1.getSymbol(), n1 < n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), n1 < n2);
             } else {
-                return new Primitivo("excepcion", a1.getSymbol(), "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
@@ -264,24 +351,24 @@ public class Expresion {
                 char s2 = (char) b1.getValor();
                 int s11 = (int) s1;
                 int s22 = (int) s2;
-                return new Primitivo("boolean", null, s11 < s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 < s22);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 < n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 < n1);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 < n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 < n1);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 < n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 < n1);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
@@ -289,9 +376,9 @@ public class Expresion {
                 int s11 = s1.length();
                 String s2 = b1.getValor().toString();
                 int s22 = s2.length();
-                return new Primitivo("boolean", null, s11 < s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 < s22);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -304,63 +391,63 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 > n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 > n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
@@ -368,24 +455,24 @@ public class Expresion {
                 char s2 = (char) b1.getValor();
                 int s11 = (int) s1;
                 int s22 = (int) s2;
-                return new Primitivo("boolean", null, s11 > s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 > s22);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 > n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 > n1);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 > n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 > n1);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 > n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 > n1);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
@@ -393,9 +480,9 @@ public class Expresion {
                 int s11 = s1.length();
                 String s2 = b1.getValor().toString();
                 int s22 = s2.length();
-                return new Primitivo("boolean", null, s11 > s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 > s22);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -408,63 +495,63 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 >= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 >= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
@@ -472,24 +559,24 @@ public class Expresion {
                 char s2 = (char) b1.getValor();
                 int s11 = (int) s1;
                 int s22 = (int) s2;
-                return new Primitivo("boolean", null, s11 >= s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 >= s22);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 >= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 >= n1);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 >= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 >= n1);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 >= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 >= n1);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
@@ -497,9 +584,9 @@ public class Expresion {
                 int s11 = s1.length();
                 String s2 = b1.getValor().toString();
                 int s22 = s2.length();
-                return new Primitivo("boolean", null, s11 >= s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 >= s22);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -512,63 +599,63 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 <= n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 <= n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
@@ -576,24 +663,24 @@ public class Expresion {
                 char s2 = (char) b1.getValor();
                 int s11 = (int) s1;
                 int s22 = (int) s2;
-                return new Primitivo("boolean", null, s11 <= s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 <= s22);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 <= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 <= n1);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 <= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 <= n1);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n2 <= n1);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n2 <= n1);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
@@ -601,9 +688,9 @@ public class Expresion {
                 int s11 = s1.length();
                 String s2 = b1.getValor().toString();
                 int s22 = s2.length();
-                return new Primitivo("boolean", null, s11 <= s22);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s11 <= s22);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -616,94 +703,94 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 String s1 = a1.getValor().toString();
                 String s2 = b1.getValor().toString();
-                return new Primitivo("boolean", null, !s1.equals(s2));
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),!s1.equals(s2));
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 != n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 != n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
                 String s1 = a1.getValor().toString();
                 String s2 = b1.getValor().toString();
-                return new Primitivo("boolean", null, !s1.equals(s2));
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),!s1.equals(s2));
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -716,95 +803,94 @@ public class Expresion {
                 int n1 = (int) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (int) b1.getValor();
-                System.out.println(n1 + " y " + n2);
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (int) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (int) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("decimal")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 double n1 = (double) a1.getValor();
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 double n1 = (double) a1.getValor();
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 double n1 = (double) a1.getValor();
                 int n2 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("boolean")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 char c1 = (char) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) b1.getValor();
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 int n1 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
                 double n2 = (double) b1.getValor();
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (valor_boolean(a1.getValor().toString()) ? 1 : 0);
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else if (a1.getTipo().equalsIgnoreCase("caracter")) {
             if (b1.getTipo().equalsIgnoreCase("caracter")) {
                 String s1 = a1.getValor().toString();
                 String s2 = b1.getValor().toString();
-                return new Primitivo("boolean", null, s1.equals(s2));
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s1.equals(s2));
             } else if (b1.getTipo().equalsIgnoreCase("numero")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (int) b1.getValor();
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("decimal")) {
                 char c1 = (char) a1.getValor();
                 double n1 = (double) b1.getValor();
                 double n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else if (b1.getTipo().equalsIgnoreCase("boolean")) {
                 char c1 = (char) a1.getValor();
                 int n1 = (valor_boolean(b1.getValor().toString()) ? 1 : 0);
                 int n2 = (int) c1;
-                return new Primitivo("boolean", null, n1 == n2);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),n1 == n2);
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         } else {
             if (b1.getTipo().equalsIgnoreCase("string")) {
                 String s1 = a1.getValor().toString();
                 String s2 = b1.getValor().toString();
-                return new Primitivo("boolean", null, s1.equals(s2));
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(),s1.equals(s2));
             } else {
-                return new Primitivo("excepcion", null, "No puedes comparar un string con otro tipo de dato");
+                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No puedes comparar un string con otro tipo de dato");
             }
         }
     }
@@ -815,9 +901,9 @@ public class Expresion {
             Primitivo b1 = (Primitivo) b;
             boolean boo1 = valor_boolean(a1.getValor().toString());
             boolean boo2 = valor_boolean(b1.getValor().toString());
-            return new Primitivo("boolean", null, !(boo1 && boo2));
+            return new Primitivo("boolean", a.getLinea(), a.getColumna(),!(boo1 && boo2));
         } else {
-            return new Primitivo("excepcion", null, "El operador and funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador and funciona solo con valores booleanos");
         }
     }
 
@@ -827,9 +913,9 @@ public class Expresion {
             Primitivo b1 = (Primitivo) b;
             boolean boo1 = valor_boolean(a1.getValor().toString());
             boolean boo2 = valor_boolean(b1.getValor().toString());
-            return new Primitivo("boolean", null, boo1 || boo2);
+            return new Primitivo("boolean", a.getLinea(), a.getColumna(),boo1 || boo2);
         } else {
-            return new Primitivo("excepcion", null, "El operador and funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador and funciona solo con valores booleanos");
         }
     }
 
@@ -839,9 +925,9 @@ public class Expresion {
             Primitivo b1 = (Primitivo) b;
             boolean boo1 = valor_boolean(a1.getValor().toString());
             boolean boo2 = valor_boolean(b1.getValor().toString());
-            return new Primitivo("boolean", null, !(boo1 || boo2));
+            return new Primitivo("boolean", a.getLinea(), a.getColumna(),!(boo1 || boo2));
         } else {
-            return new Primitivo("excepcion", null, "El operador and funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador and funciona solo con valores booleanos");
         }
     }
 
@@ -851,9 +937,9 @@ public class Expresion {
             Primitivo b1 = (Primitivo) b;
             boolean boo1 = valor_boolean(a1.getValor().toString());
             boolean boo2 = valor_boolean(b1.getValor().toString());
-            return new Primitivo("boolean", null, ((boo1 && !boo2) || (!boo1 && boo2)));
+            return new Primitivo("boolean", a.getLinea(), a.getColumna(),((boo1 && !boo2) || (!boo1 && boo2)));
         } else {
-            return new Primitivo("excepcion", null, "El operador and funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador and funciona solo con valores booleanos");
         }
     }
 
@@ -863,9 +949,9 @@ public class Expresion {
             Primitivo b1 = (Primitivo) b;
             boolean boo1 = valor_boolean(a1.getValor().toString());
             boolean boo2 = valor_boolean(b1.getValor().toString());
-            return new Primitivo("boolean", null, boo1 && boo2);
+            return new Primitivo("boolean", a.getLinea(), a.getColumna(),boo1 && boo2);
         } else {
-            return new Primitivo("excepcion", null, "El operador and funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador and funciona solo con valores booleanos");
         }
     }
 
@@ -885,27 +971,27 @@ public class Expresion {
             } else {
                 if (numerico(obt, obt2)) {
                     if (obt == Tipos.NUMERO && obt2 == Tipos.NUMERO) {
-                        return new Primitivo("numero", null, (int) (a_int(a1.getValor()) - a_int(a2.getValor())));
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(),(int) (a_int(a1.getValor()) - a_int(a2.getValor())));
                     } else {
                         String d1 = a1.getValor().toString();
                         String d2 = a2.getValor().toString();
                         double pr = Double.parseDouble(d1);
                         double pr2 = Double.parseDouble(d2);
-                        return new Primitivo("decimal", null, (double) (pr - pr2));
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(),(double) (pr - pr2));
                     }
                 } else {
                     // IF todos los STRING
                     if ((obt == Tipos.STRING || obt2 == Tipos.STRING)) {
-                        return new Primitivo("excepcion", null, "La resta solo acepta operandos enteramente númericos");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"La resta solo acepta operandos enteramente númericos");
                     } // IF para CARACTER-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.CARACTER) {
                         char c = (char) a1.getValor();
                         char t = (char) a2.getValor();
                         int concatenando = (int) c - (int) t;
                         if (concatenando >= 0) {
-                            return new Primitivo("caracter", null, (char) concatenando);
+                            return new Primitivo("caracter", a.getLinea(), a.getColumna(),(char) concatenando);
                         } else {
-                            return new Primitivo("excepcion", null, "Resta de caracteres excedio el limite de no tener negativos");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"Resta de caracteres excedio el limite de no tener negativos");
                         }
                     } // IF para CARACTER-NUMERO, NUMERO-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.NUMERO
@@ -913,9 +999,9 @@ public class Expresion {
                         char caracter = (obt == Tipos.CARACTER) ? (char) (a1.getValor()) : (char) (a2.getValor());
                         int entero = (obt == Tipos.NUMERO) ? (int) (a1.getValor()) : (int) (a2.getValor());
                         if (obt == Tipos.CARACTER) {
-                            return new Primitivo("numero", null, (int) caracter - entero);
+                            return new Primitivo("numero", a.getLinea(), a.getColumna(),(int) caracter - entero);
                         } else {
-                            return new Primitivo("numero", null, entero - (int) caracter);
+                            return new Primitivo("numero", a.getLinea(), a.getColumna(),entero - (int) caracter);
                         }
                     } // IF para BOOLEAN-CARACTER, CARACTER-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.CARACTER
@@ -926,17 +1012,17 @@ public class Expresion {
                         int ca = (int) carac;
                         if (obt == Tipos.BOOLEAN) {
                             if ((s1 - ca) < 0) {
-                                return new Primitivo("excepcion", null, "No existen caracteres con indice negativo");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No existen caracteres con indice negativo");
                             } else {
                                 char c = (char) (s1 - ca);
-                                return new Primitivo("caracter", null, c);
+                                return new Primitivo("caracter", a.getLinea(), a.getColumna(),c);
                             }
                         } else {
                             if ((ca - s1) < 0) {
-                                return new Primitivo("excepcion", null, "No existen caracteres con indice negativo");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"No existen caracteres con indice negativo");
                             } else {
                                 char c = (char) (ca - s1);
-                                return new Primitivo("caracter", null, c);
+                                return new Primitivo("caracter", a.getLinea(), a.getColumna(),c);
                             }
                         }
                     } // IF para NUMERO-BOOLEAN, BOOLEAN-NUMERO
@@ -946,9 +1032,9 @@ public class Expresion {
                         int bo = (boo) ? 1 : 0;
                         int nu = (obt == Tipos.NUMERO) ? (int) a1.getValor() : (int) a2.getValor();
                         if (obt == Tipos.NUMERO) {
-                            return new Primitivo("numero", null, nu - bo);
+                            return new Primitivo("numero", a.getLinea(), a.getColumna(),nu - bo);
                         } else {
-                            return new Primitivo("numero", null, bo - nu);
+                            return new Primitivo("numero", a.getLinea(), a.getColumna(),bo - nu);
                         }
                     } // IF para DECIMAL-BOOLEAN, BOOLEAN-DECIMAL
                     else if (obt == Tipos.DECIMAL && obt2 == Tipos.BOOLEAN
@@ -957,9 +1043,9 @@ public class Expresion {
                         double bo = (boo) ? 1.0 : 0.0;
                         double nu = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
                         if (obt == Tipos.DECIMAL) {
-                            return new Primitivo("decimal", null, nu - bo);
+                            return new Primitivo("decimal", a.getLinea(), a.getColumna(),nu - bo);
                         } else {
-                            return new Primitivo("decimal", null, bo - nu);
+                            return new Primitivo("decimal", a.getLinea(), a.getColumna(),bo - nu);
                         }
                     }// IF para BOOLEAN-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.BOOLEAN) {
@@ -967,16 +1053,16 @@ public class Expresion {
                         boolean bo2 = (boolean) valor_boolean(a2.getValor().toString());
                         int b1 = (boo) ? 1 : 0;
                         int b2 = (bo2) ? 1 : 0;
-                        return new Primitivo("numero", null, b1 - b2);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(),b1 - b2);
                     }// IF para CARACTER-DECIMAL, DECIMAL-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.DECIMAL
                             || obt == Tipos.DECIMAL && obt2 == Tipos.CARACTER) {
                         char carac = (obt == Tipos.CARACTER) ? (char) a1.getValor() : (char) a2.getValor();
                         double dec = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
                         if (obt == Tipos.DECIMAL) {
-                            return new Primitivo("decimal", null, dec - (int) carac);
+                            return new Primitivo("decimal", a.getLinea(), a.getColumna(),dec - (int) carac);
                         } else {
-                            return new Primitivo("decimal", null, (int) carac - dec);
+                            return new Primitivo("decimal", a.getLinea(), a.getColumna(),(int) carac - dec);
                         }
                     } else {
                         return null;
@@ -994,20 +1080,20 @@ public class Expresion {
             if (a1.getValor() instanceof Boolean) {
                 boolean boo = (boolean) a1.getValor();
                 int bo = (boo) ? 1 : 0;
-                return new Primitivo("numero", null, -bo);
+                return new Primitivo("numero", a.getLinea(), a.getColumna(),-bo);
             } else if (a1.getValor() instanceof Double) {
                 double nega = -(double) a1.getValor();
-                return new Primitivo("decimal", null, nega);
+                return new Primitivo("decimal", a.getLinea(), a.getColumna(),nega);
             } else if (a1.getValor() instanceof Integer) {
                 int nega = -(int) a1.getValor();
-                return new Primitivo("numero", null, nega);
+                return new Primitivo("numero", a.getLinea(), a.getColumna(),nega);
             } else {
                 char nega = (char) a1.getValor();
                 int ne = -(int) nega;
-                return new Primitivo("numero", null, ne);
+                return new Primitivo("numero", a.getLinea(), a.getColumna(),ne);
             }
         } else {
-            return new Primitivo("excepcion", null, "El operador negativo funciona solo con valores numericos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"El operador negativo funciona solo con valores numericos");
         }
     }
 
@@ -1016,12 +1102,12 @@ public class Expresion {
             Primitivo a1 = (Primitivo) a;
             if (a1.getValor() instanceof Boolean) {
                 boolean boo = (boolean) a1.getValor();
-                return new Primitivo("boolean", null, !boo);
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), !boo);
             } else {
-                return new Primitivo("boolean", null, !valor_boolean(a1.getValor()));
+                return new Primitivo("boolean", a.getLinea(), a.getColumna(), !valor_boolean(a1.getValor()));
             }
         } else {
-            return new Primitivo("excepcion", null, "El operador not funciona solo con valores booleanos");
+            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "El operador not funciona solo con valores booleanos");
         }
     }
 
@@ -1042,28 +1128,28 @@ public class Expresion {
                 if (obt2 == Tipos.NUMERO) {
                     int n2 = (int) a2.getValor();
                     if (obt == Tipos.STRING) {
-                        return new Primitivo("excepcion", null, "Base de potencia es un tipo de dato no numerico");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Base de potencia es un tipo de dato no numerico");
                     } else if (obt == Tipos.NUMERO) {
                         int n1 = (int) a1.getValor();
                         int pot = (int) Math.pow(n1, n2);
-                        return new Primitivo("numero", null, pot);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), pot);
                     } else if (obt == Tipos.BOOLEAN) {
                         boolean n1 = (boolean) a1.getValor();
                         int numero1 = (n1) ? 1 : 0;
                         int pot = (int) Math.pow(numero1, n2);
-                        return new Primitivo("numero", null, pot);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), pot);
                     } else if (obt == Tipos.CARACTER) {
                         char n1 = (char) a1.getValor();
                         int numero1 = (int) n1;
                         int pot = (int) Math.pow(numero1, n2);
-                        return new Primitivo("numero", null, pot);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), pot);
                     } else {
                         double n1 = (double) a1.getValor();
                         double pot = (double) Math.pow(n1, n2);
-                        return new Primitivo("decimal", null, pot);
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), pot);
                     }
                 } else {
-                    return new Primitivo("excepcion", null, "Potencia solo acepta exponentes de tipo entero");
+                    return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Potencia solo acepta exponentes de tipo entero");
                 }
             }
         } else {
@@ -1090,9 +1176,9 @@ public class Expresion {
                     int n1 = (int) a1.getValor();
                     int n2 = (int) a2.getValor();
                     int mod = n1 % n2;
-                    return new Primitivo("numero", null, mod);
+                    return new Primitivo("numero", a.getLinea(), a.getColumna(),mod);
                 } else {
-                    return new Primitivo("excepcion", null, "Modulo solo acepta operandos de tipo entero");
+                    return new Primitivo("excepcion", a.getLinea(), a.getColumna(),"Modulo solo acepta operandos de tipo entero");
                 }
             }
         } else {
@@ -1117,20 +1203,20 @@ public class Expresion {
             } else {
                 if (numerico(obt, obt2)) {
                     if (obt == Tipos.NUMERO && obt2 == Tipos.NUMERO) {
-                        return new Primitivo("numero", null, (int) (a_int(a1.getValor()) * a_int(a2.getValor())));
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), (int) (a_int(a1.getValor()) * a_int(a2.getValor())));
                     } else {
                         String d1 = a1.getValor().toString();
                         String d2 = a2.getValor().toString();
                         double pr = Double.parseDouble(d1);
                         double pr2 = Double.parseDouble(d2);
-                        return new Primitivo("decimal", null, (double) (pr * pr2));
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), (double) (pr * pr2));
                     }
                 } else {
                     // IF para STRING-STRING, CARACTER-STRING, STRING-CARACTER
                     if ((obt == Tipos.STRING && obt2 == Tipos.STRING)
                             || (obt == Tipos.CARACTER && obt2 == Tipos.STRING)
                             || (obt == Tipos.STRING && obt2 == Tipos.CARACTER)) {
-                        return new Primitivo("excepcion", null, "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
                     } // IF para CARACTER-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.CARACTER) {
                         char c = (char) a1.getValor();
@@ -1139,9 +1225,9 @@ public class Expresion {
                         int t1 = (int) t;
                         if ((c1 * t1) < 255) {
                             int mul = c1 * t1;
-                            return new Primitivo("caracter", null, (char) mul);
+                            return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) mul);
                         } else {
-                            return new Primitivo("excepcion", null, "Multiplicacion de caracteres excedio el limite de 255");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Multiplicacion de caracteres excedio el limite de 255");
                         }
                     } // IF para CARACTER-NUMERO, NUMERO-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.NUMERO
@@ -1149,7 +1235,7 @@ public class Expresion {
                         char caracter = (obt == Tipos.CARACTER) ? (char) (a1.getValor()) : (char) (a2.getValor());
                         int entero = (obt == Tipos.NUMERO) ? (int) (a1.getValor()) : (int) (a2.getValor());
                         int n = (int) caracter;
-                        return new Primitivo("numero", null, n * entero);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), n * entero);
                     } // IF para BOOLEAN-CARACTER, CARACTER-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.CARACTER
                             || obt == Tipos.CARACTER && obt2 == Tipos.BOOLEAN) {
@@ -1158,45 +1244,45 @@ public class Expresion {
                         int s1 = (boo) ? 1 : 0;
                         int c1 = (int) carac;
                         int mult = s1 * c1;
-                        return new Primitivo("numero", null, (char) mult);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), (char) mult);
                     } // IF para BOOLEAN-STRING
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.STRING) {
-                        return new Primitivo("excepcion", null, "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
                     } // IF para STRING-BOOLEAN
                     else if (obt == Tipos.STRING && obt2 == Tipos.BOOLEAN) {
-                        return new Primitivo("excepcion", null, "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
                     } // IF para STRING-NUMERO, NUMERO-STRING, DECIMAL-STRING, STRING-DECIMAL
                     else if (obt == Tipos.STRING && obt2 == Tipos.NUMERO
                             || obt == Tipos.NUMERO && obt2 == Tipos.STRING
                             || obt == Tipos.DECIMAL && obt2 == Tipos.STRING
                             || obt == Tipos.STRING && obt2 == Tipos.DECIMAL) {
-                        return new Primitivo("excepcion", null, "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Multiplicacion entre valores no numericos (" + a1.getTipo() + "*" + a2.getTipo() + ")");
                     } // IF para NUMERO-BOOLEAN, BOOLEAN-NUMERO
                     else if (obt == Tipos.NUMERO && obt2 == Tipos.BOOLEAN
                             || obt == Tipos.BOOLEAN && obt2 == Tipos.NUMERO) {
                         boolean boo = (obt == Tipos.BOOLEAN) ? valor_boolean(a1.getValor().toString()) : valor_boolean(a2.getValor().toString());
                         int bo = (boo) ? 1 : 0;
                         int nu = (obt == Tipos.NUMERO) ? (int) a1.getValor() : (int) a2.getValor();
-                        return new Primitivo("numero", null, bo * nu);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), bo * nu);
                     } // IF para DECIMAL-BOOLEAN, BOOLEAN-DECIMAL
                     else if (obt == Tipos.DECIMAL && obt2 == Tipos.BOOLEAN
                             || obt == Tipos.BOOLEAN && obt2 == Tipos.DECIMAL) {
                         boolean boo = (obt == Tipos.BOOLEAN) ? valor_boolean(a1.getValor().toString()) : valor_boolean(a2.getValor().toString());
                         double bo = (boo) ? 1.0 : 0.0;
                         double nu = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
-                        return new Primitivo("decimal", null, bo * nu);
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), bo * nu);
                     }// IF para BOOLEAN-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.BOOLEAN) {
                         boolean boo = (boolean) valor_boolean(a1.getValor().toString());
                         boolean bo2 = (boolean) valor_boolean(a2.getValor().toString());
-                        return new Primitivo("boolean", null, boo && bo2);
+                        return new Primitivo("boolean", a.getLinea(), a.getColumna(), boo && bo2);
                     }// IF para CARACTER-DECIMAL, DECIMAL-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.DECIMAL
                             || obt == Tipos.DECIMAL && obt2 == Tipos.CARACTER) {
                         char carac = (obt == Tipos.CARACTER) ? (char) a1.getValor() : (char) a2.getValor();
                         double dec = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
                         int car = (int) carac;
-                        return new Primitivo("decimal", null, (double) (dec * car));
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), (double) (dec * car));
                     } else {
                         return null;
                     }
@@ -1224,14 +1310,13 @@ public class Expresion {
             } else {
                 if (numerico(obt, obt2)) {
                     if (obt == Tipos.NUMERO && obt2 == Tipos.NUMERO) {
-                        System.out.println("entra a suma enteros");
-                        return new Primitivo("numero", null, (int) (a_int(a1.getValor()) + a_int(a2.getValor())));
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), (int) (a_int(a1.getValor()) + a_int(a2.getValor())));
                     } else {
                         String d1 = a1.getValor().toString();
                         String d2 = a2.getValor().toString();
                         double pr = Double.parseDouble(d1);
                         double pr2 = Double.parseDouble(d2);
-                        return new Primitivo("decimal", null, (double) (pr + pr2));
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), (double) (pr + pr2));
                     }
                 } else {
                     // IF para STRING-STRING, CARACTER-STRING, STRING-CARACTER
@@ -1239,23 +1324,23 @@ public class Expresion {
                             || (obt == Tipos.CARACTER && obt2 == Tipos.STRING)
                             || (obt == Tipos.STRING && obt2 == Tipos.CARACTER)) {
                         String concatenando = (String) a1.getValor() + (String) a2.getValor();
-                        return new Primitivo("string", null, concatenando);
+                        return new Primitivo("string", a.getLinea(), a.getColumna(), concatenando);
                     } // IF para CARACTER-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.CARACTER) {
                         char c = (char) a1.getValor();
                         char t = (char) a2.getValor();
                         int concatenando = (int) c + (int) t;
                         if (concatenando < 255) {
-                            return new Primitivo("caracter", null, (char) concatenando);
+                            return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) concatenando);
                         } else {
-                            return new Primitivo("excepcion", null, "Suma de caracteres excedio el limite de 255");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Suma de caracteres excedio el limite de 255");
                         }
                     } // IF para CARACTER-NUMERO, NUMERO-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.NUMERO
                             || obt == Tipos.NUMERO && obt2 == Tipos.CARACTER) {
                         char caracter = (obt == Tipos.CARACTER) ? (char) (a1.getValor()) : (char) (a2.getValor());
                         int entero = (obt == Tipos.NUMERO) ? (int) (a1.getValor()) : (int) (a2.getValor());
-                        return new Primitivo("numero", null, entero + (int) caracter);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), entero + (int) caracter);
                     } // IF para BOOLEAN-CARACTER, CARACTER-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.CARACTER
                             || obt == Tipos.CARACTER && obt2 == Tipos.BOOLEAN) {
@@ -1264,52 +1349,52 @@ public class Expresion {
                         int s1 = (boo) ? 1 : 0;
                         s1 += (int) carac;
                         if (s1 < 255) {
-                            return new Primitivo("caracter", null, (char) s1);
+                            return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) s1);
                         } else {
-                            return new Primitivo("excepcion", null, "Suma de caracteres excedio el limite de 255");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "Suma de caracteres excedio el limite de 255");
                         }
                     } // IF para BOOLEAN-STRING
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.STRING) {
                         String concatenar = (obt == Tipos.BOOLEAN) ? a1.getValor().toString() : a2.getValor().toString();
-                        return new Primitivo("string", null, concatenar + (String) a2.getValor());
+                        return new Primitivo("string", a.getLinea(), a.getColumna(), concatenar + (String) a2.getValor());
                     } // IF para STRING-BOOLEAN
                     else if (obt == Tipos.STRING && obt2 == Tipos.BOOLEAN) {
                         String concatenar = (obt == Tipos.BOOLEAN) ? a1.getValor().toString() : a2.getValor().toString();
-                        return new Primitivo("string", null, (String) a1.getValor() + concatenar);
+                        return new Primitivo("string", a.getLinea(), a.getColumna(), (String) a1.getValor() + concatenar);
                     } // IF para STRING-NUMERO, NUMERO-STRING, DECIMAL-STRING, STRING-DECIMAL
                     else if (obt == Tipos.STRING && obt2 == Tipos.NUMERO
                             || obt == Tipos.NUMERO && obt2 == Tipos.STRING
                             || obt == Tipos.DECIMAL && obt2 == Tipos.STRING
                             || obt == Tipos.STRING && obt2 == Tipos.DECIMAL) {
                         String concatenando = a1.getValor().toString() + a2.getValor().toString();
-                        return new Primitivo("string", null, concatenando);
+                        return new Primitivo("string", a.getLinea(), a.getColumna(), concatenando);
                     } // IF para NUMERO-BOOLEAN, BOOLEAN-NUMERO
                     else if (obt == Tipos.NUMERO && obt2 == Tipos.BOOLEAN
                             || obt == Tipos.BOOLEAN && obt2 == Tipos.NUMERO) {
                         boolean boo = (obt == Tipos.BOOLEAN) ? valor_boolean(a1.getValor().toString()) : valor_boolean(a2.getValor().toString());
                         int bo = (boo) ? 1 : 0;
                         int nu = (obt == Tipos.NUMERO) ? (int) a1.getValor() : (int) a2.getValor();
-                        return new Primitivo("numero", null, bo + nu);
+                        return new Primitivo("numero", a.getLinea(), a.getColumna(), bo + nu);
                     } // IF para DECIMAL-BOOLEAN, BOOLEAN-DECIMAL
                     else if (obt == Tipos.DECIMAL && obt2 == Tipos.BOOLEAN
                             || obt == Tipos.BOOLEAN && obt2 == Tipos.DECIMAL) {
                         boolean boo = (obt == Tipos.BOOLEAN) ? valor_boolean(a1.getValor().toString()) : valor_boolean(a2.getValor().toString());
                         double bo = (boo) ? 1.0 : 0.0;
                         double nu = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
-                        return new Primitivo("decimal", null, bo + nu);
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), bo + nu);
                     }// IF para BOOLEAN-BOOLEAN
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.BOOLEAN) {
                         boolean boo = (boolean) valor_boolean(a1.getValor().toString());
                         boolean bo2 = (boolean) valor_boolean(a2.getValor().toString());
                         boolean respuesta = boo || bo2;
-                        return new Primitivo("boolean", null, respuesta);
+                        return new Primitivo("boolean", a.getLinea(), a.getColumna(), respuesta);
                     }// IF para CARACTER-DECIMAL, DECIMAL-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.DECIMAL
                             || obt == Tipos.DECIMAL && obt2 == Tipos.CARACTER) {
                         char carac = (obt == Tipos.CARACTER) ? (char) a1.getValor() : (char) a2.getValor();
                         double dec = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
                         double respuesta = carac + dec;
-                        return new Primitivo("decimal", null, respuesta);
+                        return new Primitivo("decimal", a.getLinea(), a.getColumna(), respuesta);
                     } else {
                         return null;
                     }
@@ -1336,16 +1421,16 @@ public class Expresion {
             } else {
                 if (numerico(obt, obt2)) {
                     if ((int) a2.getValor() == 0) {
-                        return new Primitivo("excepcion", null, "División entre cero");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                     } else {
                         if (obt == Tipos.NUMERO && obt2 == Tipos.NUMERO) {
-                            return new Primitivo("numero", null, (int) (a_int(a1.getValor()) / a_int(a2.getValor())));
+                            return new Primitivo("numero", a.getLinea(), a.getColumna(), (int) (a_int(a1.getValor()) / a_int(a2.getValor())));
                         } else {
                             String d1 = a1.getValor().toString();
                             String d2 = a2.getValor().toString();
                             double pr = Double.parseDouble(d1);
                             double pr2 = Double.parseDouble(d2);
-                            return new Primitivo("decimal", null, (double) (pr / pr2));
+                            return new Primitivo("decimal", a.getLinea(), a.getColumna(), (double) (pr / pr2));
                         }
                     }
                 } else {
@@ -1353,7 +1438,7 @@ public class Expresion {
                     if ((obt == Tipos.STRING && obt2 == Tipos.STRING)
                             || (obt == Tipos.CARACTER && obt2 == Tipos.STRING)
                             || (obt == Tipos.STRING && obt2 == Tipos.CARACTER)) {
-                        return new Primitivo("excepcion", null, "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
                     } // IF para CARACTER-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.CARACTER) {
                         char c = (char) a1.getValor();
@@ -1361,10 +1446,10 @@ public class Expresion {
                         int c1 = (int) c;
                         int t1 = (int) t;
                         if (t1 == 0) {
-                            return new Primitivo("excepcion", null, "División entre cero");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                         } else {
                             int res = (int) (c1 / t1);
-                            return new Primitivo("caracter", null, (char) res);
+                            return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) res);
                         }
                     } // IF para CARACTER-NUMERO, NUMERO-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.NUMERO
@@ -1375,16 +1460,16 @@ public class Expresion {
                         if (obt == Tipos.CARACTER) {
                             if (entero != 0) {
                                 int retorno = (int) (n / entero);
-                                return new Primitivo("numero", null, retorno);
+                                return new Primitivo("numero", a.getLinea(), a.getColumna(), retorno);
                             } else {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             }
                         } else {
                             if (n != 0) {
                                 int retorno = (int) (entero / n);
-                                return new Primitivo("numero", null, retorno);
+                                return new Primitivo("numero", a.getLinea(), a.getColumna(), retorno);
                             } else {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             }
                         }
                     } // IF para BOOLEAN-CARACTER, CARACTER-BOOLEAN
@@ -1396,31 +1481,31 @@ public class Expresion {
                         int c1 = (int) carac;
                         if (obt == Tipos.BOOLEAN) {
                             if (c1 == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 int retorno = (int) (s1 / c1);
-                                return new Primitivo("caracter", null, (char) retorno);
+                                return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) retorno);
                             }
                         } else {
                             if (s1 == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 int retorno = (int) (c1 / s1);
-                                return new Primitivo("caracter", null, (char) retorno);
+                                return new Primitivo("caracter", a.getLinea(), a.getColumna(), (char) retorno);
                             }
                         }
                     } // IF para BOOLEAN-STRING
                     else if (obt == Tipos.BOOLEAN && obt2 == Tipos.STRING) {
-                        return new Primitivo("excepcion", null, "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
                     } // IF para STRING-BOOLEAN
                     else if (obt == Tipos.STRING && obt2 == Tipos.BOOLEAN) {
-                        return new Primitivo("excepcion", null, "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
                     } // IF para STRING-NUMERO, NUMERO-STRING, DECIMAL-STRING, STRING-DECIMAL
                     else if (obt == Tipos.STRING && obt2 == Tipos.NUMERO
                             || obt == Tipos.NUMERO && obt2 == Tipos.STRING
                             || obt == Tipos.DECIMAL && obt2 == Tipos.STRING
                             || obt == Tipos.STRING && obt2 == Tipos.DECIMAL) {
-                        return new Primitivo("excepcion", null, "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
+                        return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre valores no numericos (" + a1.getTipo() + "/" + a2.getTipo() + ")");
                     } // IF para NUMERO-BOOLEAN, BOOLEAN-NUMERO
                     else if (obt == Tipos.NUMERO && obt2 == Tipos.BOOLEAN
                             || obt == Tipos.BOOLEAN && obt2 == Tipos.NUMERO) {
@@ -1429,17 +1514,17 @@ public class Expresion {
                         int nu = (obt == Tipos.NUMERO) ? (int) a1.getValor() : (int) a2.getValor();
                         if (obt == Tipos.NUMERO) {
                             if (bo == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 int retorno = (int) (nu / bo);
-                                return new Primitivo("numero", null, retorno);
+                                return new Primitivo("numero", a.getLinea(), a.getColumna(), retorno);
                             }
                         } else {
                             if (nu == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 int retorno = (int) (bo / nu);
-                                return new Primitivo("numero", null, retorno);
+                                return new Primitivo("numero", a.getLinea(), a.getColumna(), retorno);
                             }
                         }
                     } // IF para DECIMAL-BOOLEAN, BOOLEAN-DECIMAL
@@ -1450,17 +1535,17 @@ public class Expresion {
                         double nu = (obt == Tipos.DECIMAL) ? (double) a1.getValor() : (double) a2.getValor();
                         if (obt == Tipos.DECIMAL) {
                             if (bo == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 double retorno = (double) (nu / bo);
-                                return new Primitivo("decimal", null, retorno);
+                                return new Primitivo("decimal", a.getLinea(), a.getColumna(), retorno);
                             }
                         } else {
                             if (nu == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 double retorno = (double) (bo / nu);
-                                return new Primitivo("decimal", null, retorno);
+                                return new Primitivo("decimal", a.getLinea(), a.getColumna(), retorno);
                             }
                         }
                     }// IF para BOOLEAN-BOOLEAN
@@ -1468,10 +1553,10 @@ public class Expresion {
                         boolean boo = (boolean) valor_boolean(a1.getValor().toString());
                         boolean bo2 = (boolean) valor_boolean(a2.getValor().toString());
                         if (!bo2) {
-                            return new Primitivo("excepcion", null, "División entre cero");
+                            return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                         } else {
                             boolean respuesta = boo && bo2;
-                            return new Primitivo("boolean", null, respuesta);
+                            return new Primitivo("boolean", a.getLinea(), a.getColumna(), respuesta);
                         }
                     }// IF para CARACTER-DECIMAL, DECIMAL-CARACTER
                     else if (obt == Tipos.CARACTER && obt2 == Tipos.DECIMAL
@@ -1481,17 +1566,17 @@ public class Expresion {
                         int car = (int) carac;
                         if (obt == Tipos.CARACTER) {
                             if (dec == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 double retorno = (double) (car / dec);
-                                return new Primitivo("decimal", null, retorno);
+                                return new Primitivo("decimal", a.getLinea(), a.getColumna(),retorno);
                             }
                         } else {
                             if (car == 0) {
-                                return new Primitivo("excepcion", null, "División entre cero");
+                                return new Primitivo("excepcion", a.getLinea(), a.getColumna(), "División entre cero");
                             } else {
                                 double retorno = (double) (dec / car);
-                                return new Primitivo("decimal", null, retorno);
+                                return new Primitivo("decimal", a.getLinea(), a.getColumna(), retorno);
                             }
                         }
                     } else {
@@ -1542,4 +1627,33 @@ public class Expresion {
         boolean b2 = a2 == Tipos.NUMERO || a2 == Tipos.DECIMAL;
         return b1 && b2;
     }
+
+    public Expresion(Operacion tipo) {
+        this.tipo = tipo;
+    }
+
+    public Expresion getIzquierda() {
+        return izquierda;
+    }
+
+    public void setIzquierda(Expresion izquierda) {
+        this.izquierda = izquierda;
+    }
+
+    public Expresion getDerecha() {
+        return derecha;
+    }
+
+    public void setDerecha(Expresion derecha) {
+        this.derecha = derecha;
+    }
+
+    public Termino getValor() {
+        return valor;
+    }
+
+    public void setValor(Termino valor) {
+        this.valor = valor;
+    }
+
 }

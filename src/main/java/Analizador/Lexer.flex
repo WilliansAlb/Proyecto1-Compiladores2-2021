@@ -41,7 +41,6 @@ sal = [\n]+
                 if ((indentados - espacios) > 0) {
                     indentados--;
                     yypushback(espacios);
-                    System.out.println("Se encuentra dedentado no1");
                     return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
                 } else if ((indentados - espacios)==0) {
                     yybegin(YYINITIAL);
@@ -49,7 +48,6 @@ sal = [\n]+
                 } else if ((indentados - espacios) < 0) {
                     indentados++;
                     yypushback(espacios);
-                    System.out.println("Se encuentra indentado");
                     return new Symbol(sym.INDENT, yyline, yycolumn, yytext());
                 } else {
                     System.out.println("No sé como entró acá");
@@ -59,7 +57,6 @@ sal = [\n]+
                 if (indentados > 0) {
                     indentados--;
                     yypushback(1);
-                    System.out.println("Se encuentra dedentado no2");
                     return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
                 } else {
                     yybegin(YYINITIAL);
@@ -70,7 +67,6 @@ sal = [\n]+
         } else {
             if (indentados > 0) {
                 indentados--;
-                System.out.println("Se encuentra dedentado no3");
                 return new Symbol(sym.DEDENT, yyline, yycolumn, yytext());
             } else {
                 return new java_cup.runtime.Symbol(sym.EOF);
@@ -111,6 +107,7 @@ sal = [\n]+
     ("DESCENDENTE"|"Descendente"|"descendente")                 { return symbol(sym.DESC); }
     ("PARES"|"Pares"|"pares")               { return symbol(sym.PAR); }
     ("IMPARES"|"Impares"|"impares")         { return symbol(sym.IMPAR); }
+    ("PRIMOS"|"Primos"|"primos")         { return symbol(sym.PRIMOS); }
     ("SUMARIZAR"|"Sumarizar"|"sumarizar")   { return symbol(sym.SUMARIZAR); }
     ("LONGITUD"|"Longitud"|"longitud")      { return symbol(sym.LONG); }
     ("MENSAJE"|"Mensaje"|"mensaje")         { return symbol(sym.MSG); }
@@ -230,7 +227,7 @@ sal = [\n]+
 }
 <COMMENT_M>{
     [^"-"]+                               {}
-    "-"                               { yybegin(PRO); }
+    "-"                               { yybegin(SALIDA_MULTI); }
 }
 
 <SALIDA_MULTI>{

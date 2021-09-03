@@ -73,10 +73,9 @@ public class Task extends Thread {
         n.setInstrument(0);
         if (reproduce != null) {
             while (isActive && segundos < reproduce.max() - 1) {
-
                 try {
                     // Simulate heavy processing stuff
-                    Thread.sleep(500);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -89,29 +88,27 @@ public class Task extends Thread {
                             this.chart.getData().add(seriees.get(i));
                             this.seriees.get(i).getData().add(new Data<>("" + 0, 0));
                         }
-                        //this.series.getData().add(new Data<>("" + conteo++, 0));
                     }
                     if (segundos > 40) {
-                        //this.series.getData().remove(0);
+                        for (int i = 0; i < reproduce.getCanales().size(); i++) {
+                            this.seriees.get(i).getData().remove(0);
+                        }
                     }
-                    // Add a new number to the linechart
-                    //this.series.getData().add(new Data<>("" + segundos, nm[n1]));
                     for (int i = 0; i < reproduce.getCanales().size(); i++) {
                         int re = reproduce.getCanales().get(i).nota(segundos);
-                        double res = (re != 0) ? (Math.pow(2, ((re - 69) / 12)) * 440) : 0;
+                        double res = (Math.abs(re) > 0) ? (Math.pow(2, ((Math.abs(re) - 69) / 12)) * 440) : 0;
                         this.seriees.get(i).getData().add(new Data<>("" + segundos + 1, res));
-                        if (re != 0) {
-                            System.out.println(re);
+                        if (re > 0) {
                             n.noteOn(re);
                         }
                     }
 
                     segundos++;
-                    if (segundos % 2 == 0) {
-                        int sec = segundos/2;
+                    if ((segundos * 50) % 50 == 0) {
+                        int nue = segundos * 50;
+                        int sec = (nue) / 1000;
                         double pro = (double) segundos / reproduce.max();
                         progreso.setProgress(pro);
-                        System.out.println(sec / reproduce.max());
                         int minutos = (int) (sec / 60);
                         int sec2 = (int) (sec % 60);
                         String tiempo_pasado = (sec2 > 9) ? minutos + ":" + sec2 : minutos + ":0" + sec2;
@@ -131,6 +128,13 @@ public class Task extends Thread {
                     }
                 }
             }
+            try {
+                // Simulate heavy processing stuff
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            kill();
         } else {
             while (isActive) {
                 System.out.println("Ha pasado: " + segundos + " segundos de la cancion");

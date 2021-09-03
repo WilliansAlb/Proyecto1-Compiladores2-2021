@@ -15,15 +15,21 @@ import java_cup.runtime.Symbol;
  */
 public class Metodo_Retorno extends Termino {
 
-    private Instruccion llamada;
-    private String id;
-    
-    @Override
-    public Simbolos interpretar(Simbolos tabla) {
-        
-        return tabla;
+    private Llamada llamada;
+
+    public Metodo_Retorno(Llamada llamada) {
+        this.llamada = llamada;
     }
 
+    public Termino interpretar(Simbolos tabla) {
+        llamada.interpretar(tabla);
+        if (llamada.retorno != null) {
+            return new Primitivo(llamada.retorno_tipo,llamada.getLinea(), llamada.getColumna(), llamada.retorno);
+        } else {
+            System.out.println("acá 2");
+            return new Primitivo("excepcion", llamada.getLinea(), llamada.getColumna(), "Este método no devuelve ningun valor");
+        }
+    }
 
     @Override
     public String toString() {
@@ -35,17 +41,22 @@ public class Metodo_Retorno extends Termino {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String getId() {
-        return id;
+    public Instruccion getLlamada() {
+        return llamada;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setLlamada(Llamada llamada) {
+        this.llamada = llamada;
     }
 
     @Override
-    public Termino getValor2() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getLinea() {
+        return llamada.getLinea();
     }
-    
+
+    @Override
+    public int getColumna() {
+        return llamada.getColumna();
+    }
+
 }

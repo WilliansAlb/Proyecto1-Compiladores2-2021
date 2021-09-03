@@ -34,7 +34,7 @@ public class Metodo {
     }
 
     public Metodo() {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     public void interpretar(Simbolos tabla, List<Metodo> metodos, List<Expresion> param) {
@@ -42,17 +42,20 @@ public class Metodo {
         if (retorno){
             tabla.agregar_sistema("$retorno", tipo, null);
         }
-        if (param == null) {
+        if (parametros == null) {
             for (Instruccion instruccion : instrucciones) {
                 instruccion.interpretar(tabla);
             }
         } else {
-            System.out.println("codigo cuando si hay parametros");
+            
         }
         if (retorno){
             if (tabla.obtener("$retorno").getDatos().get(0)==null){
                 System.out.println("falta retorno");
             }
+        }
+        for (Simbolo tabla1 : tabla) {
+            System.out.println("id: "+tabla1.getId()+" valor: "+tabla1.getDatos().get(0));
         }
         tabla.eliminar_ambito();
     }

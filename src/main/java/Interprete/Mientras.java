@@ -32,7 +32,19 @@ public class Mientras extends Instruccion {
             int conteo = 0;
             while((boolean)((Primitivo)condicion.ejecutar(tabla)).getValor()){
                 for (Instruccion ins:instrucciones){
-                    ins.interpretar(tabla);
+                    if (ins instanceof ContinuarSalir){
+                        ContinuarSalir c = (ContinuarSalir)ins;
+                        if (c.isContinuar()){
+                            break;
+                        } else {
+                            return;
+                        }
+                    } else if (ins instanceof Retorno){
+                        System.out.println("retorno");
+                        return;
+                    } else {
+                        ins.interpretar(tabla);
+                    }
                 }
                 if (conteo==20){
                     System.out.println("No tiene condicion de salida");

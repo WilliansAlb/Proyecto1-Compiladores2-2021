@@ -10,18 +10,19 @@ package Interprete;
  * @author willi
  */
 public class Errores {
+
     private int linea;
     private int columna;
     private String tipo;
     private String razon;
 
-    public Errores(int linea, int columna, String tipo, String razon) {
+    public Errores(String tipo, String razon, int linea, int columna) {
         this.linea = linea;
         this.columna = columna;
         this.tipo = tipo;
         this.razon = razon;
-    }    
-    
+    }
+
     public int getLinea() {
         return linea;
     }
@@ -53,6 +54,5 @@ public class Errores {
     public void setRazon(String razon) {
         this.razon = razon;
     }
-    
-    
+
 }

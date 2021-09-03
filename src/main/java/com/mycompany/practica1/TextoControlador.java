@@ -19,6 +19,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,19 +30,29 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableStringValue;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -49,9 +60,16 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
+import javafx.util.Callback;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
@@ -82,6 +100,8 @@ public class TextoControlador implements Initializable {
     @FXML
     public Label faltante;
     @FXML
+    public Label cancion;
+    @FXML
     public Button btn_revisar;
     @FXML
     public Button btn_consola;
@@ -95,9 +115,18 @@ public class TextoControlador implements Initializable {
     public ImageView parar_img;
     @FXML
     public ImageView con;
-
     public TextField donde;
     public Reproduccion actual;
+    @FXML
+    public ListView<Lista> listas;
+    @FXML
+    public ListView<Cancion> canciones_lista;
+    @FXML
+    public ListView<Cancion> canciones;
+    public final ObservableList<Lista> data = FXCollections.observableArrayList();
+    public final ObservableList<Cancion> data_cancion = FXCollections.observableArrayList();
+    public final ObservableList<Cancion> data_lista_cancion = FXCollections.observableArrayList();
+    public String lista_escogida = "";
 
     Task nuevo;
 
@@ -218,6 +247,134 @@ public class TextoControlador implements Initializable {
         consola.managedProperty().bind(consola.visibleProperty());
         parar.setVisible(false);
         parar.managedProperty().bind(parar.visibleProperty());
+        data.clear();
+        data.add(new Lista("Romanticas", 12, "lista.png"));
+        data.add(new Lista("Dramaticas", 10, "lista.png"));
+        for (int i = 0; i < 10; i++) {
+            data.add(new Lista("Romanticas" + i, 12, "lista.png"));
+            data.add(new Lista("Dramaticas" + i, 10, "lista.png"));
+        }
+        listas.setCellFactory(new Callback<ListView<Lista>, ListCell<Lista>>() {
+            @Override
+            public ListCell<Lista> call(ListView<Lista> param) {
+                ListCell<Lista> cell = new ListCell<Lista>() {
+                    @Override
+                    protected void updateItem(Lista pa, boolean s) {
+                        super.updateItem(pa, s);
+                        if (pa != null) {
+                            Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
+                            BorderPane b = new BorderPane();
+                            Label l = new Label("No. Canciones: " + pa.getCanciones());
+                            Label iden = new Label(pa.getId());
+                            l.setFont(new Font(10.0));
+                            iden.setPrefWidth(200.00);
+                            iden.setTextAlignment(TextAlignment.LEFT);
+                            l.setTextAlignment(TextAlignment.RIGHT);
+                            iden.setTooltip(new Tooltip(pa.getId()));
+                            ImageView imgView = new ImageView(img);
+                            imgView.setPreserveRatio(false);
+                            imgView.setFitWidth(20.00);
+                            imgView.setFitHeight(20.00);
+                            b.setCenter(iden);
+                            b.setLeft(imgView);
+                            b.setRight(l);
+                            setGraphic(b);
+                            b.addEventFilter(
+                                    MouseEvent.MOUSE_PRESSED,
+                                    new EventHandler<MouseEvent>() {
+                                public void handle(final MouseEvent mouseEvent) {
+                                    lista_escogida = iden.getText();
+                                }
+                            });
+                        }
+                    }
+                };
+                return cell;
+            }
+        });
+        listas.setItems(data);
+        data_cancion.add(new Cancion("Rythim_night", "1:30", null));
+        data_cancion.add(new Cancion("Rythim_day", "1:30", null));
+        data_cancion.add(new Cancion("Rythim_afternoon", "1:30", null));
+        data_lista_cancion.add(new Cancion("Rythim_night", "1:30", null));
+        data_lista_cancion.add(new Cancion("Rythim_day", "1:30", null));
+        data_lista_cancion.add(new Cancion("Rythim_afternoon", "1:30", null));
+        canciones.setCellFactory(new Callback<ListView<Cancion>, ListCell<Cancion>>() {
+            @Override
+            public ListCell<Cancion> call(ListView<Cancion> param) {
+                ListCell<Cancion> cell = new ListCell<Cancion>() {
+                    @Override
+                    protected void updateItem(Cancion pa, boolean s) {
+                        super.updateItem(pa, s);
+                        if (pa != null) {
+                            Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
+                            Label l = new Label("Duracion: " + pa.getDuracion());
+                            Label iden = new Label(pa.getId());
+                            l.setFont(new Font(10.0));
+                            l.setTextAlignment(TextAlignment.RIGHT);
+                            iden.setPrefWidth(500.00);
+                            iden.setTextAlignment(TextAlignment.LEFT);
+                            BorderPane b = new BorderPane();
+                            ImageView imgView = new ImageView(img);
+                            imgView.setPreserveRatio(false);
+                            imgView.setFitWidth(20.00);
+                            imgView.setFitHeight(20.00);
+                            b.setLeft(imgView);
+                            b.setCenter(iden);
+                            b.setRight(l);
+                            setGraphic(b);
+                            b.addEventFilter(
+                                    MouseEvent.MOUSE_PRESSED,
+                                    new EventHandler<MouseEvent>() {
+                                public void handle(final MouseEvent mouseEvent) {
+                                    lista_escogida = iden.getText();
+                                }
+                            });
+                        }
+                    }
+                };
+                return cell;
+            }
+        });
+        canciones.setItems(data_cancion);
+        canciones_lista.setCellFactory(new Callback<ListView<Cancion>, ListCell<Cancion>>() {
+            @Override
+            public ListCell<Cancion> call(ListView<Cancion> param) {
+                ListCell<Cancion> cell = new ListCell<Cancion>() {
+                    @Override
+                    protected void updateItem(Cancion pa, boolean s) {
+                        super.updateItem(pa, s);
+                        if (pa != null) {
+                            Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
+                            Label l = new Label("Duracion: " + pa.getDuracion());
+                            Label iden = new Label(pa.getId());
+                            l.setFont(new Font(10.0));
+                            l.setTextAlignment(TextAlignment.RIGHT);
+                            iden.setPrefWidth(200.00);
+                            iden.setTextAlignment(TextAlignment.LEFT);
+                            BorderPane b = new BorderPane();
+                            ImageView imgView = new ImageView(img);
+                            imgView.setPreserveRatio(false);
+                            imgView.setFitWidth(20.00);
+                            imgView.setFitHeight(20.00);
+                            b.setLeft(imgView);
+                            b.setCenter(iden);
+                            b.setRight(l);
+                            setGraphic(b);
+                            b.addEventFilter(
+                                    MouseEvent.MOUSE_PRESSED,
+                                    new EventHandler<MouseEvent>() {
+                                public void handle(final MouseEvent mouseEvent) {
+                                    lista_escogida = iden.getText();
+                                }
+                            });
+                        }
+                    }
+                };
+                return cell;
+            }
+        });
+        canciones_lista.setItems(data_lista_cancion);
     }
 
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
@@ -300,24 +457,32 @@ public class TextoControlador implements Initializable {
 
     private void iniciar(Programa p) {
         Simbolos s = new Simbolos();
+        s.agregar_sistema("$consola", "$consola", consola);
         p.interpretar(s);
         Simbolo rep = s.obtener("$reproducir");
-        //empezar_reproduccion(rep);
+        Simbolo msg = s.obtener("$mensaje");
+        if (rep != null) {
+            empezar_reproduccion(rep);
+        }
     }
-    
-    private void empezar_reproduccion(Simbolo rep){
+
+    private void empezar_reproduccion(Simbolo rep) {
         if (rep.getDatos().get(0) != null) {
             actual = (Reproduccion) rep.getDatos().get(0);
-            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
-            myChart.getData().clear();
-            int nuevo2 = actual.max()/2;
-            int minutos = (int) (nuevo2/ 120);
-            int sec = (int) (nuevo2 % 120);
-            String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
-            faltante.setText(tiempo_pasado);
-            nuevo = new Task(myChart, progreso, pasado, actual);
-            nuevo.start();
-            iniciando = false;
+            if (actual.getCanales() != null) {
+                repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+                myChart.getData().clear();
+                int nuevo2 = actual.max() * 50;
+                int nuevo3 = nuevo2 / 1000;
+                int minutos = (int) (nuevo3 / 60);
+                int sec = (int) (nuevo3 % 60);
+                String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+                faltante.setText(tiempo_pasado);
+                cancion.setText(actual.getId());
+                nuevo = new Task(myChart, progreso, pasado, actual);
+                nuevo.start();
+                iniciando = false;
+            }
         }
     }
 

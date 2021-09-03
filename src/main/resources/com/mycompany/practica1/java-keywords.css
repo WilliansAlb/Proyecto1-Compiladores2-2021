@@ -44,17 +44,17 @@
 }
 
 .root {
-    -fx-base: #a3d3d6;
+    -fx-base: #3f474f;
     -fx-accent: #e7eff7 ;
     -fx-default-button: #7f878f ;
     -fx-focus-color: #efefef;
     -fx-faint-focus-color: #efefef22;
     -fx-focused-text-base-color : ladder(
-        -fx-selection-bar,
-        -fx-light-text-color 45%,
-        -fx-dark-text-color 46%,
-        -fx-dark-text-color 59%,
-        -fx-mid-text-color 60%
+            -fx-selection-bar,
+            -fx-light-text-color 45%,
+            -fx-dark-text-color 46%,
+            -fx-dark-text-color 59%,
+            -fx-mid-text-color 60%
         );
     -fx-focused-mark-color : -fx-focused-text-base-color ;   
 
@@ -67,7 +67,7 @@
         -fx-dark-text-color  46%,
         -fx-dark-text-color  59%,
         -fx-mid-text-color   60%
-        );
+    );
 }
 .button {
     -fx-background-color: transparent;
@@ -89,5 +89,19 @@
 
 .progress-bar { 
     -fx-box-border: goldenrod;
-    -fx-accent: green;
+    -fx-accent: #0d0030;
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-text-fill: white;
+}
+
+.list-cell:even { /* <=== changed to even */
+    -fx-background-color: lightgray;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #0093ff;
+    -fx-text-fill: white;
 }

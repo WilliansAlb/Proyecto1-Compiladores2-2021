@@ -40,9 +40,10 @@ public class Canal {
     }
 
     public void agregar(int nota, int mili){
-        int tiempos = (int)Math.round(mili/500);
-        for (int i = 0; i < tiempos; i++) {
-            notas.add(nota);
+        int tiempos = (int)Math.round(mili/50);
+        notas.add(nota);
+        for (int i = 1; i < tiempos; i++) {
+            notas.add(-nota);
         }
         this.tiempo += tiempos;
     }

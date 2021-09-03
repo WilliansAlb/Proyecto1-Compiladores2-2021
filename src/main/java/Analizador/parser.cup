@@ -24,7 +24,7 @@ parser code
             esperados += symbl_name_from_id(expected_token_ids().get(i))+"-";
         }
         System.out.print(esperados+", pero se encontro "+cur_token.value+" en la linea"+cur_token.right+" y en la columna"+cur_token.left);
-        errores.add(new Errores(cur_token.right,cur_token.left,"SINTACTICO","Se esperaba "+esperados+" y se encontro "+symbl_name_from_id(cur_token.sym)));
+        errores.add(new Errores("SINTACTICO","Se esperaba "+esperados+" y se encontro "+symbl_name_from_id(cur_token.sym),cur_token.right,cur_token.left));
     }
 
     public void report_fatal_error(String message, Object info) {
@@ -48,7 +48,7 @@ terminal PISTA, EXT, ENTERO, DECIMAL, BOOLEAN, CHAR, CADENA, TRUE, FALSE, KEEP, 
     POR, ENTRE, MOD, POT, DEC, INC, SUMA_S, COR_A, COR_C, DOS_P, COMA, LLAVE_A, LLAVE_C, SAL, ARREGLO,
     ID, STRING, CARACTER, PAR_A, PAR_C, NUMERO, NUMERO_D, ASIGNAR, ERRORLEX, INDENT, DEDENT, UMINUS, PUNTOC;
 
-non terminal inicio, declaraciones, asigna, lista_declaracion, metodos_retorno, forma_ordenar, arreglo_cadena, arreglo_ordenar, incremento, decremento, suma_simplificada;
+non terminal inicio, declaraciones, lista_declaracion, metodos_retorno, forma_ordenar, arreglo_cadena, arreglo_ordenar, incremento, decremento, suma_simplificada;
 
 non terminal List<Pista> pistas;
 non terminal Pista pista;
@@ -78,8 +78,9 @@ non terminal Para para;
 non terminal Llamada llamada;
 non terminal Switch switch;
 non terminal Asignacion asignacion;
-non terminal List<Item> items, arreglo, asignar_arreglo;
-non terminal Item item;
+non terminal List<Item> items, arreglo;
+non terminal Item item, asignar_arreglo;
+non terminal Asigna asigna;
 
 precedence left SUMA, RESTA;
 precedence left POR, ENTRE, MOD;
@@ -214,7 +215,11 @@ parametros::=
 parametro::=
     tipo:e1 ID:e2
         {:
-            RESULT = new Parametro(e1.toString(),e2.toString());
+            RESULT = new Parametro(e1.toString(),e2.toString(), false, e2right, e2left);
+        :}
+|   tipo:e1 ARREGLO:e2 ID:e3
+        {:
+            RESULT = new Parametro(e1.toString(),e2.toString(), true, e2right, e2left);
         :}
 ;
 
@@ -236,6 +241,14 @@ instruccion::=
         {:
             RESULT = e1;
         :}
+|   paso:e1
+        {:
+            RESULT = e1;
+        :}   
+|   para:e1
+        {:
+            RESULT = e1;
+        :}   
 |   asignacion:e1
         {:
             RESULT = e1;
@@ -270,6 +283,47 @@ instruccion::=
         :}
 ;
 
+para::=
+    PARA:e5 PAR_A asigna:e1 PUNTOC expresion:e2 PUNTOC paso:e3 PAR_C INDENT inst:e4 DEDENT
+        {:
+            RESULT = new Para(e1, e2, e3, e4, e5right, e5left);
+        :}
+;
+
+paso::=
+    ID:e1 INC
+        {:
+            RESULT = new Paso(e1.toString(),null,Paso.TIPO.INCREMENTO, e1right, e1left);
+        :}
+|   ID:e1 DEC
+        {:
+            RESULT = new Paso(e1.toString(),null,Paso.TIPO.DECREMENTO, e1right, e1left);
+        :}
+|   ID:e1 SUMA_S expresion:e2
+        {:
+            RESULT = new Paso(e1.toString(),e2,Paso.TIPO.SIMPLIFICADA, e1right, e1left);
+        :}
+;
+
+asigna::=
+    ENTERO ID:e1 ASIGNAR expresion:e2
+        {:
+            RESULT = new Asigna(e1.toString(), e2, e1right, e1left);
+        :}
+|   VAR ENTERO ID:e1 ASIGNAR expresion:e2
+        {:
+            RESULT = new Asigna(e1.toString(), e2, e1right, e1left);
+        :}
+|   ID:e1
+        {:
+            RESULT = new Asigna(e1.toString(), null, e1right, e1left);
+        :}
+|   ID:e1 ASIGNAR expresion:e2
+        {:
+            RESULT = new Asigna(e1.toString(), e2, e1right, e1left);
+        :}
+;
+
 inst::=
     inst:e1 instruc:e2
     {:
@@ -284,7 +338,10 @@ inst::=
 ;
 
 llamada::=
-    id_llamada:e1 PAR_A param_enviar PAR_C
+    id_llamada:e1 PAR_A param_enviar:e2 PAR_C:e3
+        {:
+            RESULT = new Llamada(e1,e2, e3right, e3left);
+        :}
 ;
 
 param_enviar::=
@@ -313,36 +370,19 @@ parametros_enviar::=
 parametro_enviar::=
     expresion:e1
         {:
-            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.EXPRESION,null,null,null);
-        :}
-|   llamada:e1
-        {:
-            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.LLAMADA,null,e1,null);
+            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.EXPRESION,null,null,null,e1);
         :}
 |   notas:e1
         {:
-            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.NOTA,null,null,e1);
+            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.NOTA,null,null,e1,null);
         :}
 |   orden:e1
         {:
-            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.ORDEN,null,null,e1);
+            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.ORDEN,null,null,e1,null);
         :}
-|   LLAVE_A expresiones:e1 LLAVE_C
+|   LLAVE_A items:e1 LLAVE_C
         {:
-            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.ARREGLO,e1,null,null);
-        :}
-;
-
-expresiones::=
-    expresiones:e1 COMA expresion:e2
-        {:
-            RESULT = e1;
-            RESULT.add(e2);
-        :}
-|   expresion:e1
-        {:
-            RESULT = new LinkedList<>();
-            RESULT.add(e1);
+            RESULT = new ParametroEnviar(ParametroEnviar.Tipo.ARREGLO,new Item(e1,false,null),null,null,null);
         :}
 ;
 
@@ -457,13 +497,33 @@ declaracion_global::=
         :}
 ;
 
+dimensiones::=
+    dimensiones:e1 dimension:e2
+        {:
+            RESULT = e1;
+            RESULT.add(e2);
+        :}
+|   dimension:e1
+        {:
+            RESULT = new LinkedList<>();
+            RESULT.add(e1);
+        :}
+;
+
+dimension::=
+    COR_A expresion:e1 COR_C
+    {:
+        RESULT = e1;
+    :}
+;
+
 asignar_arreglo::=
         {:
             RESULT = null;
         :}
 |   ASIGNAR LLAVE_A items:e1 LLAVE_C
         {:
-            RESULT = e1;
+            RESULT = new Item(e1,false,null);
         :}
 ;
 
@@ -510,7 +570,7 @@ asignar::=
 ;
 
 tipo::=
-    ENTERO:e1
+    ENTERO
         {:
             RESULT = "numero";
         :}
@@ -535,27 +595,27 @@ tipo::=
 valor_puntual::=
     NUMERO:e1 
         {:
-            RESULT = new Primitivo("numero",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),Integer.parseInt(e1.toString())); 
+            RESULT = new Primitivo("numero",e1right,e1left,Integer.parseInt(e1.toString())); 
         :}
 |   STRING:e1 
         {: 
-            RESULT = new Primitivo("string",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),e1.toString()); 
+            RESULT = new Primitivo("string",e1right,e1left,e1.toString()); 
         :}
 |   CARACTER:e1 
         {: 
-            RESULT = new Primitivo("caracter",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),e1.toString().charAt(0)); 
+            RESULT = new Primitivo("caracter",e1right,e1left,e1.toString().charAt(0)); 
         :}
 |   TRUE:e1 
         {: 
-            RESULT = new Primitivo("boolean",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),true);
+            RESULT = new Primitivo("boolean",e1right,e1left,true);
         :}
 |   FALSE:e1 
         {: 
-            RESULT = new Primitivo("boolean",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),false);
+            RESULT = new Primitivo("boolean",e1right,e1left,false);
         :}
 |   NUMERO_D:e1 
         {: 
-            RESULT = new Primitivo("decimal",(java_cup.runtime.Symbol) CUP$parser$stack.peek(),Double.parseDouble(e1.toString())); 
+            RESULT = new Primitivo("decimal",e1right,e1left,Double.parseDouble(e1.toString())); 
         :}
 ;
 
@@ -565,117 +625,98 @@ expresion::=
             RESULT = new Expresion(e1,e2,Expresion.Operacion.SUMA);
         :}
 |   expresion:e1 RESTA expresion:e2 {:
-            imp("Encuentra menos"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.RESTA);
         :}
 |   expresion:e1 POR expresion:e2 {: 
-            imp("Encuentra por");
             RESULT = new Expresion(e1,e2,Expresion.Operacion.POR);
         :}
 |   expresion:e1 ENTRE expresion:e2
         {: 
-            imp("Encuentra division"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.ENTRE);
         :}
 |   expresion:e1 POT expresion:e2
         {: 
-            imp("Encuentra potencia"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.POT);
         :}
 |   expresion:e1 MOD expresion:e2 
         {: 
-            imp("Encuentra modulo"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.MOD);
         :}
 |   RESTA expresion:e1 
         {: 
-            imp("Encuentra negativo"); 
             RESULT = new Expresion(e1,Expresion.Operacion.NEGATIVO);
         :}
 %prec UMINUS
 |   expresion:e1 MAYOR expresion:e2
         {: 
-            imp("Encuentra mayor"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.MAYOR);
         :}
 |   expresion:e1 MENOR expresion:e2 
         {: 
-            imp("Encuentra menor"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.MENOR);
         :}
 |   expresion:e1 MENOR_I expresion:e2 
         {: 
-            imp("Encuentra menor igual"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.MENOR_I);
         :}
 |   expresion:e1 MAYOR_I expresion:e2 
         {: 
-            imp("Encuentra mayor igual"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.MAYOR_I);
         :}
 |   expresion:e1 IGUAL expresion:e2 
         {: 
-            imp("Encuentra igual"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.IGUAL);
         :}
 |   expresion:e1 DIFF expresion:e2 
         {: 
-            imp("Encuentra diferente"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.DIFF);
         :}
 |   expresion:e1 AND expresion:e2
         {: 
-            imp("Encuentra and"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.AND);
         :}
 |   expresion:e1 OR expresion:e2 
         {: 
-            imp("Encuentra or"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.OR);
         :}
 |   expresion:e1 XOR expresion:e2 
         {: 
-            imp("Encuentra xor"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.XOR);
         :}
 |   expresion:e1 NAND expresion:e2 
         {: 
-            imp("Encuentra nand"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.NAND);
         :}
 |   expresion:e1 NOR expresion:e2 
         {: 
-            imp("Encuentra nor"); 
             RESULT = new Expresion(e1,e2,Expresion.Operacion.NOR);
         :}
 |   valor_puntual:e1 
         {: 
-            imp("Encuentra valor"); 
             RESULT = new Expresion(e1,Expresion.Operacion.PRIMITIVO);
         :}
 |   PAR_A expresion:e1 PAR_C
         {: 
-            imp("Encuentra parentesis"); 
             RESULT = e1;
         :}
 |   ID:e1
         {: 
-            imp("Encuentra arreglo"); 
             RESULT = new Expresion(new Identificador(e1.toString(),null,false,e1left,e1right),Expresion.Operacion.IDENTIFICADOR);
         :}
 |   ID:e1 dimensiones:e2 
         {: 
-            imp("Encuentra arreglo"); 
-            RESULT = new Expresion(new Identificador(e1.toString(),e2,true,e1left,e1right),Expresion.Operacion.IDENTIFICADOR);
+            RESULT = new Expresion(new Identificador(e1.toString(),e2,true,e1left,e1right),Expresion.Operacion.ARREGLO);
         :}
 |   NOT expresion:e1 
         {: 
-            imp("Encuentra not"); 
             RESULT = new Expresion(e1,Expresion.Operacion.NOT);
+        :}
+|   llamada:e1 
+        {: 
+            RESULT = new Expresion(new Metodo_Retorno(e1),Expresion.Operacion.LLAMADA);
         :}
 |   NULO ID:e1
         {: 
-            imp("Encuentra arreglo"); 
             RESULT = new Expresion(new Identificador(e1.toString(),null,false,e1left,e1right),Expresion.Operacion.NULO);
         :}
 ;
@@ -698,15 +739,12 @@ si::=
 asignacion::=
     ID:e1 ASIGNAR expresion:e2
         {: 
-            List<Expresion> exp = new LinkedList<>();
-            exp.add(e2);
-            RESULT = new Asignacion(e1.toString(),exp,null,e1right,e1left);
+            RESULT = new Asignacion(e1.toString(),e2,null,e1right,e1left);
         :}
 |    ID:e1 dimensiones:e3 ASIGNAR expresion:e2 
         {: 
-            List<Expresion> exp = new LinkedList<>();
-            exp.add(e2);
-            RESULT = new Asignacion(e1.toString(),exp,e3,e1right,e1left);
+            
+            RESULT = new Asignacion(e1.toString(),e2,e3,e1right,e1left);
         :}
 ;
 

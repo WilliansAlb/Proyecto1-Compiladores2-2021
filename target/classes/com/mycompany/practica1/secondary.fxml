@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.practica1.TextoControlador">
+<VBox stylesheets="@java-keywords.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.practica1.TextoControlador">
     <children>
         <MenuBar>
             <menus>
@@ -67,27 +67,104 @@
                            <content>
                               <SplitPane dividerPositions="0.33910533910533913" prefHeight="200.0" prefWidth="200.0">
                                  <items>
-                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                    <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
+                                      <items>
+                                          <VBox alignment="CENTER" prefHeight="773.0" prefWidth="231.0">
+                                             <children>
+                                                <Label text="LISTAS">
+                                                   <font>
+                                                      <Font name="Arial Bold" size="26.0" />
+                                                   </font>
+                                                </Label>
+                                                <ListView fx:id="listas" prefHeight="500.0" prefWidth="300.0" />
+                                                <HBox alignment="CENTER" fillHeight="false" prefHeight="16.0" prefWidth="343.0" spacing="10.0">
+                                                   <children>
+                                                      <Button mnemonicParsing="false" text="EDITAR" HBox.hgrow="ALWAYS">
+                                                         <graphic>
+                                                            <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@editor3.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic>
+                                                      </Button>
+                                                      <Button mnemonicParsing="false" text="ELIMINAR" HBox.hgrow="ALWAYS">
+                                                         <graphic>
+                                                            <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@error.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic>
+                                                      </Button>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+                                             <children>
+                                                <Label text="CANCIONES DE LA LISTA" VBox.vgrow="NEVER">
+                                                   <font>
+                                                      <Font name="Arial Bold" size="16.0" />
+                                                   </font>
+                                                </Label>
+                                                <ListView fx:id="canciones_lista" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                             </children>
+                                          </VBox>
+                                      </items>
+                                    </SplitPane>
+                                    <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
                                        <children>
-                                          <Label text="LISTAS">
+                                          <Label text="CANCIONES">
                                              <font>
                                                 <Font name="Arial Bold" size="26.0" />
                                              </font>
                                           </Label>
-                                          <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                                          <HBox alignment="CENTER" fillHeight="false" prefHeight="16.0" prefWidth="343.0">
+                                          <ListView fx:id="canciones" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                          <HBox alignment="TOP_CENTER" prefHeight="16.0" prefWidth="454.0" spacing="2.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <Button mnemonicParsing="false" text="MODIFICAR" HBox.hgrow="ALWAYS" />
-                                                <Button mnemonicParsing="false" text="ELIMINAR" HBox.hgrow="ALWAYS">
-                                                   <HBox.margin>
-                                                      <Insets left="20.0" />
-                                                   </HBox.margin>
+                                                <Button mnemonicParsing="false" text="CREAR">
+                                                   <graphic>
+                                                      <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@app.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                                <Button mnemonicParsing="false" text="EDITAR">
+                                                   <graphic>
+                                                      <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@editor3.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                                <Button mnemonicParsing="false" text="REPRODUCIR">
+                                                   <graphic>
+                                                      <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@play.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                                <Button mnemonicParsing="false" text="ELIMINAR">
+                                                   <graphic>
+                                                      <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@error.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
                                                 </Button>
                                              </children>
+                                             <opaqueInsets>
+                                                <Insets />
+                                             </opaqueInsets>
                                           </HBox>
-                                       </children>
-                                    </VBox>
-                                    <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" />
+                                       </children></VBox>
                                  </items></SplitPane>
                            </content>
                             </Tab>
@@ -106,10 +183,13 @@
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
-                                                      <Image url="@app.png" />
+                                                      <Image url="@coding.png" />
                                                    </image>
                                                 </ImageView>
                                              </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="OPEN_HAND" />
+                                             </cursor>
                                           </Button>
                                           <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" text="VER CONSOLA" textAlignment="CENTER">
                                              <graphic>
@@ -122,6 +202,9 @@
                                              <HBox.margin>
                                                 <Insets left="10.0" />
                                              </HBox.margin>
+                                             <cursor>
+                                                <Cursor fx:constant="OPEN_HAND" />
+                                             </cursor>
                                           </Button>
                                        </children>
                                     </HBox>
@@ -134,7 +217,7 @@
                            <graphic>
                               <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@app.png" />
+                                    <Image url="@editor3.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -187,7 +270,7 @@
                            <graphic>
                               <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@error.png" />
+                                    <Image url="@error2.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -206,7 +289,7 @@
                                     <NumberAxis autoRanging="false" minorTickLength="100.0" side="LEFT" tickUnit="50.0" upperBound="4000.0" />
                                 </yAxis>
                             </LineChart>
-                            <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="1000.0" text="Canción por defecto" textAlignment="CENTER" />
+                            <Label fx:id="cancion" alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="1000.0" text="Canción por defecto" textAlignment="CENTER" />
                             <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="12.0" prefWidth="668.0">
                                 <children>
                                     <Label fx:id="pasado" text="0:00" HBox.hgrow="NEVER" />

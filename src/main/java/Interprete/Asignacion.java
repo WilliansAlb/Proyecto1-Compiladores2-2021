@@ -17,12 +17,12 @@ import java.util.List;
 public class Asignacion extends Instruccion {
 
     String id;
-    List<Expresion> datos;
+    Expresion datos;
     List<Expresion> dimensiones;
     int linea;
     int columna;
 
-    public Asignacion(String id, List<Expresion> datos, List<Expresion> dimensiones, int linea, int columna) {
+    public Asignacion(String id, Expresion datos, List<Expresion> dimensiones, int linea, int columna) {
         this.id = id;
         this.datos = datos;
         this.dimensiones = dimensiones;
@@ -39,51 +39,75 @@ public class Asignacion extends Instruccion {
         Simbolo buscado = tabla.obtener(id);
         if (buscado != null) {
             if (dimensiones != null) {
-                for (Expresion dimensione : dimensiones) {
-                    Termino ab = dimensione.ejecutar(tabla);
-                    if (ab instanceof Primitivo) {
-                        Primitivo a = (Primitivo) dimensione.ejecutar(tabla);
-                        if (!a.getTipo().equalsIgnoreCase("excepcion")) {
-                            if (a.getTipo().equalsIgnoreCase("numero")) {
-                                dim.add((int) a.getValor());
+                if (buscado.getDimensiones() != null) {
+                    for (Expresion dimensione : dimensiones) {
+                        Termino ab = dimensione.ejecutar(tabla);
+                        if (ab instanceof Primitivo) {
+                            Primitivo a = (Primitivo) dimensione.ejecutar(tabla);
+                            if (!a.getTipo().equalsIgnoreCase("excepcion")) {
+                                if (a.getTipo().equalsIgnoreCase("numero")) {
+                                    dim.add((int) a.getValor());
+                                } else {
+                                    System.out.println("La dimensión no puede ser un no numero");
+                                    solo_numeros = false;
+                                    break;
+                                }
                             } else {
-                                System.out.println("La dimensión no puede ser un no numero");
+                                System.out.println("error");
                                 solo_numeros = false;
                                 break;
                             }
                         } else {
-                            System.out.println("error");
                             solo_numeros = false;
                             break;
                         }
-                    } else {
-                        solo_numeros = false;
-                        break;
+                    }
+                    if (solo_numeros) {
+                        List<Integer> di = buscado.getDimensiones();
+                        if (di.size() == dim.size()) {
+                            boolean correcto = true;
+                            for (int i = 0; i < di.size(); i++) {
+                                if (!(di.get(i) > dim.get(i))) {
+                                    correcto = false;
+                                    break;
+                                }
+                            }
+                            if (correcto) {
+                                int posicion = tabla.obtener(id).insertarEn(dim, di);
+                                Termino ab = datos.ejecutar(tabla);
+                                if (ab instanceof Primitivo) {
+                                    Primitivo a = (Primitivo) datos.ejecutar(tabla);
+                                    if (a.asignar(buscado.getTipo())) {
+                                        tabla.cambiar_arreglo(id, a.getValor(),posicion);
+                                    } else {
+                                        solo_valores = false;
+                                    }
+                                } else {
+                                    solo_valores = false;
+                                }
+                            }
+                        }
                     }
                 }
             } else {
-                dim.add(1);
-            }
-            if (solo_numeros) {
-                for (Expresion dato : datos) {
-                    Termino ab = dato.ejecutar(tabla);
+                if (solo_numeros) {
+                    Termino ab = datos.ejecutar(tabla);
                     if (ab instanceof Primitivo) {
-                        Primitivo a = (Primitivo) dato.ejecutar(tabla);
-                        if (a.asignar(buscado.getTipo())){
+                        Primitivo a = (Primitivo) ab;
+                        if (a.asignar(buscado.getTipo())) {
                             valores.add(a.getValor());
                         } else {
                             solo_valores = false;
-                            break;
                         }
                     } else {
                         solo_valores = false;
-                        break;
                     }
                 }
+                if (solo_numeros && solo_valores) {
+                    tabla.cambiar(id, valores);
+                }
             }
-            if (solo_numeros && solo_valores) {
-                tabla.cambiar(id, valores);
-            }
+
         } else {
             System.out.println("No existe la variable a la que le quiere asignar valor");
         }
@@ -106,11 +130,11 @@ public class Asignacion extends Instruccion {
         this.id = id;
     }
 
-    public List<Expresion> getExpresion() {
+    public Expresion getDatos() {
         return datos;
     }
 
-    public void setExpresion(List<Expresion> datos) {
+    public void setDatos(Expresion datos) {
         this.datos = datos;
     }
 

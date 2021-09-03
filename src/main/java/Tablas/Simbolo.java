@@ -65,5 +65,25 @@ public class Simbolo {
     public void setAmbito(int ambito) {
         this.ambito = ambito;
     }
+
+    /**
+     * Método que dice la posicion donde se debe insertar el valor
+     * @param coordenadas
+     * @param dimension
+     * @return la posicion en la lista donde se debe insertar el elemento
+     */
+    public int insertarEn(List<Integer> coordenadas, List<Integer> dimension) {
+        if (coordenadas.size()>1){
+            int coordenadaA = coordenadas.get(0);
+            for (int i = 1; i < dimension.size(); i++) {
+                coordenadaA*=dimension.get(i);
+            }
+            coordenadas.remove(0);
+            dimension.remove(0);
+            return coordenadaA+insertarEn(coordenadas,dimension);
+        } else {
+            return coordenadas.get(0);
+        }
+    }
     
 }

@@ -7,6 +7,7 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class Declaracion extends Instruccion {
     String tipo;
     List<Expresion> dimensiones;
     Expresion dato;
-    List<Item> items;
+    Item items;
     boolean esArreglo;
     boolean keep;
     int linea;
@@ -36,7 +37,7 @@ public class Declaracion extends Instruccion {
         this.columna = -1;
     }
 
-    public Declaracion(List<String> ids, String tipo, List<Expresion> dimensiones, Expresion dato, List<Item> items, boolean esArreglo, boolean keep, int linea, int columna) {
+    public Declaracion(List<String> ids, String tipo, List<Expresion> dimensiones, Expresion dato, Item items, boolean esArreglo, boolean keep, int linea, int columna) {
         this.ids = ids;
         this.tipo = tipo;
         this.dimensiones = dimensiones;
@@ -77,10 +78,20 @@ public class Declaracion extends Instruccion {
                     break;
                 }
             }
-            List<Expresion> lista_datos = new LinkedList<>();
             if (solo_numeros) {
-                for (Item item : items) {
-                    
+                if (items != null) {
+                    System.out.println("arreglo de "+dim.size()+" dimensiones");
+                    items.interpretar(valores, tipo, 0, dim, tabla);
+                    System.out.println(Arrays.toString(valores.toArray()));
+                } else {
+                    int cuantos = 1;
+                    for (Integer dim1 : dim) {
+                        cuantos*=dim1;
+                    }
+                    for (int i = 0; i < cuantos; i++) {
+                        valores.add(null);
+                    }
+                    System.out.println(cuantos);
                 }
             }
             if (solo_numeros && solo_valores) {
@@ -95,7 +106,6 @@ public class Declaracion extends Instruccion {
                 }
             }
         } else {
-            dim.add(1);
             if (solo_numeros) {
                 if (dato != null) {
                     Termino ab = dato.ejecutar(tabla);
@@ -117,10 +127,10 @@ public class Declaracion extends Instruccion {
             if (solo_numeros && solo_valores) {
                 for (String id : ids) {
                     if (keep) {
-                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        Simbolo nuevo = new Simbolo(id, tipo, null, valores, tabla.ambitos);
                         tabla.agregar(nuevo);
                     } else {
-                        Simbolo nuevo = new Simbolo(id, tipo, dim, valores, tabla.ambitos);
+                        Simbolo nuevo = new Simbolo(id, tipo, null, valores, tabla.ambitos);
                         tabla.agregar(nuevo);
                     }
                 }
@@ -165,11 +175,11 @@ public class Declaracion extends Instruccion {
         this.dato = dato;
     }
 
-    public List<Item> getItems() {
+    public Item getItems() {
         return items;
     }
 
-    public void setItems(List<Item> items) {
+    public void setItems(Item items) {
         this.items = items;
     }
 
@@ -180,7 +190,6 @@ public class Declaracion extends Instruccion {
     public void setEsArreglo(boolean esArreglo) {
         this.esArreglo = esArreglo;
     }
-
 
     public boolean isKeep() {
         return keep;

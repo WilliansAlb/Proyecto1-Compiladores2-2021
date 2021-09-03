@@ -25,6 +25,7 @@ public class Programa {
     }
    
     public void interpretar(Simbolos tabla){
+        tabla.ambitos = 0;
         for (Pista pista:pistas) {
             pista.interpretar(tabla);
         }

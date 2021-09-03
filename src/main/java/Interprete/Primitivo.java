@@ -17,18 +17,41 @@ public class Primitivo extends Termino {
 
     private Asignar as = new Asignar();
     private String tipo;
-    private Symbol simbolo;
+    private int linea;
+    private int columna;
     private Object valor;
 
-    public Primitivo(String tipo, Symbol simbolo, Object valor) {
+    public Primitivo(String tipo, int linea, int columna, Object valor) {
         this.tipo = tipo;
-        this.simbolo = simbolo;
+        this.linea = linea;
+        this.columna = columna;
         this.valor = valor;
     }
-    
+
+    public Asignar getAs() {
+        return as;
+    }
+
+    public void setAs(Asignar as) {
+        this.as = as;
+    }
+
     @Override
-    public Simbolos interpretar(Simbolos tabla) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getLinea() {
+        return linea;
+    }
+
+    public void setLinea(int linea) {
+        this.linea = linea;
+    }
+
+    @Override
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
     }
 
     public boolean asignar(String tipo_correcto){
@@ -106,7 +129,7 @@ public class Primitivo extends Termino {
     
     @Override
     public String toString() {
-        return "Primitivo tipo "+tipo+" con valor "+valor.toString()+" en la linea "+simbolo.left+" y columna "+simbolo.right;
+        return "Primitivo tipo "+tipo+" con valor "+valor.toString()+" en la linea "+linea+" y columna "+columna;
     }
 
     @Override
@@ -121,14 +144,4 @@ public class Primitivo extends Termino {
     public void setValor(Object valor) {
         this.valor = valor;
     }
-    
-    public Symbol getSymbol() {
-        return simbolo;
-    }
-
-    @Override
-    public Termino getValor2() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

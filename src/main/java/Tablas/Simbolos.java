@@ -5,7 +5,9 @@
  */
 package Tablas;
 
+import Interprete.Errores;
 import Interprete.Metodo;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,7 +101,7 @@ public class Simbolos extends LinkedList<Simbolo> {
             }
         }
         if (cambiada) {
-            System.out.println("La variable con identificador " + id + " fue cambiada");
+            //System.out.println("La variable con identificador " + id + " fue cambiada");
         } else {
             System.out.println("La variable con identificador " + id + " no fue declarada antes");
         }
@@ -150,5 +152,42 @@ public class Simbolos extends LinkedList<Simbolo> {
 
         }
         ambitos--;
+    }
+    
+    /**
+     * Método que inserta en la posición que se le manda el nuevo objeto
+     * @param id el identificador del arreglo a cambiar
+     * @param nuevo el objeto nuevo a insertar
+     * @param posicion la posicion donde se insertará
+     * @return true si logró hacer el cambio
+     */
+    public boolean cambiar_arreglo(String id, Object nuevo, int posicion){
+        for (Simbolo ss:this){
+            if (ss.getId().equalsIgnoreCase(id)){
+                ss.getDatos().set(posicion, nuevo);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean agregar_errores(Errores agregar){
+        for (Simbolo ss:this){
+            if (ss.getId().equalsIgnoreCase("$errores")){
+                ss.getDatos().add(agregar);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean agregar_error(String tipo_error, String razon, int linea, int columna){
+        for (Simbolo ss:this){
+            if (ss.getId().equalsIgnoreCase("$errores")){
+                ss.getDatos().add(new Errores(tipo_error,razon,linea,columna));
+                return true;
+            }
+        }
+        return false;
     }
 }

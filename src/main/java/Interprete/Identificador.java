@@ -46,6 +46,7 @@ public class Identificador extends Termino{
         this.dimensiones = dimensiones;
     }
     
+    @Override
     public int getLinea() {
         return linea;
     }
@@ -54,11 +55,6 @@ public class Identificador extends Termino{
         this.linea = linea;
     }
     
-    @Override
-    public Simbolos interpretar(Simbolos tabla) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     @Override
     public String toString() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -78,17 +74,13 @@ public class Identificador extends Termino{
         this.isArreglo = isArreglo;
     }
 
+    @Override
     public int getColumna() {
         return columna;
     }
 
     public void setColumna(int columna) {
         this.columna = columna;
-    }
-
-    @Override
-    public Termino getValor2() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
