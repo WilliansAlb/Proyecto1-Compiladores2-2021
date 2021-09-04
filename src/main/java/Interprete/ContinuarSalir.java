@@ -25,6 +25,7 @@ public class ContinuarSalir extends Instruccion {
     }
 
     public ContinuarSalir() {
+        
     }
 
     public String getTipo() {
@@ -61,7 +62,7 @@ public class ContinuarSalir extends Instruccion {
 
     @Override
     public void interpretar(Simbolos tabla) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     @Override

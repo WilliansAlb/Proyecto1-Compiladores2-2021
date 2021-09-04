@@ -38,9 +38,8 @@ public class Pista {
         tabla.agregar_sistema("$reproducir", "$reproducir", nuevo);
         tabla.agregar_sistema("$mensaje", "$mensaje", "");
         tabla.agregar_sistema("$errores", "$errores", listado);
-        for (Declaracion declaracione : declaraciones) {
-            declaracione.interpretar(tabla);
-        }
+        agregar_extiende(tabla);
+        agregar_declaraciones(tabla);
         int principales = 0;
         Metodo principal = new Metodo();
         for (Metodo metodo : metodos) {
@@ -51,10 +50,37 @@ public class Pista {
                 listado_metodos.add(metodo);
             }
         }
+        tabla.agregar_sistema("$metodos", "$metodos", listado_metodos);
         if (principales == 1) {
-            principal.interpretar(tabla, metodos, null);
+            principal.interpretar(tabla);
         } else {
-            //
+            System.out.println("tiene más de un método principal");
+        }
+    }
+    
+    public void agregar_declaraciones(Simbolos tabla){
+        for (Declaracion declaracione : declaraciones) {
+            declaracione.interpretar(tabla);
+        }
+    }
+    
+    public void agregar_extiende(Simbolos tabla){
+        List<Pista> pistas = (List)tabla.obtener("$pistas").getDatos().get(0);
+        if (extiende!=null){
+            for (int i = 0; i < pistas.size(); i++) {
+                if (extiende.contains(pistas.get(i).getId())){
+                    for (Declaracion declaracion : pistas.get(i).getDeclaraciones()) {
+                        if (declaracion.isKeep()){
+                            declaraciones.add(declaracion);
+                        }
+                    }
+                    for (Metodo metodo : pistas.get(i).getMetodos()) {
+                        if (metodo.isKeep() && !metodo.isPrincipal()){
+                            metodos.add(metodo);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -89,4 +115,38 @@ public class Pista {
         }
         return n;
     }
+
+    public List<Metodo> getMetodos() {
+        return metodos;
+    }
+
+    public void setMetodos(List<Metodo> metodos) {
+        this.metodos = metodos;
+    }
+
+    public List<Declaracion> getDeclaraciones() {
+        return declaraciones;
+    }
+
+    public void setDeclaraciones(List<Declaracion> declaraciones) {
+        this.declaraciones = declaraciones;
+    }
+
+    public List<String> getExtiende() {
+        return extiende;
+    }
+
+    public void setExtiende(List<String> extiende) {
+        this.extiende = extiende;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    
 }

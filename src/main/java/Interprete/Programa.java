@@ -26,6 +26,7 @@ public class Programa {
    
     public void interpretar(Simbolos tabla){
         tabla.ambitos = 0;
+        tabla.agregar_sistema("$pistas", "$pistas", pistas);
         for (Pista pista:pistas) {
             pista.interpretar(tabla);
         }

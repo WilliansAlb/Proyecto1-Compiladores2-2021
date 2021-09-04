@@ -59,18 +59,30 @@ public class Retorno extends Instruccion {
 
     @Override
     public void interpretar(Simbolos tabla) {
-        Simbolo retorno = tabla.obtener("$retorno");
+        Simbolo retorno = tabla.ultimo_retorno();
         Termino a = valor.ejecutar(tabla);
         if (a instanceof Primitivo) {
             Primitivo p = (Primitivo) a;
-            if (p.asignar(retorno.getTipo())) {
-                tabla.obtener("$retorno").getDatos().set(0, p.getValor());
+            if (retorno != null) {
+                if (!retorno.getTipo().equalsIgnoreCase("void")) {
+                    if (p.asignar(retorno.getTipo())) {
+                        tabla.ultimo_retorno().getDatos().set(0, p.getValor());
+                    } else {
+                        tabla.ultimo_retorno().getDatos().set(0, p.getValor());
+                        tabla.ultimo_retorno().setTipo("excepcion");
+                    }
+                } else {
+                    if (retorno.getDatos().get(0)==null){
+                        System.out.println("acá");
+                        tabla.ultimo_retorno().getDatos().set(0, "excepcion");
+                        tabla.agregar_error("Semantico", "El metodo es de tipo void y se le está intentando retornar un valor", linea, columna);
+                    }
+                }
             } else {
-                tabla.obtener("$retorno").getDatos().set(0, p.getValor());
-                tabla.obtener("$retorno").setTipo("excepcion");
+                tabla.agregar_error("Semantico", "No se ha declarado el retorno", linea, columna);
             }
         } else {
-            tabla.obtener("$retorno").getDatos().set(0,"Error en la linea "+linea+", no es un tipo de dato primitivo el return");
+            tabla.obtener("$retorno").getDatos().set(0, "Error en la linea " + linea + ", no es un tipo de dato primitivo el return");
             tabla.obtener("$retorno").setTipo("excepcion");
         }
     }

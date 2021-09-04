@@ -25,33 +25,46 @@ public class Mientras extends Instruccion {
         this.linea = linea;
         this.columna = columna;
     }
-    
+
     @Override
     public void interpretar(Simbolos tabla) {
-        if (((Primitivo)condicion.ejecutar(tabla)).getTipo().equalsIgnoreCase("boolean")){
+        if (((Primitivo) condicion.ejecutar(tabla)).getTipo().equalsIgnoreCase("boolean")) {
             int conteo = 0;
-            while((boolean)((Primitivo)condicion.ejecutar(tabla)).getValor()){
-                for (Instruccion ins:instrucciones){
-                    if (ins instanceof ContinuarSalir){
-                        ContinuarSalir c = (ContinuarSalir)ins;
-                        if (c.isContinuar()){
+            tabla.ambitos++;
+            while ((boolean) ((Primitivo) condicion.ejecutar(tabla)).getValor()) {
+                for (Instruccion ins : instrucciones) {
+                    if (ins instanceof ContinuarSalir) {
+                        ContinuarSalir c = (ContinuarSalir) ins;
+                        if (c.isContinuar()) {
                             break;
                         } else {
+                            tabla.eliminar_ambito();
                             return;
                         }
-                    } else if (ins instanceof Retorno){
-                        System.out.println("retorno");
+                    } else if (ins instanceof Retorno) {
+                        tabla.eliminar_ambito();
                         return;
                     } else {
-                        ins.interpretar(tabla);
+                        if (ins != null) {
+                            ins.interpretar(tabla);
+                        }
+                        if (tabla.tieneBreak()) {
+                            tabla.eliminar_ambito();
+                            return;
+                        }
+                        if (tabla.tieneRetorno()){
+                            tabla.eliminar_ambito();
+                            return;
+                        }
                     }
                 }
-                if (conteo==20){
+                if (conteo == 20) {
                     System.out.println("No tiene condicion de salida");
                     break;
                 }
                 conteo++;
             }
+            tabla.eliminar_ambito();
         } else {
             System.out.println("La condición no tiene un valor booleano aceptable");
         }
@@ -93,6 +106,5 @@ public class Mientras extends Instruccion {
     public void setColumna(int columna) {
         this.columna = columna;
     }
-    
-    
+
 }

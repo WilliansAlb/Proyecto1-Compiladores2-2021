@@ -22,6 +22,8 @@ public class Metodo {
     boolean retorno;
     boolean keep;
     boolean principal;
+    Object objeto_retorno;
+    String tipo_retorno;
 
     public Metodo(String id, String tipo, List<Parametro> parametros, List<Instruccion> instrucciones, boolean retorno, boolean keep, boolean principal) {
         this.id = id;
@@ -34,28 +36,46 @@ public class Metodo {
     }
 
     public Metodo() {
-        
+
     }
 
-    public void interpretar(Simbolos tabla, List<Metodo> metodos, List<Expresion> param) {
+    public void interpretar(Simbolos tabla) {
         tabla.ambitos++;
-        if (retorno){
-            tabla.agregar_sistema("$retorno", tipo, null);
-        }
-        if (parametros == null) {
-            for (Instruccion instruccion : instrucciones) {
-                instruccion.interpretar(tabla);
-            }
+        if (retorno) {
+            tabla.agregar_sistema("$retorno"+id, tipo, null);
         } else {
-            
+            tabla.agregar_sistema("$retorno"+id, "void", null);
         }
-        if (retorno){
-            if (tabla.obtener("$retorno").getDatos().get(0)==null){
-                System.out.println("falta retorno");
+        for (Instruccion instruccion : instrucciones) {
+            instruccion.interpretar(tabla);
+        }
+        if (retorno) {
+            if (tabla.ultimo_retorno() == null) {
+                tabla.agregar_error("Semantico", "Falta el retorno del metodo "+id, -1, -1);
+            } else {
+                Simbolo ultimo = tabla.ultimo_retorno();
+                if (ultimo != null) {
+                    if (!ultimo.getTipo().equalsIgnoreCase("excepcion")) {
+                        objeto_retorno = ultimo.getDatos().get(0);
+                        tipo_retorno = ultimo.getTipo();
+                    }
+                }
             }
         }
-        for (Simbolo tabla1 : tabla) {
-            System.out.println("id: "+tabla1.getId()+" valor: "+tabla1.getDatos().get(0));
+        System.out.println("Ambito del metodo " + id);
+        tabla.forEach(tabla1 -> {
+            if (tabla1.getDatos() != null) {
+                if (tabla1.getDatos().get(0) != null) {
+                    System.out.println("id: " + tabla1.getId() + " valor: " + tabla1.getDatos().get(0));
+                } else {
+                    System.out.println(tabla1.getId());
+                }
+            } else {
+                System.out.println(tabla1.getId());
+            }
+        });
+        for (int i = 0; i < 2; i++) {
+            System.out.println("------------------------------------------------------------");
         }
         tabla.eliminar_ambito();
     }

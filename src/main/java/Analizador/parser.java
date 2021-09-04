@@ -1487,7 +1487,7 @@ class CUP$parser$actions {
 		int e2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object e2 = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		
-            RESULT = new Parametro(e1.toString(),e2.toString(), false, e2right, e2left);
+            RESULT = new Parametro(e2.toString(),e1.toString(), false, e2right, e2left);
         
               CUP$parser$result = parser.getSymbolFactory().newSymbol("parametro",42, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1507,7 +1507,7 @@ class CUP$parser$actions {
 		int e3right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object e3 = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		
-            RESULT = new Parametro(e1.toString(),e2.toString(), true, e2right, e2left);
+            RESULT = new Parametro(e2.toString(),e1.toString(), true, e2right, e2left);
         
               CUP$parser$result = parser.getSymbolFactory().newSymbol("parametro",42, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }

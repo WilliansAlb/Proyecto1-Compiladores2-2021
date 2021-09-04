@@ -63,7 +63,21 @@ public class Llamada extends Instruccion {
                 interpretar_ordenar(tabla);
                 break;
             default:
+                interpretar_llamada(tabla);
                 break;
+        }
+    }
+
+    public void interpretar_llamada(Simbolos tabla) {
+        Metodo aux = tabla.obtener_metodo(id, parametros);
+        if (aux != null) {
+            aux.interpretar(tabla);
+            if (aux.objeto_retorno != null) {
+                retorno = aux.objeto_retorno;
+                retorno_tipo = aux.tipo_retorno;
+            }
+        } else {
+            System.out.println("No existe tal metodo");
         }
     }
 
@@ -76,12 +90,13 @@ public class Llamada extends Instruccion {
     public void interpretar_mensaje(Simbolos tabla) {
         if (parametros.size() == 1) {
             if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.EXPRESION) {
-                System.out.println("mensaje");
                 Mensaje n = new Mensaje(parametros.get(0).getExpresion(), linea, columna);
                 n.interpretar(tabla);
             } else {
-
+                interpretar_llamada(tabla);
             }
+        } else {
+            interpretar_llamada(tabla);
         }
     }
 
@@ -93,7 +108,6 @@ public class Llamada extends Instruccion {
      * @param tabla recibe la tabla de simbolos que se está utilizando
      */
     public void interpretar_reproducir(Simbolos tabla) {
-        System.out.println("reproducir");
         if (parametros.size() == 4) {
             if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.NOTA) {
                 if (parametros.get(1).getTipo() == ParametroEnviar.Tipo.EXPRESION
@@ -114,12 +128,16 @@ public class Llamada extends Instruccion {
                                     retorno = tiempo;
                                     retorno_tipo = "numero";
                                 } else {
-                                    tabla.agregar_error("Semantico", "Ocurrió un error al momento de asignar la reproduccion.",linea, columna);
+                                    tabla.agregar_error("Semantico", "Ocurrió un error al momento de asignar la reproduccion.", linea, columna);
                                 }
                             }
                         }
                     }
+                } else {
+                    interpretar_llamada(tabla);
                 }
+            } else {
+                interpretar_llamada(tabla);
             }
         }
     }
@@ -153,15 +171,19 @@ public class Llamada extends Instruccion {
                             retorno = sumarizar(encontrado.getTipo(), encontrado.getDatos());
                             retorno_tipo = "string";
                         } else {
-                            tabla.agregar_error( "Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo",linea,columna);
+                            tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea, columna);
                         }
                     } else {
-                        tabla.agregar_error( "Semantico", "No se ha definido el arreglo " + te.getId(),linea,columna);
+                        tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea, columna);
                     }
                 } else {
-                    tabla.agregar_error( "Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo",linea,columna);
+                    tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea, columna);
                 }
+            } else {
+                interpretar_llamada(tabla);
             }
+        } else {
+            interpretar_llamada(tabla);
         }
     }
 
@@ -181,10 +203,9 @@ public class Llamada extends Instruccion {
             if (parametros.get(1).getTipo() == ParametroEnviar.Tipo.ORDEN) {
                 if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.ARREGLO) {
                     Item arr = parametros.get(0).getArreglo();
-                    System.out.println((int) propiedades.get(1) + "a ver");
                     arr.obtener_arreglo(elementos, tabla, propiedades, 0);
                     if ((int) propiedades.get(1) > 1) {
-                        tabla.agregar_error("Semantico", "El arreglo es de mas de una dimension",linea,columna);
+                        tabla.agregar_error("Semantico", "El arreglo es de mas de una dimension", linea, columna);
                     } else {
                         retorno = ordenar(elementos, parametros.get(1).getNota_orden(), propiedades.get(0).toString()) ? 1 : 0;
                         retorno_tipo = "numero";
@@ -198,7 +219,7 @@ public class Llamada extends Instruccion {
                         if (encontrado != null) {
                             if (encontrado.getDimensiones() != null) {
                                 if (encontrado.getDimensiones().size() > 1) {
-                                    tabla.agregar_error("Semantico", "El identificador " + te.getId() + " le pertenece a un arreglo de mas de una dimension",linea,columna);
+                                    tabla.agregar_error("Semantico", "El identificador " + te.getId() + " le pertenece a un arreglo de mas de una dimension", linea, columna);
                                 } else {
                                     if (encontrado.getDatos() != null) {
                                         if (encontrado.getDatos().size() > 1) {
@@ -209,16 +230,20 @@ public class Llamada extends Instruccion {
                                 }
                                 System.out.println(parametros.get(1).getNota_orden());
                             } else {
-                                tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo",linea,columna);
+                                tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea, columna);
                             }
                         } else {
-                            tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(),linea,columna);
+                            tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea, columna);
                         }
                     } else {
-                        tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo",linea,columna);
+                        tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea, columna);
                     }
                 }
+            } else {
+                interpretar_llamada(tabla);
             }
+        } else {
+            interpretar_llamada(tabla);
         }
     }
 
@@ -620,8 +645,10 @@ public class Llamada extends Instruccion {
                 retorno = elementos.size();
                 retorno_tipo = "numero";
             } else {
-                //tabla.agregar_error("Semantico", "El tipo de dato enviado no es aceptado por", linea, columna);
+                interpretar_llamada(tabla);
             }
+        } else {
+            interpretar_llamada(tabla);
         }
     }
 
@@ -635,8 +662,6 @@ public class Llamada extends Instruccion {
         if (parametros.size() == 2) {
             if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.EXPRESION
                     && parametros.get(1).getTipo() == ParametroEnviar.Tipo.EXPRESION) {
-                Termino ti = parametros.get(0).getExpresion().getValor();
-                Termino ca = parametros.get(1).getExpresion().getValor();
                 int tiempo = numero(parametros.get(0).getExpresion(), tabla);
                 if (tiempo > 0) {
                     int canal = numero(parametros.get(1).getExpresion(), tabla);
@@ -656,7 +681,11 @@ public class Llamada extends Instruccion {
                 } else {
                     System.out.println("No se pudo agregar el tiempo de espera");
                 }
+            } else {
+                interpretar_llamada(tabla);
             }
+        } else {
+            interpretar_llamada(tabla);
         }
     }
 

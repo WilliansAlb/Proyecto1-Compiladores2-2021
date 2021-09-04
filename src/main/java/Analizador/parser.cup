@@ -215,11 +215,11 @@ parametros::=
 parametro::=
     tipo:e1 ID:e2
         {:
-            RESULT = new Parametro(e1.toString(),e2.toString(), false, e2right, e2left);
+            RESULT = new Parametro(e2.toString(),e1.toString(), false, e2right, e2left);
         :}
 |   tipo:e1 ARREGLO:e2 ID:e3
         {:
-            RESULT = new Parametro(e1.toString(),e2.toString(), true, e2right, e2left);
+            RESULT = new Parametro(e2.toString(),e1.toString(), true, e2right, e2left);
         :}
 ;
 

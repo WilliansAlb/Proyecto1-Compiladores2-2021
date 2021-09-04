@@ -150,6 +150,7 @@ public class Item {
                         elementos.add(d.getValor());
                         if ((int) propiedades.get(DIMENSIONES) < dimension) {
                             propiedades.set(DIMENSIONES, dimension);
+                            ((List)propiedades.get(3)).add(dimension);
                         }
                     } else {
                         propiedades.set(ERRORES, true);

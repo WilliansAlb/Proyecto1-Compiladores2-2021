@@ -33,17 +33,39 @@ public class Hacer extends Instruccion {
         if (((Primitivo) condicion.ejecutar(tabla)).getTipo().equalsIgnoreCase("boolean")) {
             int conteo = 0;
             do {
+                tabla.ambitos++;
                 for (Instruccion ins : instrucciones) {
-                    ins.interpretar(tabla);
+                    if (ins instanceof ContinuarSalir) {
+                        ContinuarSalir c = (ContinuarSalir) ins;
+                        if (c.isContinuar()) {
+                            break;
+                        } else {
+                            tabla.eliminar_ambito();
+                            return;
+                        }
+                    } else if (ins instanceof Retorno) {
+                        tabla.eliminar_ambito();
+                        return;
+                    } else {
+                        if (ins != null) {
+                            ins.interpretar(tabla);
+                        }
+                        if (tabla.tieneBreak()) {
+                            tabla.eliminar_ambito();
+                            return;
+                        }
+                        if (tabla.tieneRetorno()){
+                            tabla.eliminar_ambito();
+                            return;
+                        }
+                    }
                 }
                 if (conteo>20){
-                    Simbolo prueba= tabla.obtener("");
-                    if (prueba instanceof List){
-                    
-                    }
+                    tabla.eliminar_ambito();
                     break;
                 }
                 conteo++;
+                tabla.eliminar_ambito();
             } while ((boolean) ((Primitivo) condicion.ejecutar(tabla)).getValor());
         } else {
             System.out.println("La condición no es un valor booleano");

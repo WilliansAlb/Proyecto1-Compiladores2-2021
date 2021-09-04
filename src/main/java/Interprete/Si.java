@@ -5,6 +5,7 @@
  */
 package Interprete;
 
+import Tablas.Simbolo;
 import Tablas.Simbolos;
 import java.util.List;
 
@@ -39,32 +40,75 @@ public class Si extends Instruccion {
                 if ((boolean) cond.getValor()) {
                     tabla.ambitos++;
                     for (Instruccion inst : instrucciones) {
-                        inst.interpretar(tabla);
+                        if (inst instanceof ContinuarSalir) {
+                            ContinuarSalir cs = (ContinuarSalir) inst;
+                            if (cs.isContinuar()) {
+                                break;
+                            } else {
+                                tabla.agregar(new Simbolo("$break", "$break", null, null, tabla.ambitos - 1));
+                                break;
+                            }
+                        } else if (inst instanceof Retorno) {
+                            inst.interpretar(tabla);
+                            break;
+                        } else {
+                            if (inst != null) {
+                                inst.interpretar(tabla);
+                            }
+                            if (tabla.tieneBreak()) {
+                                System.out.println("sube el break");
+                                tabla.subir_break();
+                                break;
+                            }
+                            if (tabla.tieneRetorno()) {
+                                System.out.println("sube el retorno");
+                                break;
+                            }
+                        }
                     }
                     tabla.eliminar_ambito();
-                    return;
                 } else {
                     if (sinosi != null) {
-                        tabla.ambitos++;
                         sinosi.interpretar(tabla);
-                        tabla.eliminar_ambito();
-                        return;
                     } else {
                         if (sino != null) {
                             tabla.ambitos++;
                             for (Instruccion inst : sino) {
-                                inst.interpretar(tabla);
+                                if (inst instanceof ContinuarSalir) {
+                                    ContinuarSalir cs = (ContinuarSalir) inst;
+                                    if (cs.isContinuar()) {
+                                        break;
+                                    } else {
+                                        tabla.agregar(new Simbolo("$break", "$break", null, null, tabla.ambitos - 1));
+                                        break;
+                                    }
+                                } else if (inst instanceof Retorno) {
+                                    inst.interpretar(tabla);
+                                    break;
+                                } else {
+                                    if (inst != null) {
+                                        inst.interpretar(tabla);
+                                    }
+                                    if (tabla.tieneBreak()) {
+                                        System.out.println("subir break");
+                                        tabla.subir_break();
+                                        break;
+                                    }
+                                    if (tabla.tieneRetorno()) {
+                                        System.out.println("sube el retorno");
+                                        break;
+                                    }
+                                }
                             }
                             tabla.eliminar_ambito();
-                            return;
                         }
                     }
                 }
             } else {
-                System.out.println("La condición no es un valor booleano");
+                tabla.agregar_error("Semantico", "La condición no es del tipo booleano", linea, columna);
             }
         } else {
-            System.out.println("La condición no es un valor booleano");
+            tabla.agregar_error("Semantico", "La condición no es de un tipo valido", linea, columna);
         }
     }
 

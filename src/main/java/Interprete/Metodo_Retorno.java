@@ -26,7 +26,6 @@ public class Metodo_Retorno extends Termino {
         if (llamada.retorno != null) {
             return new Primitivo(llamada.retorno_tipo,llamada.getLinea(), llamada.getColumna(), llamada.retorno);
         } else {
-            System.out.println("acá 2");
             return new Primitivo("excepcion", llamada.getLinea(), llamada.getColumna(), "Este método no devuelve ningun valor");
         }
     }

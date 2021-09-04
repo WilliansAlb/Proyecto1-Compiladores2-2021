@@ -34,13 +34,12 @@ public class Para extends Instruccion {
 
     @Override
     public void interpretar(Simbolos tabla) {
+        tabla.ambitos++;
         if (asigna.interpretar(tabla)) {
             Termino c = condicion.ejecutar(tabla);
             if (c instanceof Primitivo) {
                 Primitivo co = (Primitivo) c;
                 if (co.getTipo().equalsIgnoreCase("boolean")) {
-                    tabla.ambitos++;
-                    boolean cortar = false;
                     while ((boolean) ((Primitivo) condicion.ejecutar(tabla)).getValor()) {
                         for (Instruccion instruccion : instrucciones) {
                             if (instruccion instanceof ContinuarSalir) {
@@ -52,17 +51,27 @@ public class Para extends Instruccion {
                                     return;
                                 }
                             } else {
-                                instruccion.interpretar(tabla);
+                                if (instruccion != null) {
+                                    instruccion.interpretar(tabla);
+                                }
+                                if (tabla.tieneBreak()) {
+                                    tabla.eliminar_ambito();
+                                    return;
+                                }
+                                if (tabla.tieneRetorno()) {
+                                    tabla.eliminar_ambito();
+                                    return;
+                                }
                             }
                         }
                         paso.interpretar(tabla);
                     }
-                    tabla.eliminar_ambito();
                 }
             }
         } else {
             tabla.agregar_error("Semantico", "No se pudo ejecutar el para, dado que la asignacion/declaracion está mal", linea, columna);
         }
+        tabla.eliminar_ambito();
     }
 
     @Override
