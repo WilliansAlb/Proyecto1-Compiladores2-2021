@@ -1,0 +1,37 @@
+PISTA komm
+	Principal()
+		para (entero e = 0; e < 20; e++)
+			Reproducir(re,2,100,4)
+		Metodo1()
+	keep Metodo1()
+		var entero a2 = 0
+		var entero a3 = 3
+		var entero a = 10
+		si (((a2+a3)>3)||a>9)
+			var entero a3 = 20+10
+			var entero a4 = 2
+			var entero a5 = 5
+			Reproducir(re#,5,1000,3)
+		sino si (falso)
+			var entero a34 = 34
+			Reproducir(do#,5,1000,3)
+PISTA nueva EXTIENDE komm
+	Principal()
+		Reproducir(do#,2,3000,4)
+		Metodo1()
+PISTA another EXTIENDE komm
+	var entero a = 10
+	keep var entero a09 = 22
+	var cadena ca = "hola"
+	Principal()
+		a = a + Reproducir(do,3,1000,9)+ Reproducir(re,5,2000,10)
+		Esperar(100,9)
+		Reproducir(mi,6,100,9)
+		Reproducir(re,2,100,10)
+		Esperar(100,9)
+		Reproducir(mi,6,100,9)
+		Reproducir(re,3,100,10)
+		mientras(a09<25)
+			a09 = a09 + 1
+			Reproducir(la,6,500,1)
+		Metodo1()

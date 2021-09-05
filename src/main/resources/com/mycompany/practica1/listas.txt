@@ -1,0 +1,12 @@
+{
+    lista:
+    {
+        nombre: "fiesta",
+        pistas: [bailable1, Salsa3, Cumbia2]
+    }
+    lista:
+    {
+        nombre: "fiesta2",
+        pistas: [bailable2, Salsa2, Cumbia1, Cumbia3]
+    }
+}

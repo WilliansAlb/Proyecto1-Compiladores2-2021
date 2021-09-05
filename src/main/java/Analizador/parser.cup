@@ -191,7 +191,7 @@ metodo::=
 
 param::=
         {:
-            RESULT = new LinkedList<>();
+            RESULT = null;
         :}
 |   parametros:e1
         {:

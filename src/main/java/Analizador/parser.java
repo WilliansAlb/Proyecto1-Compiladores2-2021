@@ -1423,7 +1423,7 @@ class CUP$parser$actions {
             {
               List<Parametro> RESULT =null;
 		
-            RESULT = new LinkedList<>();
+            RESULT = null;
         
               CUP$parser$result = parser.getSymbolFactory().newSymbol("param",44, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }

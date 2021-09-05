@@ -18,6 +18,9 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        Servidor s = new Servidor();
+        s.setDaemon(true);
+        //s.start();
         scene = new Scene(FXMLLoader.load(getClass().getResource("secondary.fxml")), 1900, 980);
         scene.getStylesheets().add(App.class.getResource("java-keywords.css").toExternalForm());
         stage.getIcons().add(new Image(App.class.getResource("icono.png").toExternalForm()));

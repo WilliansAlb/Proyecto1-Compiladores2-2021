@@ -23,6 +23,7 @@ public class Pista {
     List<Declaracion> declaraciones;
     List<String> extiende;
     String id;
+    Reproduccion rep;
 
     public Pista(List<Metodo> metodos, List<Declaracion> declaraciones, List<String> extiende, String id) {
         this.metodos = metodos;
@@ -32,7 +33,7 @@ public class Pista {
     }
 
     public void interpretar(Simbolos tabla) {
-        Reproduccion nuevo = new Reproduccion(null,id);
+        Reproduccion nuevo = new Reproduccion(null, id);
         List<Errores> listado = new LinkedList<>();
         ArrayList<Metodo> listado_metodos = new ArrayList<>();
         tabla.agregar_sistema("$reproducir", "$reproducir", nuevo);
@@ -47,6 +48,7 @@ public class Pista {
                 principal = metodo;
                 principales++;
             } else {
+                System.out.println("agrega metodo" + metodo.id);
                 listado_metodos.add(metodo);
             }
         }
@@ -57,31 +59,72 @@ public class Pista {
             System.out.println("tiene más de un método principal");
         }
     }
-    
-    public void agregar_declaraciones(Simbolos tabla){
+
+    public void interpretar(Simbolos tabla, boolean reproducir) {
+        Reproduccion nuevo = new Reproduccion(null, id);
+        List<Errores> listado = new LinkedList<>();
+        ArrayList<Metodo> listado_metodos = new ArrayList<>();
+        int principales = 0;
+        Metodo principal = new Metodo();
+        for (Metodo metodo : metodos) {
+            if (metodo.isPrincipal()) {
+                principal = metodo;
+                principales++;
+            } else {
+                listado_metodos.add(metodo);
+            }
+        }
+        //listado_metodos = verificar_repetidos(listado_metodos, tabla);
+        if (principales == 1) {
+            if (reproducir) {
+                tabla.ambitos++;
+                System.out.println("acá");
+                tabla.agregar_sistema("$reproducir", "$reproducir", nuevo);
+                tabla.agregar_sistema("$mensaje", "$mensaje", "");
+                tabla.agregar_sistema("$errores", "$errores", listado);
+                ArrayList<Metodo> m = agregar_extiende(tabla);
+                agregar_declaraciones(tabla);
+                if (!m.isEmpty()) {
+                    listado_metodos.addAll(m);
+                }
+                tabla.agregar_sistema("$metodos", "$metodos", listado_metodos);
+                principal.interpretar(tabla);
+                Simbolo s = tabla.obtener("$reproducir");
+                ((Pista) tabla.obtener("$pistas").getDatos().get(tabla.obtener("$pistas").getDatos().size() - 1)).setRep((Reproduccion) s.getDatos().get(0));
+                tabla.eliminar_ambito();
+            }
+        } else {
+            ((Pista) tabla.obtener("$pistas").getDatos().get(tabla.obtener("$pistas").getDatos().size() - 1)).setRep(null);
+        }
+    }
+
+    public void agregar_declaraciones(Simbolos tabla) {
         for (Declaracion declaracione : declaraciones) {
             declaracione.interpretar(tabla);
         }
     }
-    
-    public void agregar_extiende(Simbolos tabla){
-        List<Pista> pistas = (List)tabla.obtener("$pistas").getDatos().get(0);
-        if (extiende!=null){
+
+    public ArrayList<Metodo> agregar_extiende(Simbolos tabla) {
+        List<Object> pistas = (List) tabla.obtener("$pistas").getDatos();
+        ArrayList<Metodo> met = new ArrayList<>();
+        if (extiende != null) {
             for (int i = 0; i < pistas.size(); i++) {
-                if (extiende.contains(pistas.get(i).getId())){
-                    for (Declaracion declaracion : pistas.get(i).getDeclaraciones()) {
-                        if (declaracion.isKeep()){
+                if (extiende.contains(((Pista) pistas.get(i)).getId())) {
+                    for (Declaracion declaracion : ((Pista) pistas.get(i)).getDeclaraciones()) {
+                        if (declaracion.isKeep()) {
                             declaraciones.add(declaracion);
                         }
                     }
-                    for (Metodo metodo : pistas.get(i).getMetodos()) {
-                        if (metodo.isKeep() && !metodo.isPrincipal()){
-                            metodos.add(metodo);
+                    for (Metodo metodo : ((Pista) pistas.get(i)).getMetodos()) {
+                        if (metodo.isKeep() && !metodo.isPrincipal()) {
+                            System.out.println("metodo agregado " + metodo.getId());
+                            met.add(metodo);
                         }
                     }
                 }
             }
         }
+        return met;
     }
 
     public ArrayList<Metodo> verificar_repetidos(ArrayList<Metodo> met, Simbolos tabla) {
@@ -103,8 +146,8 @@ public class Pista {
                                     break;
                                 }
                             }
-                        } 
-                        if (!rep){
+                        }
+                        if (!rep) {
                             n.add(temp);
                         }
                     } else {
@@ -114,6 +157,17 @@ public class Pista {
             }
         }
         return n;
+    }
+
+    public String obtener_duracion() {
+        if (rep != null) {
+            int tiempo = rep.max() * 50;
+            int ntiempo = tiempo / 1000;
+            int minutos = (int) (ntiempo / 60);
+            int sec = (int) (ntiempo % 60);
+            return (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+        }
+        return "--:--";
     }
 
     public List<Metodo> getMetodos() {
@@ -136,6 +190,14 @@ public class Pista {
         return extiende;
     }
 
+    public Reproduccion getRep() {
+        return rep;
+    }
+
+    public void setRep(Reproduccion rep) {
+        this.rep = rep;
+    }
+
     public void setExtiende(List<String> extiende) {
         this.extiende = extiende;
     }
@@ -147,6 +209,5 @@ public class Pista {
     public void setId(String id) {
         this.id = id;
     }
-    
-    
+
 }

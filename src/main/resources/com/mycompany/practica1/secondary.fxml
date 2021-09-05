@@ -54,7 +54,7 @@
                 <items>
                     <VBox alignment="TOP_CENTER" prefHeight="855.0" prefWidth="696.0">
                <children>
-                    <TabPane prefHeight="1003.0" prefWidth="693.0">
+                    <TabPane fx:id="tabs" prefHeight="1003.0" prefWidth="693.0">
                         <tabs>
                             <Tab closable="false" text="Biblioteca">
                            <graphic>
@@ -123,7 +123,7 @@
                                           <ListView fx:id="canciones" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="TOP_CENTER" prefHeight="16.0" prefWidth="454.0" spacing="2.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <Button mnemonicParsing="false" text="CREAR">
+                                                <Button fx:id="btn_crear" mnemonicParsing="false" onAction="#crear" text="CREAR">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -141,7 +141,7 @@
                                                       </ImageView>
                                                    </graphic>
                                                 </Button>
-                                                <Button mnemonicParsing="false" text="REPRODUCIR">
+                                                <Button mnemonicParsing="false" onAction="#play_seleccion" text="REPRODUCIR">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -222,6 +222,60 @@
                               </ImageView>
                            </graphic>
                             </Tab>
+                        <Tab closable="false" text="Editor de listas">
+                           <content>
+                              <VBox alignment="CENTER" prefWidth="693.0">
+                                 <children>
+                                    <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="39.0" prefWidth="240.0" text="Editor de listas" textAlignment="CENTER">
+                                       <font>
+                                          <Font name="Arial Bold" size="26.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" text="INTERPRETAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@coding.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="OPEN_HAND" />
+                                             </cursor>
+                                          </Button>
+                                          <Button fx:id="btn_consola1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" text="VER CONSOLA" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fx:id="con1" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@ver.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                             <cursor>
+                                                <Cursor fx:constant="OPEN_HAND" />
+                                             </cursor>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <StackPane fx:id="area1" prefHeight="645.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
+                                    <TextField fx:id="donde1" VBox.vgrow="ALWAYS" />
+                                    <TextArea fx:id="consola1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="192.0" prefWidth="693.0" promptText="Consola" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                           </content>
+                           <graphic>
+                              <ImageView fitHeight="99.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@editor3.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Tab>
                         <Tab text="Errores">
                           <content>
                               <VBox alignment="TOP_CENTER">

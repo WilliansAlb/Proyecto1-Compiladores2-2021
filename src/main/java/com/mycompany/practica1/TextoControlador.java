@@ -8,14 +8,22 @@ package com.mycompany.practica1;
 import Analizador.Lexer;
 import Analizador.parser;
 import Interprete.Expresion;
+import Interprete.Pista;
 import Interprete.Primitivo;
 import Interprete.Programa;
 import Interprete.Reproduccion;
 import Interprete.Termino;
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +31,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java_cup.runtime.Symbol;
@@ -49,7 +59,10 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -87,12 +100,15 @@ public class TextoControlador implements Initializable {
 
     boolean reproduciendo = true;
     CodeArea codeArea;
+    CodeArea codeArea1;
     @FXML
     public LineChart myChart;
     @FXML
     public Button play;
     @FXML
     public StackPane area;
+    @FXML
+    public StackPane area1;
     @FXML
     public ProgressBar progreso;
     @FXML
@@ -110,15 +126,20 @@ public class TextoControlador implements Initializable {
     @FXML
     public TextArea consola;
     @FXML
+    public TextArea consola1;
+    @FXML
     public ImageView repro;
     @FXML
     public ImageView parar_img;
     @FXML
     public ImageView con;
     public TextField donde;
+    public TextField donde1;
     public Reproduccion actual;
     @FXML
     public ListView<Lista> listas;
+    @FXML
+    public TabPane tabs;
     @FXML
     public ListView<Cancion> canciones_lista;
     @FXML
@@ -130,20 +151,6 @@ public class TextoControlador implements Initializable {
 
     Task nuevo;
 
-    private static final String[] KEYWORDS = new String[]{
-        "Pista", "PISTA", "pista", "extiende", "EXTIENDE", "Extiende", "Entero", "entero", "ENTERO",
-        "doble", "DOBLE", "Doble", "Boolean", "boolean", "BOOLEAN", "Caracter", "CARACTER", "caracter",
-        "cadena", "CADENA", "Cadena", "verdadero", "Verdadero", "VERDADERO", "True", "true", "TRUE",
-        "False", "false", "FALSE", "falso", "Falso", "FALSO", "Keep", "keep", "KEEP", "var", "VAR", "Var",
-        "Si", "SI", "si", "Sino", "SINO", "sino", "Salir", "SALIR", "salir", "Continuar", "continuar",
-        "CONTINUAR", "Switch", "switch", "SWITCH", "Caso", "CASO", "caso", "default", "Default", "DEFAULT",
-        "Para", "para", "PARA", "Mientras", "mientras", "MIENTRAS", "hacer", "HACER", "Hacer", "retorna",
-        "Retorna", "RETORNA", "Reproducir", "reproducir", "REPRODUCIR", "Esperar", "ESPERAR", "esperar",
-        "Ordenar", "ORDENAR", "ordenar", "Ascendente", "ASCENDENTE", "ascendente", "DESCENDENTE",
-        "descendente", "Descendente", "Pares", "pares", "PARES", "impares", "IMPARES", "Impares",
-        "primos", "Primos", "PRIMOS", "Sumarizar", "sumarizar", "SUMARIZAR", "Longitud", "LONGITUD",
-        "longitud", "Mensaje", "MENSAJE", "mensaje", "Principal", "PRINCIPAL", "principal"
-    };
     private static final String COMENTARIOS = ">>prueba comentario de linea\n"
             + ">>prueba comentario de linea\n"
             + "<- prueba comentario\n"
@@ -182,42 +189,14 @@ public class TextoControlador implements Initializable {
             + "			default\n"
             + "				Mensaje(\"No tendría que pasar\")\n"
             + "				Mensaje(\"No tendría que pasar2\")";
-    private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
-    private static final String PAREN_PATTERN = "\\(|\\)";
-    private static final String NUMBER_PATTERN = "[0-9]+\\.?[0-9]*";
-    private static final String ID_PATTERN = "([aA-zZ]|_)([aA-zZ]|[0-9]|_)*";
-    private static final String BRACE_PATTERN = "\\{|\\}";
-    private static final String BRACKET_PATTERN = "\\[|\\]";
-    private static final String SEMICOLON_PATTERN = "\\;";
-    private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
-    private static final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/" // for whole text processing (text blocks)
-            + "|" + "/\\*[^\\v]*" + "|" + "^\\h*\\*([^\\v]*|/)";  // for visible paragraph processing (line by line)
-
-    private static final Pattern PATTERN = Pattern.compile(
-            "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
-            + "|(?<PAREN>" + PAREN_PATTERN + ")"
-            + "|(?<BRACE>" + BRACE_PATTERN + ")"
-            + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
-            + "|(?<SEMICOLON>" + SEMICOLON_PATTERN + ")"
-            + "|(?<STRING>" + STRING_PATTERN + ")"
-            + "|(?<ID>" + ID_PATTERN + ")"
-            + "|(?<NUMBER>" + NUMBER_PATTERN + ")"
-            + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
-    );
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        codeArea = new CodeArea();
+        CodePista cp = new CodePista();
+        CodeLista cl = new CodeLista();
+        codeArea = cp.obtener();
+        codeArea1 = cl.obtener();
 
-        // add line numbers to the left of area
-        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.setContextMenu(new DefaultContextMenu());
-
-        codeArea.getVisibleParagraphs().addModificationObserver(
-                new VisibleParagraphStyler<>(codeArea, this::computeHighlighting)
-        );
-
-        // auto-indent: insert previous line's indents on enter
         final Pattern whiteSpace = Pattern.compile("^\\s+");
         codeArea.addEventHandler(KeyEvent.KEY_PRESSED, KE
                 -> {
@@ -232,19 +211,39 @@ public class TextoControlador implements Initializable {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
 
+        codeArea1.addEventHandler(KeyEvent.KEY_PRESSED, KE
+                -> {
+            if (KE.getCode() == KeyCode.ENTER) {
+                int caretPosition = codeArea1.getCaretPosition();
+                int currentParagraph = codeArea1.getCurrentParagraph();
+                Matcher m0 = whiteSpace.matcher(codeArea1.getParagraph(currentParagraph - 1).getSegments().get(0));
+                if (m0.find()) {
+                    Platform.runLater(() -> codeArea1.insertText(caretPosition, m0.group()));
+                }
+            }
+            donde1.setText("Linea: " + (codeArea1.getCurrentParagraph() + 1) + " Columna: " + codeArea1.getCaretColumn());
+        });
+
         codeArea.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent MO) -> {
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
-        String loop = "";
+        codeArea1.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent MO) -> {
+            donde1.setText("Linea: " + (codeArea1.getCurrentParagraph() + 1) + " Columna: " + codeArea1.getCaretColumn());
+        });
         codeArea.replaceText(0, 0, COMENTARIOS);
-        //codeArea.replaceText("");
-        //codeArea.setPrefSize(1000, 600);
+
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
+        donde1.setText("Linea: " + (codeArea1.getCurrentParagraph() + 1) + " Columna: " + codeArea1.getCaretColumn());
         donde.setEditable(false);
         area.getChildren().add(new VirtualizedScrollPane<>(codeArea));
-        codeArea.setBackground(new Background(new BackgroundFill(Paint.valueOf("#0d0030"), CornerRadii.EMPTY, Insets.EMPTY)));
+        donde1.setEditable(false);
+        area1.getChildren().add(new VirtualizedScrollPane<>(codeArea1));
+        codeArea.setBackground(new Background(new BackgroundFill(Paint.valueOf("lightgray"), CornerRadii.EMPTY, Insets.EMPTY)));
+        codeArea1.setBackground(new Background(new BackgroundFill(Paint.valueOf("lightgray"), CornerRadii.EMPTY, Insets.EMPTY)));
         consola.setVisible(false);
         consola.managedProperty().bind(consola.visibleProperty());
+        consola1.setVisible(false);
+        consola1.managedProperty().bind(consola1.visibleProperty());
         parar.setVisible(false);
         parar.managedProperty().bind(parar.visibleProperty());
         data.clear();
@@ -375,59 +374,18 @@ public class TextoControlador implements Initializable {
             }
         });
         canciones_lista.setItems(data_lista_cancion);
+
+        try {
+            leer_texto();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
-    private StyleSpans<Collection<String>> computeHighlighting(String text) {
-        Matcher matcher = PATTERN.matcher(text);
-        int lastKwEnd = 0;
-        StyleSpansBuilder<Collection<String>> spansBuilder
-                = new StyleSpansBuilder<>();
-        while (matcher.find()) {
-            String styleClass
-                    = matcher.group("KEYWORD") != null ? "keyword"
-                    : matcher.group("PAREN") != null ? "paren"
-                    : matcher.group("BRACE") != null ? "brace"
-                    : matcher.group("BRACKET") != null ? "bracket"
-                    : matcher.group("SEMICOLON") != null ? "semicolon"
-                    : matcher.group("STRING") != null ? "string"
-                    : matcher.group("NUMBER") != null ? "number"
-                    : matcher.group("ID") != null ? "id"
-                    : matcher.group("COMMENT") != null ? "comment"
-                    : null;
-            /* never happens */ assert styleClass != null;
-            spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
-            spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
-            lastKwEnd = matcher.end();
-        }
-        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
-        return spansBuilder.create();
-    }
-
-    private class VisibleParagraphStyler<PS, SEG, S> implements Consumer<ListModification<? extends Paragraph<PS, SEG, S>>> {
-
-        private final GenericStyledArea<PS, SEG, S> area;
-        private final Function<String, StyleSpans<S>> computeStyles;
-        private int prevParagraph, prevTextLength;
-
-        public VisibleParagraphStyler(GenericStyledArea<PS, SEG, S> area, Function<String, StyleSpans<S>> computeStyles) {
-            this.computeStyles = computeStyles;
-            this.area = area;
-        }
-
-        @Override
-        public void accept(ListModification<? extends Paragraph<PS, SEG, S>> lm) {
-            if (lm.getAddedSize() > 0) {
-                int paragraph = Math.min(area.firstVisibleParToAllParIndex() + lm.getFrom(), area.getParagraphs().size() - 1);
-                String text = area.getText(paragraph, 0, paragraph, area.getParagraphLength(paragraph));
-
-                if (paragraph != prevParagraph || text.length() != prevTextLength) {
-                    int startPos = area.getAbsolutePosition(paragraph, 0);
-                    Platform.runLater(() -> area.setStyleSpans(startPos, computeStyles.apply(text)));
-                    prevTextLength = text.length();
-                    prevParagraph = paragraph;
-                }
-            }
-        }
+    @FXML
+    private void crear() {
+        SingleSelectionModel<Tab> selectionModel = tabs.getSelectionModel();
+        selectionModel.select(1);
     }
 
     @FXML
@@ -458,11 +416,13 @@ public class TextoControlador implements Initializable {
     private void iniciar(Programa p) {
         Simbolos s = new Simbolos();
         s.agregar_sistema("$consola", "$consola", consola);
-        p.interpretar(s);
+        p.interpretar(s, false);
         Simbolo rep = s.obtener("$reproducir");
         Simbolo msg = s.obtener("$mensaje");
         if (rep != null) {
             empezar_reproduccion(rep);
+        } else {
+            System.out.println("error");
         }
     }
 
@@ -480,6 +440,7 @@ public class TextoControlador implements Initializable {
                 faltante.setText(tiempo_pasado);
                 cancion.setText(actual.getId());
                 nuevo = new Task(myChart, progreso, pasado, actual);
+                nuevo.setDaemon(true);
                 nuevo.start();
                 iniciando = false;
             }
@@ -496,52 +457,6 @@ public class TextoControlador implements Initializable {
         }
     }
 
-    private class DefaultContextMenu extends ContextMenu {
-
-        private MenuItem fold, unfold, print;
-
-        public DefaultContextMenu() {
-            fold = new MenuItem("Fold selected text");
-            fold.setOnAction(AE -> {
-                hide();
-                fold();
-            });
-
-            unfold = new MenuItem("Unfold from cursor");
-            unfold.setOnAction(AE -> {
-                hide();
-                unfold();
-            });
-
-            print = new MenuItem("Print");
-            print.setOnAction(AE -> {
-                hide();
-                print();
-            });
-
-            getItems().addAll(fold, unfold, print);
-        }
-
-        /**
-         * Folds multiple lines of selected text, only showing the first line
-         * and hiding the rest.
-         */
-        private void fold() {
-            ((CodeArea) getOwnerNode()).foldSelectedParagraphs();
-        }
-
-        /**
-         * Unfold the CURRENT line/paragraph if it has a fold.
-         */
-        private void unfold() {
-            CodeArea area = (CodeArea) getOwnerNode();
-            area.unfoldParagraphs(area.getCurrentParagraph());
-        }
-
-        private void print() {
-            System.out.println(((CodeArea) getOwnerNode()).getText());
-        }
-    }
     boolean iniciando = true;
 
     @FXML
@@ -550,6 +465,7 @@ public class TextoControlador implements Initializable {
             repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
             myChart.getData().clear();
             nuevo = new Task(myChart, progreso, pasado);
+            nuevo.setDaemon(true);
             nuevo.start();
             iniciando = false;
         } else {
@@ -577,6 +493,61 @@ public class TextoControlador implements Initializable {
         myChart.getData().removeAll(Collections.singleton(myChart.getData().setAll()));
         progreso.setProgress(0);
         pasado.setText("0:00");
+    }
+
+    @FXML
+    private void play_seleccion() {
+        Reproduccion r = new Reproduccion();
+        boolean pasa = false;
+        for (int i = 0; i < data_cancion.size(); i++) {
+            if (data_cancion.get(i).getId().equals(lista_escogida)) {
+                r = data_cancion.get(i).getReproductor();
+                pasa = true;
+                break;
+            }
+        }
+        if (pasa) {
+            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+            myChart.getData().clear();
+            int nuevo2 = r.max() * 50;
+            int nuevo3 = nuevo2 / 1000;
+            int minutos = (int) (nuevo3 / 60);
+            int sec = (int) (nuevo3 % 60);
+            String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+            faltante.setText(tiempo_pasado);
+            cancion.setText(r.getId());
+            nuevo = new Task(myChart, progreso, pasado, r);
+            nuevo.setDaemon(true);
+            nuevo.start();
+            iniciando = false;
+        }
+    }
+
+    private void escribir_texto(String texto) throws IOException {
+        try (Writer out = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream("C:/Users/willi/OneDrive/Documentos/NetBeansProjects/GCIC/src/main/webapp/pages/generados/temp.jsp"), "UTF-8"))) {
+            out.write(texto);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void leer_texto() throws IOException {
+        File nuevo = new File("src/main/resources/pistas.txt");
+        parser par = new parser(new Lexer(new FileReader(nuevo)));
+        try {
+            par.parse();
+            Programa program = par.programa;
+            Simbolos tabla = new Simbolos();
+            program.interpretar(tabla, true);
+            List<Pista> lista = (List) tabla.obtener("$pistas").getDatos();
+            data_cancion.clear();
+            for (Pista p : lista) {
+                data_cancion.add(new Cancion(p.getId(), p.obtener_duracion(), p.getRep()));
+            }
+        } catch (Exception ex) {
+            System.out.println("Error por: " + ex.toString());
+        }
     }
 
 }

@@ -1,24 +1,23 @@
 .paragraph-text .text{
-    -fx-fill: #A9B7C6;
+    -fx-fill: black;
 }
 
 .keyword {
     -fx-fill: blue !important;
-    -fx-font-weight: bold;
 }
 .semicolon {
     -fx-font-weight: bold;
 }
 .paren {
-    -fx-fill: white !important;
+    -fx-fill: black !important;
     -fx-font-weight: bold;
 }
 .bracket {
-    -fx-fill: darkgreen !important;
+    -fx-fill: black !important;
     -fx-font-weight: bold;
 }
 .brace {
-    -fx-fill: teal !important;
+    -fx-fill: black !important;
     -fx-font-weight: bold;
 }
 .string {
@@ -27,12 +26,18 @@
 }
 
 .number {
-    -fx-fill: #C3B1E1 !important;
+    -fx-fill: purple !important;
     -fx-font-weight: bold;
 }
 
 .id {
-    -fx-fill: lightgreen !important;
+    -fx-fill: green !important;
+    -fx-font-weight: bold;
+}
+
+.char{
+    -fx-fill: orange !important;
+    -fx-font-weight: bold;
 }
 
 .comment {
@@ -40,7 +45,7 @@
 }
 
 .paragraph-box:has-caret {
-    -fx-background-color: #ffffff33;
+    -fx-background-color: #b8fbfc;
 }
 
 .root {
@@ -104,4 +109,8 @@
 .list-cell:filled:hover {
     -fx-background-color: #0093ff;
     -fx-text-fill: white;
+}
+
+.styled-text-area .selection {
+    -fx-fill: white;
 }
