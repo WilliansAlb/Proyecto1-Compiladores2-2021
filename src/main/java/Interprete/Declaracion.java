@@ -7,6 +7,7 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
  *
  * @author willi
  */
-public class Declaracion extends Instruccion {
+public class Declaracion extends Instruccion implements Serializable{
 
     List<String> ids;
     String tipo;

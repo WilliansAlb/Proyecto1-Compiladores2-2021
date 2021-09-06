@@ -7,13 +7,14 @@ package Interprete;
 
 import Tablas.Asignar;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java_cup.runtime.Symbol;
 
 /**
  *
  * @author willi
  */
-public class Primitivo extends Termino {
+public class Primitivo extends Termino{
 
     private Asignar as = new Asignar();
     private String tipo;

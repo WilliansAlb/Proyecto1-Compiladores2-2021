@@ -6,13 +6,14 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Mientras extends Instruccion {
+public class Mientras extends Instruccion implements Serializable{
 
     private Expresion condicion;
     private List<Instruccion> instrucciones;

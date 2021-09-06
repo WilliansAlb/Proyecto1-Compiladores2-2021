@@ -7,13 +7,14 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Si extends Instruccion {
+public class Si extends Instruccion implements Serializable{
 
     Expresion condicion;
     List<Instruccion> instrucciones;

@@ -7,6 +7,7 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author willi
  */
-public class Hacer extends Instruccion {
+public class Hacer extends Instruccion implements Serializable{
 
     private Expresion condicion;
     private List<Instruccion> instrucciones;

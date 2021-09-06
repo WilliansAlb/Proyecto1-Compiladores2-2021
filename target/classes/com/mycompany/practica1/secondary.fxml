@@ -132,7 +132,7 @@
                                                       </ImageView>
                                                    </graphic>
                                                 </Button>
-                                                <Button mnemonicParsing="false" text="EDITAR">
+                                                <Button mnemonicParsing="false" onAction="#modificar" text="EDITAR">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -150,7 +150,7 @@
                                                       </ImageView>
                                                    </graphic>
                                                 </Button>
-                                                <Button mnemonicParsing="false" text="ELIMINAR">
+                                                <Button mnemonicParsing="false" onAction="#eliminar_pista" text="ELIMINAR">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -233,7 +233,7 @@
                                     </Label>
                                     <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" text="INTERPRETAR" textAlignment="CENTER">
+                                          <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisarLista" text="INTERPRETAR" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>

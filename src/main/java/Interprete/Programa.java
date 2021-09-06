@@ -33,10 +33,31 @@ public class Programa {
         for (Pista pista : pistas) {
             tabla.obtener("$pistas").getDatos().add(pista);
             if (reproducir) {
+                System.out.println("MOSTRANDO PISTA "+pista.id);
+                tabla.ambitos++;
                 pista.interpretar(tabla, reproducir);
+                tabla.eliminar_ambito();
             } else {
                 pista.interpretar(tabla);
             }
+        }
+    }
+
+    public String interpretar_unica_cancion(Simbolos tabla) {
+        tabla.ambitos = 0;
+        List<Object> ls = new LinkedList<>();
+        if (tabla.obtener("$pistas") == null) {
+            tabla.agregar(new Simbolo("$pistas", "$pistas", null, ls, tabla.ambitos));
+        }
+        if (pistas.size() == 1) {
+            tabla.obtener("$pistas").getDatos().add(pistas.get(0));
+            pistas.get(0).interpretar(tabla,true);
+            return "interpretada";
+        } else {
+            if (!pistas.isEmpty()) {
+                pistas.get(0).interpretar(tabla);
+            }
+            return "mas";
         }
     }
 }

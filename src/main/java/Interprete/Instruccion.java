@@ -6,12 +6,13 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 
 /**
  *
  * @author willi
  */
-public abstract class Instruccion {
+public abstract class Instruccion{
     
     public abstract void interpretar(Simbolos tabla);
     

@@ -5,11 +5,13 @@
  */
 package Interprete;
 
+import java.io.Serializable;
+
 /**
  *
  * @author willi
  */
-public class Parametro {
+public class Parametro implements Serializable{
     private String id;
     private String tipo;
     private boolean arreglo;

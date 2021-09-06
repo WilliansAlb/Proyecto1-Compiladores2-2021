@@ -7,13 +7,14 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Switch extends Instruccion {
+public class Switch extends Instruccion implements Serializable{
 
     private String id;
     private List<Caso> casos;

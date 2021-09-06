@@ -6,6 +6,7 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author willi
  */
-public class Item {
+public class Item implements Serializable{
 
     private List<Item> hijos;
     private boolean esHoja;

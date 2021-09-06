@@ -6,6 +6,7 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 import java_cup.runtime.Symbol;
 
@@ -13,7 +14,7 @@ import java_cup.runtime.Symbol;
  *
  * @author willi
  */
-public class Identificador extends Termino{
+public class Identificador extends Termino implements Serializable{
 
     private String id;
     private boolean isArreglo;

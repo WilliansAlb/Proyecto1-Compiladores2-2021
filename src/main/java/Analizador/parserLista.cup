@@ -1,0 +1,117 @@
+package Analizador;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.XMLElement;
+import com.mycompany.practica1.Lista;
+import java.util.ArrayList;
+
+parser code
+{:
+
+    public Lista la_lista = new Lista();
+
+    public void syntax_error(Symbol cur_token) {
+        System.out.println(" Se esperaban: ");
+        String esperados = "";
+        for (int i = 0; i < expected_token_ids().size(); i++){
+            esperados += symbl_name_from_id(expected_token_ids().get(i))+"-";
+        }
+        System.out.print(esperados+", pero se encontro "+cur_token.value+" en la linea"+cur_token.right+" y en la columna"+cur_token.left);
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        System.out.println("reportfatal "+message+info);
+    }
+    
+    public void report_fatal_error(Symbol cur) {
+        System.out.println("unrecovered_syntax_error");
+    }
+
+    public void imp(String texto){
+        System.out.println(texto);
+    }
+
+:};
+
+terminal LISTA, NOMBRE, RANDOM, CIRCULAR, PISTAS, DOSP, TRUE, FALSE, COR_A,
+    COR_C, COMA, DOS_P, LLAVE_A, LLAVE_C, ID, STRING;
+
+non terminal inicio, listas, atributos, atributo;
+non terminal Boolean booleano;
+non terminal ArrayList<String> pistas;
+start with inicio;
+
+inicio::=
+    listas 
+        {:
+            if (la_lista.getId()==null){
+                System.out.println("El codigo que ingresaste no contiene id, error sintactico en la linea");
+            }
+        :}
+;
+
+listas::=
+    LLAVE_A LISTA DOS_P LLAVE_A atributos LLAVE_C LLAVE_C
+;
+
+atributos::=
+    atributos COMA atributo
+|   atributo
+;
+
+atributo::=
+    NOMBRE DOS_P STRING:e1
+        {:
+            if (!la_lista.agregar_id(e1.toString())){
+                System.out.println("Este metodo ya tiene identificador, error sintactico "+e1right+" y columna "+e1left);
+            }
+        :}
+|   RANDOM DOS_P booleano:e1
+        {:
+            la_lista.setRandom(e1);
+        :}
+|   CIRCULAR DOS_P booleano:e1
+        {:
+            la_lista.setCircular(e1);
+        :}
+|   PISTAS DOS_P COR_A pistas:e1 COR_C
+        {:
+            String respuesta = la_lista.agregar_canciones(e1);
+            switch(respuesta){
+                case "tiene":
+                    System.out.println("Este metodo ya tiene agregadas pistas, error sintactico en la linea "+e1right+" y columna "+e1left);
+                    break;
+                case "repetida":
+                    System.out.println("Este metodo tiene nombre de pistas repetidas, error sintactico en la linea "+e1right+" y columna "+e1left);
+                    break;
+                case "exito":
+                    System.out.println("Severo exito en la linea "+e1right+" y columna "+e1left);
+                    break;
+                default:
+                    break;
+            }
+        :}
+;
+
+pistas::=
+    pistas:e1 COMA ID:e2
+        {:
+            RESULT = e1;
+            RESULT.add(e2.toString());
+        :}
+|   ID:e1
+        {:
+            RESULT = new ArrayList<>();
+            RESULT.add(e1.toString());
+        :}
+;
+
+booleano::=
+    TRUE
+        {:
+            RESULT = true;
+        :}
+|   FALSE
+        {:
+            RESULT = false;
+        :}
+;

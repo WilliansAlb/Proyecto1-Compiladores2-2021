@@ -6,12 +6,13 @@
 package Interprete;
 
 import Interprete.Metodos_Nativos.Reproducir;
+import java.io.Serializable;
 
 /**
  *
  * @author willi
  */
-public class Notas {
+public class Notas implements Serializable{
     public int notas[][] = {
         {0,24,36,48,60,72,84,96,108},
         {0,25,37,49,61,73,85,97,0},

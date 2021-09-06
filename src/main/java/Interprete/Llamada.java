@@ -12,6 +12,7 @@ import Interprete.Metodos_Nativos.Reproducir;
 import Interprete.Metodos_Nativos.Sumarizar;
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import javafx.scene.control.Label;
  *
  * @author willi
  */
-public class Llamada extends Instruccion {
+public class Llamada extends Instruccion implements Serializable{
 
     private String id;
     private String tipo;

@@ -6,24 +6,37 @@
 package com.mycompany.practica1;
 
 import Interprete.Reproduccion;
+import java.io.Serializable;
 
 
 /**
  *
  * @author willi
  */
-public class Cancion {
+public class Cancion implements Serializable {
     private String id;
     private String duracion;
     private Reproduccion reproductor;
     private String img = "cancion.png";
+    private String texto;
 
-    public Cancion(String id, String duracion, Reproduccion reproductor) {
+    public Cancion(String id, String duracion, Reproduccion reproductor, String texto) {
         this.id = id;
         this.duracion = duracion;
         this.reproductor = reproductor;
+        this.texto = texto;
     }
 
+    public String getTexto() {
+        return texto;
+    }
+
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
+
+    
+    
     public String getId() {
         return id;
     }

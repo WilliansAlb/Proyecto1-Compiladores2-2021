@@ -5,11 +5,13 @@
  */
 package Interprete;
 
+import java.io.Serializable;
+
 /**
  *
  * @author willi
  */
-public class Tipos {
+public class Tipos implements Serializable{
     public final static int NUMERO = 0;
     public final static int STRING = 1;
     public final static int BOOLEAN = 2;

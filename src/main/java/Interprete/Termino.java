@@ -6,13 +6,14 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java_cup.runtime.Symbol;
 
 /**
  *
  * @author willi
  */
-public abstract class Termino {
+public abstract class Termino implements Serializable{
     @Override
     public abstract String toString();
     

@@ -6,12 +6,13 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 
 /**
  *
  * @author willi
  */
-public class ContinuarSalir extends Instruccion {
+public class ContinuarSalir extends Instruccion implements Serializable{
     private boolean continuar;
     private String tipo;
     private int linea;

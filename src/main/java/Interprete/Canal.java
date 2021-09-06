@@ -5,6 +5,7 @@
  */
 package Interprete;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author willi
  */
-public class Canal {
+public class Canal implements Serializable{
     private int id;
     private List<Integer> notas;
     private int tiempo;

@@ -7,13 +7,14 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Metodo {
+public class Metodo implements Serializable {
 
     String id;
     String tipo;
@@ -65,7 +66,7 @@ public class Metodo {
         System.out.println("Ambito del metodo " + id);
         tabla.forEach(tabla1 -> {
             if (tabla1.getDatos() != null) {
-                if (tabla1.getDatos().get(0) != null) {
+                if (!tabla1.getDatos().isEmpty()) {
                     System.out.println("id: " + tabla1.getId() + " valor: " + tabla1.getDatos().get(0));
                 } else {
                     System.out.println(tabla1.getId());

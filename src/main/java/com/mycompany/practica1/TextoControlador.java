@@ -6,7 +6,9 @@
 package com.mycompany.practica1;
 
 import Analizador.Lexer;
+import Analizador.LexerLista;
 import Analizador.parser;
+import Analizador.parserLista;
 import Interprete.Expresion;
 import Interprete.Pista;
 import Interprete.Primitivo;
@@ -15,18 +17,27 @@ import Interprete.Reproduccion;
 import Interprete.Termino;
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
@@ -35,6 +46,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java_cup.runtime.Symbol;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -52,6 +65,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -148,6 +163,8 @@ public class TextoControlador implements Initializable {
     public final ObservableList<Cancion> data_cancion = FXCollections.observableArrayList();
     public final ObservableList<Cancion> data_lista_cancion = FXCollections.observableArrayList();
     public String lista_escogida = "";
+    public ArrayList<Cancion> cans = new ArrayList<>();
+    public ArrayList<Lista> lis = new ArrayList<>();
 
     Task nuevo;
 
@@ -247,11 +264,9 @@ public class TextoControlador implements Initializable {
         parar.setVisible(false);
         parar.managedProperty().bind(parar.visibleProperty());
         data.clear();
-        data.add(new Lista("Romanticas", 12, "lista.png"));
-        data.add(new Lista("Dramaticas", 10, "lista.png"));
+        data.add(new Lista("Romanticas", null, true, false));
         for (int i = 0; i < 10; i++) {
-            data.add(new Lista("Romanticas" + i, 12, "lista.png"));
-            data.add(new Lista("Dramaticas" + i, 10, "lista.png"));
+            data.add(new Lista("Romanticas" + i, null, false, true));
         }
         listas.setCellFactory(new Callback<ListView<Lista>, ListCell<Lista>>() {
             @Override
@@ -261,30 +276,48 @@ public class TextoControlador implements Initializable {
                     protected void updateItem(Lista pa, boolean s) {
                         super.updateItem(pa, s);
                         if (pa != null) {
-                            Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
+                            Image img = new Image(App.class.getResource(pa.IMG_LISTA).toExternalForm());
                             BorderPane b = new BorderPane();
-                            Label l = new Label("No. Canciones: " + pa.getCanciones());
                             Label iden = new Label(pa.getId());
-                            l.setFont(new Font(10.0));
                             iden.setPrefWidth(200.00);
                             iden.setTextAlignment(TextAlignment.LEFT);
-                            l.setTextAlignment(TextAlignment.RIGHT);
                             iden.setTooltip(new Tooltip(pa.getId()));
+
+                            HBox h = new HBox();
+                            if (pa.isCircular()) {
+                                Image img2 = new Image(App.class.getResource(pa.IMG_CIRCULAR).toExternalForm());
+                                ImageView imgT = new ImageView(img2);
+                                imgT.setPreserveRatio(false);
+                                imgT.setFitWidth(20.00);
+                                imgT.setFitHeight(20.00);
+                                h.getChildren().add(imgT);
+                            }
+                            if (pa.isRandom()) {
+                                Image img2 = new Image(App.class.getResource(pa.IMG_RANDOM).toExternalForm());
+                                ImageView imgT = new ImageView(img2);
+                                imgT.setPreserveRatio(false);
+                                imgT.setFitWidth(20.00);
+                                imgT.setFitHeight(20.00);
+                                h.getChildren().add(imgT);
+                            }
+
                             ImageView imgView = new ImageView(img);
                             imgView.setPreserveRatio(false);
                             imgView.setFitWidth(20.00);
                             imgView.setFitHeight(20.00);
                             b.setCenter(iden);
                             b.setLeft(imgView);
-                            b.setRight(l);
+                            b.setRight(h);
                             setGraphic(b);
                             b.addEventFilter(
                                     MouseEvent.MOUSE_PRESSED,
                                     new EventHandler<MouseEvent>() {
                                 public void handle(final MouseEvent mouseEvent) {
-                                    lista_escogida = iden.getText();
+                                    rellenar_canciones_lista(iden.getText());
                                 }
                             });
+                        } else {
+                            setGraphic(null);
                         }
                     }
                 };
@@ -292,12 +325,7 @@ public class TextoControlador implements Initializable {
             }
         });
         listas.setItems(data);
-        data_cancion.add(new Cancion("Rythim_night", "1:30", null));
-        data_cancion.add(new Cancion("Rythim_day", "1:30", null));
-        data_cancion.add(new Cancion("Rythim_afternoon", "1:30", null));
-        data_lista_cancion.add(new Cancion("Rythim_night", "1:30", null));
-        data_lista_cancion.add(new Cancion("Rythim_day", "1:30", null));
-        data_lista_cancion.add(new Cancion("Rythim_afternoon", "1:30", null));
+        data_cancion.add(new Cancion("Rythim_night", "1:30", null, ""));
         canciones.setCellFactory(new Callback<ListView<Cancion>, ListCell<Cancion>>() {
             @Override
             public ListCell<Cancion> call(ListView<Cancion> param) {
@@ -329,6 +357,8 @@ public class TextoControlador implements Initializable {
                                     lista_escogida = iden.getText();
                                 }
                             });
+                        } else {
+                            setGraphic(null);
                         }
                     }
                 };
@@ -367,6 +397,8 @@ public class TextoControlador implements Initializable {
                                     lista_escogida = iden.getText();
                                 }
                             });
+                        } else {
+                            setGraphic(null);
                         }
                     }
                 };
@@ -374,11 +406,23 @@ public class TextoControlador implements Initializable {
             }
         });
         canciones_lista.setItems(data_lista_cancion);
+        llenar_canciones();
+        rellenar_listas();
+    }
 
-        try {
-            leer_texto();
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+    private void rellenar_canciones_lista(String text) {
+        data_lista_cancion.clear();
+        for (int i = 0; i < lis.size(); i++) {
+            if (lis.get(i).getId().equalsIgnoreCase(text)) {
+                if (lis.get(i).getCanciones() != null) {
+                    for (int j = 0; j < lis.get(i).getCanciones().size(); j++) {
+                        data_lista_cancion.add(new Cancion(lis.get(i).getCanciones().get(j), "--:--", null, "texto"));
+                    }
+                }
+            }
+        }
+        if (data_lista_cancion.isEmpty()) {
+            data_lista_cancion.add(new Cancion("No contiene pistas esta lista", "--:--", null, "texto"));
         }
     }
 
@@ -393,11 +437,24 @@ public class TextoControlador implements Initializable {
         //System.out.println(codeArea.getText());
         parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
         par.parse();
+        //escribir_binario();
         Programa program = par.programa;
         iniciar(program);
         //leer(par.sumando);
         //Lexer n = new Lexer(new StringReader(codeArea.getText()));
         //escribir(n);
+    }
+
+    @FXML
+    private void revisarLista() throws IOException, Exception {
+        //System.out.println(codeArea.getText());
+        parserLista par = new parserLista(new LexerLista(new StringReader(codeArea1.getText())));
+        par.parse();
+        Lista l = par.la_lista;
+        data.add(l);
+        lis.add(l);
+        escribir_binario_lista();
+        rellenar_listas();
     }
 
     @FXML
@@ -414,21 +471,168 @@ public class TextoControlador implements Initializable {
     }
 
     private void iniciar(Programa p) {
-        Simbolos s = new Simbolos();
-        s.agregar_sistema("$consola", "$consola", consola);
-        p.interpretar(s, false);
-        Simbolo rep = s.obtener("$reproducir");
-        Simbolo msg = s.obtener("$mensaje");
-        if (rep != null) {
-            empezar_reproduccion(rep);
+        Simbolos tabla = new Simbolos();
+        tabla.agregar_sistema("$consola", "$consola", consola);
+        agregarPistas(tabla);
+        tabla.agregar_sistema("$consola", "$consola", consola);
+        String res = p.interpretar_unica_cancion(tabla);
+        if (res.equalsIgnoreCase("mas")) {
+            Alert a = new Alert(AlertType.WARNING);
+            a.setContentText("El editor está destinado solo a soportar una pista por ocasión");
+            a.show();
         } else {
-            System.out.println("error");
+            Simbolo msg = tabla.obtener("$mensaje");
+            Simbolo pista = tabla.obtener("$pistas");
+            Pista ultima = (Pista) pista.getDatos().get(pista.getDatos().size() - 1);
+            cans.add(new Cancion(ultima.getId(), ultima.obtener_duracion(), ultima.getRep(), codeArea.getText()));
+            escribir_binario();
+            if (ultima.getRep() != null) {
+                Alert a = new Alert(AlertType.CONFIRMATION);
+                a.setContentText("Canción agregada correctamente");
+                a.show();
+                rellenar_canciones();
+                empezar_reproduccion(pista);
+            } else {
+                Alert a = new Alert(AlertType.CONFIRMATION);
+                a.setContentText("Canción agregada correctamente, pero no tiene reproduccion");
+                a.show();
+            }
+        }
+    }
+
+    private void agregarPistas(Simbolos tabla) {
+        List<Object> objetos = new LinkedList<>();
+        String todotexto = "";
+        for (Cancion pi : cans) {
+            todotexto += pi.getTexto();
+        }
+        if (!todotexto.isEmpty()) {
+            parser p = new parser(new Lexer(new StringReader(todotexto)));
+            try {
+                p.parse();
+                Programa pa = p.programa;
+                System.out.println("acá creo que acumula pero no sé");
+                pa.interpretar(tabla, true);
+                Simbolo pistass = tabla.obtener("$pistas");
+                tabla.removeAll(tabla);
+                System.out.println("termina");
+                tabla.agregar(pistass);
+            } catch (Exception ex) {
+                Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            tabla.agregar(new Simbolo("$pistas", "$pistas", null, objetos, 0));
+        }
+    }
+
+    private void leer_binario() {
+        // Creamos un objeto de tipo fila para asignarle un archivo
+        File archivo = new File("src/main/resources/pistas.dat");
+        try {
+            // Para poder leer utilizaremos un FileInputStream pasandole
+            // como referencia el archivo de tipo File.
+            FileInputStream fis = new FileInputStream(archivo);
+            // Declaramos una variable objeto del tipo ObjectInputStream
+            ObjectInputStream leer;
+            // Creamos un bucle para leer la información
+            // Mientras haya bytes en el archivo.
+            while (fis.available() > 0) {
+                leer = new ObjectInputStream(fis);
+                // En una variable objeto de tipo Persona almacenaremos
+                // el objeto leido de tipo Object convertido en un objeto
+                // de tipo persona
+                cans = (ArrayList) leer.readObject();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al leer el archivo. "
+                    + e.getMessage());
+            if (e.getMessage() == null) {
+                escribir_binario();
+            }
+        }
+    }
+
+    private void escribir_binario() {
+        // Creamos un objeto de tipo fila para asignarle un archivo
+        File archivo = new File("src/main/resources/pistas.dat");
+        try {
+            // Para poder escribir utilizaremos un FileOutputStream pasandole
+            // como referencia el archivo de tipo File.
+            FileOutputStream fos = new FileOutputStream(archivo);
+
+            // Y crearemos también una instancia del tipo ObjectOutputStream
+            // al que le pasaremos por parámetro
+            // el objeto de tipo FileOutputStream
+            ObjectOutputStream escribir = new ObjectOutputStream(fos);
+
+            // Escribimos los objetos en el archivo.
+            escribir.writeObject(cans);
+            // Cerramos los objetos para no consumir recursos.
+            escribir.close();
+            fos.close();
+        } catch (Exception e) {
+            System.out.println("Error al escribir en el archivo. "
+                    + e.getMessage());
+        }
+    }
+
+    private void leer_binario_lista() {
+        // Creamos un objeto de tipo fila para asignarle un archivo
+        File archivo = new File("src/main/resources/listas.dat");
+        try {
+            // Para poder leer utilizaremos un FileInputStream pasandole
+            // como referencia el archivo de tipo File.
+            FileInputStream fis = new FileInputStream(archivo);
+            // Declaramos una variable objeto del tipo ObjectInputStream
+            ObjectInputStream leer;
+            // Creamos un bucle para leer la información
+            // Mientras haya bytes en el archivo.
+            while (fis.available() > 0) {
+                leer = new ObjectInputStream(fis);
+                // En una variable objeto de tipo Persona almacenaremos
+                // el objeto leido de tipo Object convertido en un objeto
+                // de tipo persona
+                lis = (ArrayList) leer.readObject();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al leer el archivo. "
+                    + e.getMessage());
+            if (e.getMessage() == null) {
+                escribir_binario_lista();
+            }
+        }
+    }
+
+    private void escribir_binario_lista() {
+        // Creamos un objeto de tipo fila para asignarle un archivo
+        File archivo = new File("src/main/resources/listas.dat");
+        try {
+            // Para poder escribir utilizaremos un FileOutputStream pasandole
+            // como referencia el archivo de tipo File.
+            FileOutputStream fos = new FileOutputStream(archivo);
+
+            // Y crearemos también una instancia del tipo ObjectOutputStream
+            // al que le pasaremos por parámetro
+            // el objeto de tipo FileOutputStream
+            ObjectOutputStream escribir = new ObjectOutputStream(fos);
+
+            // Escribimos los objetos en el archivo.
+            escribir.writeObject(lis);
+            // Cerramos los objetos para no consumir recursos.
+            escribir.close();
+            fos.close();
+        } catch (Exception e) {
+            System.out.println("Error al escribir en el archivo. "
+                    + e.getMessage());
         }
     }
 
     private void empezar_reproduccion(Simbolo rep) {
-        if (rep.getDatos().get(0) != null) {
-            actual = (Reproduccion) rep.getDatos().get(0);
+        Reproduccion re = ((Pista) rep.getDatos().get(rep.getDatos().size() - 1)).getRep();
+        if (re != null) {
+            actual = re;
             if (actual.getCanales() != null) {
                 repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
                 myChart.getData().clear();
@@ -444,6 +648,10 @@ public class TextoControlador implements Initializable {
                 nuevo.start();
                 iniciando = false;
             }
+        } else {
+            Alert a = new Alert(AlertType.CONFIRMATION);
+            a.setContentText("Canción agregada correctamente, pero no tiene metodo main");
+            a.show();
         }
     }
 
@@ -500,7 +708,7 @@ public class TextoControlador implements Initializable {
         Reproduccion r = new Reproduccion();
         boolean pasa = false;
         for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equals(lista_escogida)) {
+            if (data_cancion.get(i).getId().equals(lista_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
                 r = data_cancion.get(i).getReproductor();
                 pasa = true;
                 break;
@@ -520,34 +728,98 @@ public class TextoControlador implements Initializable {
             nuevo.setDaemon(true);
             nuevo.start();
             iniciando = false;
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Canción seleccionada sin método main");
+            a.show();
         }
     }
 
-    private void escribir_texto(String texto) throws IOException {
-        try (Writer out = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("C:/Users/willi/OneDrive/Documentos/NetBeansProjects/GCIC/src/main/webapp/pages/generados/temp.jsp"), "UTF-8"))) {
-            out.write(texto);
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void leer_texto() throws IOException {
-        File nuevo = new File("src/main/resources/pistas.txt");
-        parser par = new parser(new Lexer(new FileReader(nuevo)));
-        try {
-            par.parse();
-            Programa program = par.programa;
-            Simbolos tabla = new Simbolos();
-            program.interpretar(tabla, true);
-            List<Pista> lista = (List) tabla.obtener("$pistas").getDatos();
-            data_cancion.clear();
-            for (Pista p : lista) {
-                data_cancion.add(new Cancion(p.getId(), p.obtener_duracion(), p.getRep()));
+    @FXML
+    private void modificar() {
+        int pos = -1;
+        boolean pasa = false;
+        for (int i = 0; i < data_cancion.size(); i++) {
+            if (data_cancion.get(i).getId().equals(lista_escogida)) {
+                pos = i;
+                break;
             }
-        } catch (Exception ex) {
-            System.out.println("Error por: " + ex.toString());
+        }
+        if (pos != -1) {
+            codeArea.replaceText(data_cancion.get(pos).getTexto());
+            SingleSelectionModel<Tab> selectionModel = tabs.getSelectionModel();
+            selectionModel.select(1);
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Canción seleccionada sin método main");
+            a.show();
         }
     }
 
+    private void llenar_canciones() {
+        leer_binario();
+        data_cancion.clear();
+        for (Cancion pi : cans) {
+            data_cancion.add(pi);
+        }
+        if (cans.isEmpty()) {
+            data_cancion.add(new Cancion("No has creado ninguna", "--:--", null, ""));
+        }
+    }
+
+    private void rellenar_canciones() {
+        data_cancion.clear();
+        for (Cancion pi : cans) {
+            data_cancion.add(pi);
+        }
+        if (cans.isEmpty()) {
+            data_cancion.add(new Cancion("No has creado ninguna", "--:--", null, ""));
+        } else {
+            canciones.setItems(data_cancion);
+        }
+    }
+
+    private void rellenar_listas() {
+        leer_binario_lista();
+        data.clear();
+        for (Lista pi : lis) {
+            data.add(pi);
+        }
+        if (lis.isEmpty()) {
+            data.add(new Lista("No has creado ninguna", null, false, false));
+        } else {
+            listas.setItems(data);
+        }
+    }
+
+    @FXML
+    private void eliminar_pista() {
+        int pos = -1;
+        for (int i = 0; i < data_cancion.size(); i++) {
+            if (data_cancion.get(i).getId().equalsIgnoreCase(lista_escogida)) {
+                pos = i;
+                break;
+            }
+        }
+        if (pos > 0) {
+            data_cancion.remove(pos);
+            cans.remove(pos);
+            escribir_binario();
+        } else if (pos == 0) {
+            if (cans.size() > 1) {
+                data_cancion.remove(pos);
+                cans.remove(pos);
+                escribir_binario();
+            } else {
+                data_cancion.add(new Cancion("No has creado ninguna", "--:--", null, ""));
+                data_cancion.remove(0);
+                cans.remove(pos);
+                escribir_binario();
+            }
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Elige primero una canción a eliminar");
+            a.show();
+        }
+    }
 }

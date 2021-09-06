@@ -6,6 +6,7 @@
 package Interprete;
 
 import com.mycompany.practica1.Synth;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,7 @@ import jm.util.Play;
  *
  * @author willi
  */
-public class Reproduccion {
+public class Reproduccion implements Serializable {
 
     private static Score s = new Score("CPhrase class example");
     private List<Canal> canales;

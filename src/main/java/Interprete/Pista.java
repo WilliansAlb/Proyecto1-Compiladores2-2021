@@ -7,6 +7,7 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author willi
  */
-public class Pista {
+public class Pista implements Serializable {
 
     List<Metodo> metodos;
     List<Declaracion> declaraciones;
@@ -74,11 +75,9 @@ public class Pista {
                 listado_metodos.add(metodo);
             }
         }
-        //listado_metodos = verificar_repetidos(listado_metodos, tabla);
         if (principales == 1) {
             if (reproducir) {
                 tabla.ambitos++;
-                System.out.println("acá");
                 tabla.agregar_sistema("$reproducir", "$reproducir", nuevo);
                 tabla.agregar_sistema("$mensaje", "$mensaje", "");
                 tabla.agregar_sistema("$errores", "$errores", listado);

@@ -49,10 +49,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <cupDefinition>src/main/java/Analizador/parser.cup</cupDefinition>
+                    <cupDefinition>src/main/java/Analizador/parserLista.cup</cupDefinition>
                     <outputDirectory>src/main/java</outputDirectory>
-                    <className>parser</className>
-                    <symbolsName>sym</symbolsName>
+                    <className>parserLista</className>
+                    <symbolsName>symLista</symbolsName>
                     <symbolsInterface>false</symbolsInterface>
                 </configuration>
             </plugin>

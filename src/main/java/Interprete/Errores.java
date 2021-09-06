@@ -5,11 +5,13 @@
  */
 package Interprete;
 
+import java.io.Serializable;
+
 /**
  *
  * @author willi
  */
-public class Errores {
+public class Errores implements Serializable{
 
     private int linea;
     private int columna;

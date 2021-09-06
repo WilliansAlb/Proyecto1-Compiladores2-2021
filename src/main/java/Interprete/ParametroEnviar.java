@@ -5,13 +5,14 @@
  */
 package Interprete;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class ParametroEnviar {
+public class ParametroEnviar implements Serializable{
     public static enum Tipo{
         ARREGLO,
         EXPRESION,

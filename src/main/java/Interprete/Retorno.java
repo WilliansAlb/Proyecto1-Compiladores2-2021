@@ -7,12 +7,13 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 
 /**
  *
  * @author willi
  */
-public class Retorno extends Instruccion {
+public class Retorno extends Instruccion implements Serializable{
 
     private String tipo = "retorno";
     private Expresion valor;

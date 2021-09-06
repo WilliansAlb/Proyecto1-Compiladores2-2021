@@ -7,12 +7,13 @@ package Interprete;
 
 import Tablas.Simbolo;
 import Tablas.Simbolos;
+import java.io.Serializable;
 
 /**
  *
  * @author willi
  */
-public class Paso extends Instruccion {
+public class Paso extends Instruccion implements Serializable{
 
     public static enum TIPO {
         INCREMENTO,

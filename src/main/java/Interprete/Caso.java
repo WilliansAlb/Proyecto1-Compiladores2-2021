@@ -6,13 +6,14 @@
 package Interprete;
 
 import Tablas.Simbolos;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Caso {
+public class Caso implements Serializable{
     private Primitivo valor;
     private List<Instruccion> instrucciones;
     private int linea;
