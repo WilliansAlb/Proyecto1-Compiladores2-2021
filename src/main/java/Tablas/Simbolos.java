@@ -247,14 +247,11 @@ public class Simbolos extends LinkedList<Simbolo> {
         return false;
     }
 
-    public Metodo obtener_metodo(String id, List<ParametroEnviar> parametros_enviados) {
+    public Metodo obtener_metodo(String id, List<ParametroEnviar> parametros_enviados, Simbolos n) {
         ArrayList<Metodo> metodos = (ArrayList) this.obtener("$metodos").getDatos().get(0);
-        System.out.println("acá en loop");
         for (Metodo metodo : metodos) {
             System.out.println(metodo.getId());
             if (id.equalsIgnoreCase(metodo.getId())) {
-                System.out.println(parametros_enviados!=null);
-                System.out.println(metodo.getParametros()!=null);
                 if (parametros_enviados != null && metodo.getParametros() != null) {
                     if (parametros_enviados.size() == metodo.getParametros().size()) {
                         ArrayList<Simbolo> array = new ArrayList<>();
@@ -303,13 +300,12 @@ public class Simbolos extends LinkedList<Simbolo> {
                         }
                         if (array.size() == metodo.getParametros().size()) {
                             array.forEach(a -> {
-                                this.agregar(a);
+                                n.agregar(a);
                             });
                             return metodo;
                         }
                     }
                 } else if (parametros_enviados == null && metodo.getParametros() == null) {
-                    System.out.println("acá en loop");
                     return metodo;
                 }
             }

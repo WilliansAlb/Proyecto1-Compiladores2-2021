@@ -25,7 +25,7 @@ import javafx.scene.control.Label;
  *
  * @author willi
  */
-public class Llamada extends Instruccion implements Serializable{
+public class Llamada extends Instruccion implements Serializable {
 
     private String id;
     private String tipo;
@@ -34,8 +34,9 @@ public class Llamada extends Instruccion implements Serializable{
     private int columna;
     public Object retorno;
     public String retorno_tipo;
+    public boolean existe = true;
 
-    public Llamada(String id, List<ParametroEnviar> parametros, int linea, int columna) {
+    public Llamada(String id, List<ParametroEnviar> parametros, int columna, int linea) {
         this.id = id;
         this.parametros = parametros;
         this.linea = linea;
@@ -70,15 +71,43 @@ public class Llamada extends Instruccion implements Serializable{
     }
 
     public void interpretar_llamada(Simbolos tabla) {
-        Metodo aux = tabla.obtener_metodo(id, parametros);
+        Simbolos nuevo = new Simbolos();
+        rellenarNuevo(nuevo, tabla);
+        Metodo aux = tabla.obtener_metodo(id, parametros, nuevo);
         if (aux != null) {
-            aux.interpretar(tabla);
+            aux.interpretar(nuevo);
+            System.out.println("actualiza");
+            actualiarAnterior(nuevo, tabla);
             if (aux.objeto_retorno != null) {
                 retorno = aux.objeto_retorno;
                 retorno_tipo = aux.tipo_retorno;
             }
         } else {
-            System.out.println("No existe tal metodo");
+            tabla.agregar_error("Semantico", "No existe el método " + id, linea + 1, columna + 1);
+            existe = false;
+        }
+    }
+
+    public void actualiarAnterior(Simbolos nuevo, Simbolos anterior) {
+        for (int i = 0; i < nuevo.size(); i++) {
+            if (nuevo.get(i).getAmbito() == 0) {
+                for (int j = 0; j < anterior.size(); j++) {
+                    if (anterior.get(j).getAmbito() == 0) {
+                        if (nuevo.get(i).getId().equals(anterior.get(j).getId())) {
+                            anterior.get(j).setDatos(nuevo.get(i).getDatos());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void rellenarNuevo(Simbolos nuevo, Simbolos anterior) {
+        for (int i = 0; i < anterior.size(); i++) {
+            if (anterior.get(i).getAmbito() == 0) {
+                nuevo.add(anterior.get(i));
+            }
         }
     }
 
@@ -121,7 +150,7 @@ public class Llamada extends Instruccion implements Serializable{
                             int canal = numero(parametros.get(3).getExpresion(), tabla);
                             if (canal > 0) {
                                 Notas ns = new Notas();
-                                int note = ns.obtener_nota(parametros.get(0).getNota_orden(), octava);
+                                int note = ns.obtener_nota(parametros.get(0).getNota_orden().toLowerCase(), octava);
                                 Simbolo s = tabla.obtener("$reproducir");
                                 String respuesta = (((Reproduccion) s.getDatos().get(0)).agregar(note, tiempo, canal)) ? "Agregada correctamente" : "No se pudo agregar";
                                 tabla.cambiar("$reproducir", s.getDatos());
@@ -156,9 +185,11 @@ public class Llamada extends Instruccion implements Serializable{
             propiedades.add("");
             propiedades.add(0);
             propiedades.add(false);
+            List<Integer> dimen = new LinkedList<>();
+            propiedades.add(dimen);
             if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.ARREGLO) {
                 Item arr = parametros.get(0).getArreglo();
-                arr.obtener_arreglo(elementos, tabla, propiedades, linea);
+                arr.obtener_arreglo(elementos, tabla, propiedades, 0);
                 retorno = sumarizar(propiedades.get(0).toString(), elementos);
                 retorno_tipo = "string";
             } else if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.EXPRESION) {
@@ -172,13 +203,13 @@ public class Llamada extends Instruccion implements Serializable{
                             retorno = sumarizar(encontrado.getTipo(), encontrado.getDatos());
                             retorno_tipo = "string";
                         } else {
-                            tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea, columna);
+                            tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea + 1, columna + 1);
                         }
                     } else {
-                        tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea, columna);
+                        tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea + 1, columna + 1);
                     }
                 } else {
-                    tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea, columna);
+                    tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea + 1, columna + 1);
                 }
             } else {
                 interpretar_llamada(tabla);
@@ -201,12 +232,14 @@ public class Llamada extends Instruccion implements Serializable{
             propiedades.add("");
             propiedades.add(0);
             propiedades.add(false);
+            List<Integer> dimen = new LinkedList<>();
+            propiedades.add(dimen);
             if (parametros.get(1).getTipo() == ParametroEnviar.Tipo.ORDEN) {
                 if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.ARREGLO) {
                     Item arr = parametros.get(0).getArreglo();
                     arr.obtener_arreglo(elementos, tabla, propiedades, 0);
                     if ((int) propiedades.get(1) > 1) {
-                        tabla.agregar_error("Semantico", "El arreglo es de mas de una dimension", linea, columna);
+                        tabla.agregar_error("Semantico", "El arreglo enviado es de mas de una dimension", linea + 1, columna + 1);
                     } else {
                         retorno = ordenar(elementos, parametros.get(1).getNota_orden(), propiedades.get(0).toString()) ? 1 : 0;
                         retorno_tipo = "numero";
@@ -220,7 +253,7 @@ public class Llamada extends Instruccion implements Serializable{
                         if (encontrado != null) {
                             if (encontrado.getDimensiones() != null) {
                                 if (encontrado.getDimensiones().size() > 1) {
-                                    tabla.agregar_error("Semantico", "El identificador " + te.getId() + " le pertenece a un arreglo de mas de una dimension", linea, columna);
+                                    tabla.agregar_error("Semantico", "El identificador " + te.getId() + " le pertenece a un arreglo de mas de una dimension", linea + 1, columna + 1);
                                 } else {
                                     if (encontrado.getDatos() != null) {
                                         if (encontrado.getDatos().size() > 1) {
@@ -231,13 +264,13 @@ public class Llamada extends Instruccion implements Serializable{
                                 }
                                 System.out.println(parametros.get(1).getNota_orden());
                             } else {
-                                tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea, columna);
+                                tabla.agregar_error("Semantico", "El identificador " + te.getId() + " no le pertenece a un arreglo", linea + 1, columna + 1);
                             }
                         } else {
-                            tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea, columna);
+                            tabla.agregar_error("Semantico", "No se ha definido el arreglo " + te.getId(), linea + 1, columna + 1);
                         }
                     } else {
-                        tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea, columna);
+                        tabla.agregar_error("Semantico", "El metodo sumarizar solo acepta como parametro un arreglo o un identificador de un arreglo", linea + 1, columna + 1);
                     }
                 }
             } else {
@@ -610,7 +643,7 @@ public class Llamada extends Instruccion implements Serializable{
                             retorno = s.getDatos().size();
                             retorno_tipo = "numero";
                         } else {
-                            tabla.agregar_error("Semantico", "La variable con id " + s.getId() + " no ha sido inicializada", linea, columna);
+                            tabla.agregar_error("Semantico", "La variable con id " + s.getId() + " no ha sido inicializada", linea + 1, columna + 1);
                         }
                     } else {
                         Simbolo s = tabla.obtener(idt.getId());
@@ -620,7 +653,7 @@ public class Llamada extends Instruccion implements Serializable{
                                 retorno_tipo = "numero";
                             }
                         } else {
-                            tabla.agregar_error("Semantico", "La variable con id " + idt.getId() + " no es ni arreglo ni string", linea, columna);
+                            tabla.agregar_error("Semantico", "La variable con id " + idt.getId() + " no es ni arreglo ni string", linea + 1, columna + 1);
                         }
                     }
                 } else {
@@ -632,7 +665,7 @@ public class Llamada extends Instruccion implements Serializable{
                             retorno_tipo = "numero";
                         }
                     } else {
-                        tabla.agregar_error("Semantico", "El valor enviado no es una cada o un arreglo", linea, columna);
+                        tabla.agregar_error("Semantico", "El valor enviado no es una cadena o un arreglo", linea + 1, columna + 1);
                     }
                 }
             } else if (parametros.get(0).getTipo() == ParametroEnviar.Tipo.ARREGLO) {
@@ -641,8 +674,10 @@ public class Llamada extends Instruccion implements Serializable{
                 propiedades.add("");
                 propiedades.add(0);
                 propiedades.add(false);
+                List<Integer> dimen = new LinkedList<>();
+                propiedades.add(dimen);
                 Item it = parametros.get(0).getArreglo();
-                it.obtener_arreglo(elementos, tabla, propiedades, linea);
+                it.obtener_arreglo(elementos, tabla, propiedades, 0);
                 retorno = elementos.size();
                 retorno_tipo = "numero";
             } else {
@@ -674,10 +709,11 @@ public class Llamada extends Instruccion implements Serializable{
                             retorno = tiempo;
                             retorno_tipo = "numero";
                         } else {
-                            tabla.agregar_error("Semantico", "Ocurrió un error al momento de asignar la reproduccion.", linea, columna);
+                            tabla.agregar_error("Semantico", "Ocurrió un error al momento de asignar la reproduccion.", linea + 1, columna + 1);
                         }
                     } else {
                         System.out.println("El canal no puede ser un numero negativo");
+                        tabla.agregar_error("Semantico", "El canal no puede ser un numero negativo", linea + 1, columna + 1);
                     }
                 } else {
                     System.out.println("No se pudo agregar el tiempo de espera");
@@ -719,6 +755,8 @@ public class Llamada extends Instruccion implements Serializable{
             Primitivo p = (Primitivo) s.ejecutar(tabla);
             if (p.getTipo().equalsIgnoreCase("numero")) {
                 return (int) p.getValor();
+            } else {
+                tabla.agregar_error("Semantico", "El valor enviado no es un numero entero", linea, columna);
             }
         }
         return -1111;

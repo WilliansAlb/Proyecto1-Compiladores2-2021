@@ -19,8 +19,8 @@ public class Lista implements Serializable{
     private boolean circular;
     private boolean random;
     public final String IMG_LISTA = "lista.png";
-    public final String IMG_CIRCULAR = "coding.png";
-    public final String IMG_RANDOM = "cancion.png";
+    public final String IMG_CIRCULAR = "circular.png";
+    public final String IMG_RANDOM = "aleatorio.png";
 
     public Lista() {
 

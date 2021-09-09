@@ -49,12 +49,32 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <cupDefinition>src/main/java/Analizador/parserLista.cup</cupDefinition>
+                    <cupDefinition>src/main/java/Analizador/parserSolicitud.cup</cupDefinition>
                     <outputDirectory>src/main/java</outputDirectory>
-                    <className>parserLista</className>
-                    <symbolsName>symLista</symbolsName>
+                    <className>parserSolicitud</className>
+                    <symbolsName>symSolicitud</symbolsName>
                     <symbolsInterface>false</symbolsInterface>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <version>1.8.2</version>
+                <executions>
+                    <execution>
+                        <id>jflex</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/java/</outputDirectory>
+                            <lexDefinitions>
+                                <lexDefinition>src/main/java/Analizador/Lexers</lexDefinition>
+                            </lexDefinitions>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -106,10 +106,10 @@ public class Si extends Instruccion implements Serializable{
                     }
                 }
             } else {
-                tabla.agregar_error("Semantico", "La condición no es del tipo booleano", linea, columna);
+                tabla.agregar_error("Semantico", "La condición no es del tipo booleano es de tipo "+cond.getTipo(), columna+1, linea+1);
             }
         } else {
-            tabla.agregar_error("Semantico", "La condición no es de un tipo valido", linea, columna);
+            tabla.agregar_error("Semantico", "La condición no es de un tipo valido", columna+1, linea+1);
         }
     }
 

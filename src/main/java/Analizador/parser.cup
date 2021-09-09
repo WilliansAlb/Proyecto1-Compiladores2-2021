@@ -18,13 +18,15 @@ parser code
     public List<Declaracion> lista_declaraciones = new LinkedList<>();
 
     public void syntax_error(Symbol cur_token) {
-        System.out.println(" Se esperaban: ");
         String esperados = "";
         for (int i = 0; i < expected_token_ids().size(); i++){
             esperados += symbl_name_from_id(expected_token_ids().get(i))+"-";
         }
-        System.out.print(esperados+", pero se encontro "+cur_token.value+" en la linea"+cur_token.right+" y en la columna"+cur_token.left);
-        errores.add(new Errores("SINTACTICO","Se esperaba "+esperados+" y se encontro "+symbl_name_from_id(cur_token.sym),cur_token.right,cur_token.left));
+        if (expected_token_ids().isEmpty()){
+            errores.add(new Errores("Sintactico","No se esperaba "+symbl_name_from_id(cur_token.sym),cur_token.right,cur_token.left));
+        } else {
+            errores.add(new Errores("Sintactico","Se esperaba "+esperados+" y se encontro "+symbl_name_from_id(cur_token.sym),cur_token.left+1,cur_token.right+1));
+        }
     }
 
     public void report_fatal_error(String message, Object info) {
@@ -121,6 +123,7 @@ pista::=
             lista_metodos = new LinkedList<>();
             lista_declaraciones = new LinkedList<>();
         :}
+    |   error
 ;
 
 extiende::=

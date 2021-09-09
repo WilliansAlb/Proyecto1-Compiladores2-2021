@@ -15,7 +15,6 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -65,7 +64,7 @@
                               </ImageView>
                            </graphic>
                            <content>
-                              <SplitPane dividerPositions="0.33910533910533913" prefHeight="200.0" prefWidth="200.0">
+                              <SplitPane dividerPositions="0.3">
                                  <items>
                                     <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
                                       <items>
@@ -75,11 +74,18 @@
                                                    <font>
                                                       <Font name="Arial Bold" size="26.0" />
                                                    </font>
+                                                   <graphic>
+                                                      <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@listas.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
                                                 </Label>
                                                 <ListView fx:id="listas" prefHeight="500.0" prefWidth="300.0" />
                                                 <HBox alignment="CENTER" fillHeight="false" prefHeight="16.0" prefWidth="343.0" spacing="10.0">
                                                    <children>
-                                                      <Button mnemonicParsing="false" text="EDITAR" HBox.hgrow="ALWAYS">
+                                                      <Button mnemonicParsing="false" onAction="#modificar_lista" styleClass="blue" text="EDITAR" HBox.hgrow="ALWAYS">
                                                          <graphic>
                                                             <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                                <image>
@@ -87,8 +93,11 @@
                                                                </image>
                                                             </ImageView>
                                                          </graphic>
+                                                         <cursor>
+                                                            <Cursor fx:constant="HAND" />
+                                                         </cursor>
                                                       </Button>
-                                                      <Button mnemonicParsing="false" text="ELIMINAR" HBox.hgrow="ALWAYS">
+                                                      <Button mnemonicParsing="false" onAction="#eliminar_lista" styleClass="blue" text="ELIMINAR" HBox.hgrow="ALWAYS">
                                                          <graphic>
                                                             <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                                <image>
@@ -96,6 +105,9 @@
                                                                </image>
                                                             </ImageView>
                                                          </graphic>
+                                                         <cursor>
+                                                            <Cursor fx:constant="HAND" />
+                                                         </cursor>
                                                       </Button>
                                                    </children>
                                                 </HBox>
@@ -119,11 +131,18 @@
                                              <font>
                                                 <Font name="Arial Bold" size="26.0" />
                                              </font>
+                                             <graphic>
+                                                <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@canciones.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
                                           </Label>
                                           <ListView fx:id="canciones" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="TOP_CENTER" prefHeight="16.0" prefWidth="454.0" spacing="2.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <Button fx:id="btn_crear" mnemonicParsing="false" onAction="#crear" text="CREAR">
+                                                <Button fx:id="btn_crear" mnemonicParsing="false" onAction="#crear" styleClass="blue" text="CREAR" HBox.hgrow="ALWAYS">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -131,8 +150,11 @@
                                                          </image>
                                                       </ImageView>
                                                    </graphic>
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
                                                 </Button>
-                                                <Button mnemonicParsing="false" onAction="#modificar" text="EDITAR">
+                                                <Button mnemonicParsing="false" onAction="#modificar" styleClass="blue" text="EDITAR" HBox.hgrow="ALWAYS">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -140,24 +162,33 @@
                                                          </image>
                                                       </ImageView>
                                                    </graphic>
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
                                                 </Button>
-                                                <Button mnemonicParsing="false" onAction="#play_seleccion" text="REPRODUCIR">
+                                                <Button mnemonicParsing="false" onAction="#play_seleccion" styleClass="blue" text="REPRODUCIR" HBox.hgrow="ALWAYS">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
-                                                            <Image url="@play.png" />
+                                                            <Image url="@008-play%20button.png" />
                                                          </image>
                                                       </ImageView>
                                                    </graphic>
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
                                                 </Button>
-                                                <Button mnemonicParsing="false" onAction="#eliminar_pista" text="ELIMINAR">
+                                                <Button mnemonicParsing="false" onAction="#eliminar_pista" styleClass="blue" text="ELIMINAR" HBox.hgrow="ALWAYS">
                                                    <graphic>
                                                       <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
-                                                            <Image url="@error.png" />
+                                                            <Image url="@013-delete.png" />
                                                          </image>
                                                       </ImageView>
                                                    </graphic>
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
                                                 </Button>
                                              </children>
                                              <opaqueInsets>
@@ -179,7 +210,7 @@
                                             </Label>
                                     <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
                                        <children>
-                                                  <Button fx:id="btn_revisar" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" text="INTERPRETAR" textAlignment="CENTER">
+                                                  <Button fx:id="btn_revisar" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" styleClass="blue" text="INTERPRETAR" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -188,10 +219,10 @@
                                                 </ImageView>
                                              </graphic>
                                              <cursor>
-                                                <Cursor fx:constant="OPEN_HAND" />
+                                                <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
-                                          <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" text="VER CONSOLA" textAlignment="CENTER">
+                                          <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" styleClass="blue" text="VER CONSOLA" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fx:id="con" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -203,7 +234,7 @@
                                                 <Insets left="10.0" />
                                              </HBox.margin>
                                              <cursor>
-                                                <Cursor fx:constant="OPEN_HAND" />
+                                                <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
                                        </children>
@@ -233,7 +264,7 @@
                                     </Label>
                                     <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisarLista" text="INTERPRETAR" textAlignment="CENTER">
+                                          <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisarLista" styleClass="blue" text="INTERPRETAR" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -242,12 +273,12 @@
                                                 </ImageView>
                                              </graphic>
                                              <cursor>
-                                                <Cursor fx:constant="OPEN_HAND" />
+                                                <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
-                                          <Button fx:id="btn_consola1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" text="VER CONSOLA" textAlignment="CENTER">
+                                          <Button fx:id="btn_consola1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" styleClass="blue" text="VER CONSOLA" textAlignment="CENTER">
                                              <graphic>
-                                                <ImageView fx:id="con1" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                <ImageView fx:id="con1" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true" styleClass="blue">
                                                    <image>
                                                       <Image url="@ver.png" />
                                                    </image>
@@ -257,7 +288,7 @@
                                                 <Insets left="10.0" />
                                              </HBox.margin>
                                              <cursor>
-                                                <Cursor fx:constant="OPEN_HAND" />
+                                                <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
                                        </children>
@@ -276,18 +307,23 @@
                               </ImageView>
                            </graphic>
                         </Tab>
-                        <Tab text="Errores">
+                        <Tab closable="false" text="Errores">
                           <content>
                               <VBox alignment="TOP_CENTER">
                                  <children>
-                                    <Label text="Reporte de errores">
+                                    <Label layoutX="240.0" layoutY="10.0" text="Reporte de errores">
                                        <font>
                                           <Font name="Arial Bold" size="26.0" />
                                        </font>
                                     </Label>
-                                    <HBox alignment="CENTER" prefHeight="62.0" prefWidth="693.0">
+                                    <Label fx:id="numero_error" text="--">
+                                       <font>
+                                          <Font name="Arial Bold" size="26.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="CENTER" prefHeight="80.0" prefWidth="693.0">
                                        <children>
-                                          <Button mnemonicParsing="false" prefHeight="64.0" prefWidth="65.0">
+                                          <Button fx:id="btn_anterior" mnemonicParsing="false" onAction="#anterior_error" prefHeight="92.0" prefWidth="74.0" styleClass="blue" HBox.hgrow="NEVER">
                                              <graphic>
                                                 <ImageView fitHeight="44.0" fitWidth="44.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -295,17 +331,12 @@
                                                    </image>
                                                 </ImageView>
                                              </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
                                           </Button>
-                                          <TableView prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-                                            <columns>
-                                              <TableColumn prefWidth="75.0" text="ERROR #" />
-                                              <TableColumn prefWidth="52.000030517578125" text="LINEA" />
-                                                <TableColumn prefWidth="85.0" text="COLUMNA" />
-                                                <TableColumn prefWidth="89.0" text="TIPO" />
-                                                <TableColumn prefWidth="260.0" text="RAZON" />
-                                            </columns>
-                                          </TableView>
-                                          <Button mnemonicParsing="false" prefHeight="64.0" prefWidth="65.0">
+                                          <TableView fx:id="tabla" prefHeight="50.0" prefWidth="400.0" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="btn_siguiente" mnemonicParsing="false" onAction="#siguiente_error" prefHeight="106.0" prefWidth="74.0" styleClass="blue">
                                              <graphic>
                                                 <ImageView fitHeight="44.0" fitWidth="44.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -313,11 +344,14 @@
                                                    </image>
                                                 </ImageView>
                                              </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
                                           </Button>
                                        </children>
                                     </HBox>
-                                    <StackPane prefHeight="416.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
-                                    <TextField />
+                                    <StackPane fx:id="area_error" prefHeight="416.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
+                                    <TextField fx:id="donde_error" />
                                  </children>
                               </VBox>
                           </content>
@@ -335,7 +369,7 @@
                     </VBox>
                     <VBox prefHeight="200.0" prefWidth="683.0">
                         <children>
-                            <LineChart fx:id="myChart" animated="false" axisSortingPolicy="NONE" createSymbols="false" legendVisible="false" prefHeight="880.0" prefWidth="597.0" title="Frecuencia">
+                            <LineChart fx:id="myChart" animated="false" axisSortingPolicy="NONE" createSymbols="false" prefHeight="880.0" prefWidth="597.0" title="Frecuencia" verticalGridLinesVisible="false">
                                 <xAxis>
                                     <CategoryAxis gapStartAndEnd="false" side="BOTTOM" tickLabelsVisible="false" />
                                 </xAxis>
@@ -343,24 +377,27 @@
                                     <NumberAxis autoRanging="false" minorTickLength="100.0" side="LEFT" tickUnit="50.0" upperBound="4000.0" />
                                 </yAxis>
                             </LineChart>
-                            <Label fx:id="cancion" alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="1000.0" text="Canción por defecto" textAlignment="CENTER" />
+                            <Label fx:id="cancion" alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="1000.0" text="--" textAlignment="CENTER">
+                     <font>
+                        <Font name="Arial Narrow Bold" size="30.0" />
+                     </font></Label>
                             <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="12.0" prefWidth="668.0">
                                 <children>
-                                    <Label fx:id="pasado" text="0:00" HBox.hgrow="NEVER" />
-                        <ProgressBar fx:id="progreso" prefHeight="23.0" prefWidth="539.0" progress="0.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="faltante" text="0:00" HBox.hgrow="NEVER" />
+                                    <Label fx:id="pasado" text="0:00" HBox.hgrow="ALWAYS" />
+                        <ProgressBar fx:id="progreso" maxHeight="1000.0" maxWidth="1000.0" progress="0.0" HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="faltante" text="0:00" HBox.hgrow="ALWAYS" />
                                 </children>
                             </HBox>
-                            <HBox alignment="CENTER" prefHeight="19.0" prefWidth="668.0">
+                            <HBox alignment="CENTER" prefHeight="19.0" prefWidth="668.0" spacing="10.0" VBox.vgrow="ALWAYS">
                                 <children>
-                                    <Button fx:id="play" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#iniciar2" prefWidth="1000.0" text="Button" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                                    <Button fx:id="play" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#iniciar2" prefWidth="0.0" styleClass="blue" text="Button" textAlignment="CENTER" HBox.hgrow="ALWAYS">
                                         <graphic>
-                                            <javafx.scene.image.ImageView fx:id="repro" fitWidth="80.0" preserveRatio="true">
+                                            <javafx.scene.image.ImageView fx:id="repro" fitWidth="80.0" preserveRatio="true" styleClass="blue">
                                                 <image>
-                                                    <javafx.scene.image.Image url="@play.png" />
+                                                    <javafx.scene.image.Image url="@reproducir.png" />
                                                 </image>
                                  <cursor>
-                                    <Cursor fx:constant="OPEN_HAND" />
+                                    <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <effect>
                                     <Lighting>
@@ -377,15 +414,18 @@
                                         <HBox.margin>
                                             <Insets />
                                         </HBox.margin>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
                                     </Button>
-                        <Button fx:id="parar" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#parar" prefWidth="1000.0" text="Button" textAlignment="CENTER">
+                        <Button fx:id="parar" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#parar" prefHeight="90.0" prefWidth="59.0" styleClass="blue" text="Button" textAlignment="CENTER" HBox.hgrow="NEVER">
                            <graphic>
-                              <ImageView fx:id="parar_img" fitWidth="80.0" preserveRatio="true">
+                              <ImageView fx:id="parar_img" fitWidth="80.0" preserveRatio="true" styleClass="blue">
                                  <image>
-                                    <Image url="@parar.png" />
+                                    <Image url="@stop.png" />
                                  </image>
                                  <cursor>
-                                    <Cursor fx:constant="OPEN_HAND" />
+                                    <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <effect>
                                     <Lighting>
@@ -399,8 +439,14 @@
                                  </effect>
                               </ImageView>
                            </graphic>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
                         </Button>
                                 </children>
+                     <VBox.margin>
+                        <Insets bottom="20.0" top="20.0" />
+                     </VBox.margin>
                             </HBox>
                         </children>
                     </VBox>

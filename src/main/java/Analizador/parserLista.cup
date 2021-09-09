@@ -1,4 +1,5 @@
 package Analizador;
+import Interprete.Errores;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.XMLElement;
 import com.mycompany.practica1.Lista;
@@ -8,14 +9,20 @@ parser code
 {:
 
     public Lista la_lista = new Lista();
+    public ArrayList<Errores> lista_errores = new ArrayList<>();
 
     public void syntax_error(Symbol cur_token) {
-        System.out.println(" Se esperaban: ");
         String esperados = "";
-        for (int i = 0; i < expected_token_ids().size(); i++){
-            esperados += symbl_name_from_id(expected_token_ids().get(i))+"-";
+        for (int i = 0; i < expected_token_ids().size(); i++) {
+            System.out.println(expected_token_ids().get(i) + "no se");
+            esperados += symbl_name_from_id(expected_token_ids().get(i)) + "-";
         }
-        System.out.print(esperados+", pero se encontro "+cur_token.value+" en la linea"+cur_token.right+" y en la columna"+cur_token.left);
+        System.out.print(esperados + ", pero se encontro " + cur_token.value + " en la linea" + cur_token.right + " y en la columna" + cur_token.left);
+        if (expected_token_ids().isEmpty()) {
+            lista_errores.add(new Errores("Sintactico", "No se esperaba " + cur_token.value, cur_token.left + 1, cur_token.right + 1));
+        } else {
+            lista_errores.add(new Errores("Sintactico", "Se esperaba " + esperados + ", pero se encontro " + cur_token.value, cur_token.left + 1, cur_token.right + 1));
+        }
     }
 
     public void report_fatal_error(String message, Object info) {
@@ -44,13 +51,14 @@ inicio::=
     listas 
         {:
             if (la_lista.getId()==null){
-                System.out.println("El codigo que ingresaste no contiene id, error sintactico en la linea");
+                lista_errores.add(new Errores("Sintactico","La lista no tiene nombre", 0, 0));
             }
         :}
 ;
 
 listas::=
     LLAVE_A LISTA DOS_P LLAVE_A atributos LLAVE_C LLAVE_C
+|   error
 ;
 
 atributos::=
@@ -62,7 +70,7 @@ atributo::=
     NOMBRE DOS_P STRING:e1
         {:
             if (!la_lista.agregar_id(e1.toString())){
-                System.out.println("Este metodo ya tiene identificador, error sintactico "+e1right+" y columna "+e1left);
+                lista_errores.add(new Errores("Sintactico","El atributo nombre solo puede venir una vez", e1left+1, e1right+1));
             }
         :}
 |   RANDOM DOS_P booleano:e1
@@ -78,18 +86,18 @@ atributo::=
             String respuesta = la_lista.agregar_canciones(e1);
             switch(respuesta){
                 case "tiene":
-                    System.out.println("Este metodo ya tiene agregadas pistas, error sintactico en la linea "+e1right+" y columna "+e1left);
+                    lista_errores.add(new Errores("Sintactico","El atributo pistas puede venir cero o una vez, no varias", e1left+1,e1right+1));
                     break;
                 case "repetida":
-                    System.out.println("Este metodo tiene nombre de pistas repetidas, error sintactico en la linea "+e1right+" y columna "+e1left);
+                    lista_errores.add(new Errores("Semantico","El atributo pistas trae pistas repetidas",e1left+1,e1right+1));
                     break;
                 case "exito":
-                    System.out.println("Severo exito en la linea "+e1right+" y columna "+e1left);
                     break;
                 default:
                     break;
             }
         :}
+|   error
 ;
 
 pistas::=

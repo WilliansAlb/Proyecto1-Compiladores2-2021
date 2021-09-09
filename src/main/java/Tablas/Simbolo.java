@@ -5,13 +5,14 @@
  */
 package Tablas;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author willi
  */
-public class Simbolo {
+public class Simbolo implements Serializable {
     private String id;
     private String tipo;
     private List<Integer> dimensiones;

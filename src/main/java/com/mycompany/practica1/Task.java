@@ -84,14 +84,10 @@ public class Task extends Thread {
                         progreso.setProgress(0);
                         for (int i = 0; i < reproduce.getCanales().size(); i++) {
                             Series<String, Number> series2 = new Series<>();
+                            series2.setName("Canal "+reproduce.getCanales().get(i).getId());
                             seriees.add(series2);
                             this.chart.getData().add(seriees.get(i));
                             this.seriees.get(i).getData().add(new Data<>("" + 0, 0));
-                        }
-                    }
-                    if (segundos > 40) {
-                        for (int i = 0; i < reproduce.getCanales().size(); i++) {
-                            this.seriees.get(i).getData().remove(0);
                         }
                     }
                     for (int i = 0; i < reproduce.getCanales().size(); i++) {
@@ -134,6 +130,11 @@ public class Task extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            Platform.runLater(() -> {
+                for (int i = 0; i < reproduce.getCanales().size(); i++) {
+                    this.seriees.get(i).getData().add(new Data<>("final", 0));
+                }
+            });
             kill();
         } else {
             while (isActive) {

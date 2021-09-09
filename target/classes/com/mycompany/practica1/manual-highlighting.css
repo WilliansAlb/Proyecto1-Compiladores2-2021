@@ -1,15 +1,6 @@
-.red {
+.styled-text-area .selection {
     -fx-fill: red;
 }
-
-.green {
-    -fx-fill: green;
-}
-
-.blue {
-    -fx-fill: blue;
-}
-
-.bold {
-    -fx-font-weight: bold;
+.paragraph-box:has-caret {
+    -fx-background-color: red;
 }

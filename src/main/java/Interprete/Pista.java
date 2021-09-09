@@ -97,6 +97,55 @@ public class Pista implements Serializable {
         }
     }
 
+    public void obtener_keeps(Simbolos tabla) {
+        ArrayList<Metodo> listado_metodos = new ArrayList<>();
+        ArrayList<Declaracion> listado_declaraciones = new ArrayList<>();
+        for (Metodo metodo : metodos) {
+            if (!metodo.isPrincipal() && metodo.isKeep()) {
+                listado_metodos.add(metodo);
+            }
+        }
+        for (Declaracion declaracion : declaraciones) {
+            if (declaracion.isKeep()) {
+                listado_declaraciones.add(declaracion);
+            }
+        }
+        Keep n = new Keep(id, listado_metodos, listado_declaraciones);
+        tabla.obtener("$keep").getDatos().add(n);
+    }
+
+    public void interpretar2(Simbolos tabla) {
+        Reproduccion nuevo = new Reproduccion(null, id);
+        ArrayList<Metodo> listado_metodos = new ArrayList<>();
+        int principales = 0;
+        Metodo principal = new Metodo();
+        for (Metodo metodo : metodos) {
+            if (metodo.isPrincipal()) {
+                principal = metodo;
+                principales++;
+            } else {
+                listado_metodos.add(metodo);
+            }
+        }
+        if (principales == 1) {
+            tabla.agregar_sistema("$metodos", "$metodos", listado_metodos);
+            agregar_declaraciones(tabla);
+            tabla.agregar_sistema("$reproducir", "$reproducir", nuevo);
+            tabla.agregar_sistema("$mensaje", "$mensaje", "");
+            tabla.ambitos++;
+            ArrayList<Metodo> m = agregar_extiende2(tabla);
+            if (!m.isEmpty()) {
+                listado_metodos.addAll(m);
+            }
+            principal.interpretar(tabla);
+            Simbolo s = tabla.obtener("$reproducir");
+            ((Pista) tabla.obtener("$pista").getDatos().get(0)).setRep((Reproduccion) s.getDatos().get(0));
+            tabla.eliminar_ambito();
+        } else {
+            tabla.agregar_error("Semantico", "Tiene más de un metodo principal", 0, 0);
+        }
+    }
+
     public void agregar_declaraciones(Simbolos tabla) {
         for (Declaracion declaracione : declaraciones) {
             declaracione.interpretar(tabla);
@@ -121,6 +170,34 @@ public class Pista implements Serializable {
                         }
                     }
                 }
+            }
+        }
+        return met;
+    }
+
+    public ArrayList<Metodo> agregar_extiende2(Simbolos tabla) {
+        List<Object> pistas = (List) tabla.obtener("$keep").getDatos();
+        ArrayList<Metodo> met = new ArrayList<>();
+        if (extiende != null) {
+            int conteo = 0;
+            for (int i = 0; i < pistas.size(); i++) {
+                Keep k = (Keep) pistas.get(i);
+                if (extiende.contains(k.getId_pista())) {
+                    if (k.tieneDeclaraciones()) {
+                        for (Declaracion declaracion : k.getDeclaracion_keep()) {
+                            declaraciones.add(declaracion);
+                        }
+                    }
+                    if (k.tieneMetodos()) {
+                        for (Metodo metodo : k.getMetodos_keep()) {
+                            met.add(metodo);
+                        }
+                    }
+                    conteo++;
+                }
+            }
+            if (conteo!=extiende.size()){
+                tabla.agregar_error("Semantico","Se solicitaron metodos de pistas que no existen", 0, 0);
             }
         }
         return met;

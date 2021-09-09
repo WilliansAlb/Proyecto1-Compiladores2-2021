@@ -9,6 +9,7 @@ import Analizador.Lexer;
 import Analizador.LexerLista;
 import Analizador.parser;
 import Analizador.parserLista;
+import Interprete.Errores;
 import Interprete.Expresion;
 import Interprete.Pista;
 import Interprete.Primitivo;
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -68,6 +70,8 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -78,9 +82,12 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -90,6 +97,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -102,6 +110,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.StyledTextArea;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
@@ -116,6 +125,8 @@ public class TextoControlador implements Initializable {
     boolean reproduciendo = true;
     CodeArea codeArea;
     CodeArea codeArea1;
+    CodeArea codeAreaError;
+    int error_actual = 0;
     @FXML
     public LineChart myChart;
     @FXML
@@ -125,9 +136,13 @@ public class TextoControlador implements Initializable {
     @FXML
     public StackPane area1;
     @FXML
+    public StackPane area_error;
+    @FXML
     public ProgressBar progreso;
     @FXML
     public Label pasado;
+    @FXML
+    public Label numero_error;
     @FXML
     public Label faltante;
     @FXML
@@ -147,9 +162,12 @@ public class TextoControlador implements Initializable {
     @FXML
     public ImageView parar_img;
     @FXML
+    public TableView<Errores> tabla;
+    @FXML
     public ImageView con;
     public TextField donde;
     public TextField donde1;
+    public TextField donde_error;
     public Reproduccion actual;
     @FXML
     public ListView<Lista> listas;
@@ -163,49 +181,14 @@ public class TextoControlador implements Initializable {
     public final ObservableList<Cancion> data_cancion = FXCollections.observableArrayList();
     public final ObservableList<Cancion> data_lista_cancion = FXCollections.observableArrayList();
     public String lista_escogida = "";
+    public String cancion_escogida = "";
     public ArrayList<Cancion> cans = new ArrayList<>();
     public ArrayList<Lista> lis = new ArrayList<>();
-
+    public final ObservableList<Errores> datos = FXCollections.observableArrayList();
+    public ArrayList<Errores> listado_errores = new ArrayList<>();
+    public boolean modificando_pista = false;
+    public boolean modificando_lista = false;
     Task nuevo;
-
-    private static final String COMENTARIOS = ">>prueba comentario de linea\n"
-            + ">>prueba comentario de linea\n"
-            + "<- prueba comentario\n"
-            + "de lineas a ver si funciona\n"
-            + "->\n"
-            + "PISTA komm EXTIENDE Neon, Genesis\n"
-            + "	var entero a = 10\n"
-            + "	keep var entero a09 = 22\n"
-            + "	var cadena ca = \"hola\"\n"
-            + "	Principal()\n"
-            + "		a = 23\n"
-            + "		si (a<5)\n"
-            + "			var entero a3 = a+10\n"
-            + "			var entero a4 = 2\n"
-            + "			var entero a5 = 5\n"
-            + "		sino si (true)\n"
-            + "			var entero a34 = 34\n"
-            + "			var entero a104 = 34\n"
-            + "			var entero a32 = true\n"
-            + "			si (a32>0)\n"
-            + "				var entero a65 = 5\n"
-            + "				a = 25\n"
-            + "				var entero a219 = 10\n"
-            + "			var entero a70 = a65\n"
-            + "		Reproducir(re,2,1000,3)\n"
-            + "		Reproducir(fa,5,2000,2)\n"
-            + "		Reproducir(mi,2,2000,1)\n"
-            + "		switch(ca)\n"
-            + "			caso \"ho\"\n"
-            + "				Mensaje(\"hola perro esto pasa\")\n"
-            + "			caso \"hola\"\n"
-            + "				Mensaje(\"Correcto sin salida\")\n"
-            + "			caso \"hello\"\n"
-            + "				Mensaje(\"Otro más\")\n"
-            + "				salir\n"
-            + "			default\n"
-            + "				Mensaje(\"No tendría que pasar\")\n"
-            + "				Mensaje(\"No tendría que pasar2\")";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -213,7 +196,6 @@ public class TextoControlador implements Initializable {
         CodeLista cl = new CodeLista();
         codeArea = cp.obtener();
         codeArea1 = cl.obtener();
-
         final Pattern whiteSpace = Pattern.compile("^\\s+");
         codeArea.addEventHandler(KeyEvent.KEY_PRESSED, KE
                 -> {
@@ -227,7 +209,6 @@ public class TextoControlador implements Initializable {
             }
             donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         });
-
         codeArea1.addEventHandler(KeyEvent.KEY_PRESSED, KE
                 -> {
             if (KE.getCode() == KeyCode.ENTER) {
@@ -247,8 +228,8 @@ public class TextoControlador implements Initializable {
         codeArea1.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent MO) -> {
             donde1.setText("Linea: " + (codeArea1.getCurrentParagraph() + 1) + " Columna: " + codeArea1.getCaretColumn());
         });
-        codeArea.replaceText(0, 0, COMENTARIOS);
-
+        codeArea.getStylesheets().add(getClass().getResource("codeArea.css").toExternalForm());
+        codeArea1.getStylesheets().add(getClass().getResource("codeArea.css").toExternalForm());
         donde.setText("Linea: " + (codeArea.getCurrentParagraph() + 1) + " Columna: " + codeArea.getCaretColumn());
         donde1.setText("Linea: " + (codeArea1.getCurrentParagraph() + 1) + " Columna: " + codeArea1.getCaretColumn());
         donde.setEditable(false);
@@ -277,12 +258,11 @@ public class TextoControlador implements Initializable {
                         super.updateItem(pa, s);
                         if (pa != null) {
                             Image img = new Image(App.class.getResource(pa.IMG_LISTA).toExternalForm());
-                            BorderPane b = new BorderPane();
+                            HBox h1 = new HBox();
                             Label iden = new Label(pa.getId());
-                            iden.setPrefWidth(200.00);
+                            iden.setMaxWidth(1000.00);
                             iden.setTextAlignment(TextAlignment.LEFT);
                             iden.setTooltip(new Tooltip(pa.getId()));
-
                             HBox h = new HBox();
                             if (pa.isCircular()) {
                                 Image img2 = new Image(App.class.getResource(pa.IMG_CIRCULAR).toExternalForm());
@@ -290,7 +270,10 @@ public class TextoControlador implements Initializable {
                                 imgT.setPreserveRatio(false);
                                 imgT.setFitWidth(20.00);
                                 imgT.setFitHeight(20.00);
-                                h.getChildren().add(imgT);
+                                Label im1 = new Label();
+                                im1.setGraphic(imgT);
+                                im1.setTooltip(new Tooltip("Lista circular"));
+                                h.getChildren().add(im1);
                             }
                             if (pa.isRandom()) {
                                 Image img2 = new Image(App.class.getResource(pa.IMG_RANDOM).toExternalForm());
@@ -298,22 +281,31 @@ public class TextoControlador implements Initializable {
                                 imgT.setPreserveRatio(false);
                                 imgT.setFitWidth(20.00);
                                 imgT.setFitHeight(20.00);
-                                h.getChildren().add(imgT);
+                                Label im1 = new Label();
+                                im1.setGraphic(imgT);
+                                im1.setTooltip(new Tooltip("Lista aleatoria"));
+                                h.getChildren().add(im1);
                             }
+                            HBox.setHgrow(iden, Priority.ALWAYS);
 
                             ImageView imgView = new ImageView(img);
                             imgView.setPreserveRatio(false);
                             imgView.setFitWidth(20.00);
                             imgView.setFitHeight(20.00);
-                            b.setCenter(iden);
-                            b.setLeft(imgView);
-                            b.setRight(h);
-                            setGraphic(b);
-                            b.addEventFilter(
+                            h1.getChildren().add(imgView);
+                            h1.getChildren().add(iden);
+                            h1.getChildren().add(h);
+                            setGraphic(h1);
+                            h1.addEventFilter(
                                     MouseEvent.MOUSE_PRESSED,
                                     new EventHandler<MouseEvent>() {
                                 public void handle(final MouseEvent mouseEvent) {
-                                    rellenar_canciones_lista(iden.getText());
+                                    lista_escogida = iden.getText();
+                                    if (!lista_escogida.equalsIgnoreCase("No has creado ninguna lista")) {
+                                        rellenar_canciones_lista(iden.getText());
+                                    } else {
+                                        data_lista_cancion.clear();
+                                    }
                                 }
                             });
                         } else {
@@ -337,24 +329,26 @@ public class TextoControlador implements Initializable {
                             Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
                             Label l = new Label("Duracion: " + pa.getDuracion());
                             Label iden = new Label(pa.getId());
-                            l.setFont(new Font(10.0));
+                            iden.setMaxWidth(1000);
+                            iden.setMinWidth(50);
                             l.setTextAlignment(TextAlignment.RIGHT);
-                            iden.setPrefWidth(500.00);
                             iden.setTextAlignment(TextAlignment.LEFT);
-                            BorderPane b = new BorderPane();
+                            HBox h = new HBox();
+                            HBox.setHgrow(iden, Priority.ALWAYS);
+                            HBox.setHgrow(l, Priority.ALWAYS);
                             ImageView imgView = new ImageView(img);
                             imgView.setPreserveRatio(false);
                             imgView.setFitWidth(20.00);
                             imgView.setFitHeight(20.00);
-                            b.setLeft(imgView);
-                            b.setCenter(iden);
-                            b.setRight(l);
-                            setGraphic(b);
-                            b.addEventFilter(
+                            h.getChildren().add(imgView);
+                            h.getChildren().add(iden);
+                            h.getChildren().add(l);
+                            setGraphic(h);
+                            h.addEventFilter(
                                     MouseEvent.MOUSE_PRESSED,
                                     new EventHandler<MouseEvent>() {
                                 public void handle(final MouseEvent mouseEvent) {
-                                    lista_escogida = iden.getText();
+                                    cancion_escogida = iden.getText();
                                 }
                             });
                         } else {
@@ -375,28 +369,19 @@ public class TextoControlador implements Initializable {
                         super.updateItem(pa, s);
                         if (pa != null) {
                             Image img = new Image(App.class.getResource(pa.getImg()).toExternalForm());
-                            Label l = new Label("Duracion: " + pa.getDuracion());
                             Label iden = new Label(pa.getId());
-                            l.setFont(new Font(10.0));
-                            l.setTextAlignment(TextAlignment.RIGHT);
-                            iden.setPrefWidth(200.00);
+                            iden.setMaxWidth(1000);
+                            iden.setMinWidth(50);
                             iden.setTextAlignment(TextAlignment.LEFT);
-                            BorderPane b = new BorderPane();
+                            HBox h = new HBox();
+                            HBox.setHgrow(iden, Priority.ALWAYS);
                             ImageView imgView = new ImageView(img);
                             imgView.setPreserveRatio(false);
                             imgView.setFitWidth(20.00);
                             imgView.setFitHeight(20.00);
-                            b.setLeft(imgView);
-                            b.setCenter(iden);
-                            b.setRight(l);
-                            setGraphic(b);
-                            b.addEventFilter(
-                                    MouseEvent.MOUSE_PRESSED,
-                                    new EventHandler<MouseEvent>() {
-                                public void handle(final MouseEvent mouseEvent) {
-                                    lista_escogida = iden.getText();
-                                }
-                            });
+                            h.getChildren().add(imgView);
+                            h.getChildren().add(iden);
+                            setGraphic(h);
                         } else {
                             setGraphic(null);
                         }
@@ -408,6 +393,29 @@ public class TextoControlador implements Initializable {
         canciones_lista.setItems(data_lista_cancion);
         llenar_canciones();
         rellenar_listas();
+
+        TableColumn<Errores, String> tipo = new TableColumn<>("tipo");
+        tipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+
+        TableColumn<Errores, String> razon = new TableColumn<>("razon");
+        razon.setCellValueFactory(new PropertyValueFactory<>("razon"));
+
+        TableColumn<Errores, Integer> linea = new TableColumn<>("linea");
+        linea.setCellValueFactory(new PropertyValueFactory<>("linea"));
+
+        TableColumn<Errores, Integer> columna = new TableColumn<>("columna");
+        columna.setCellValueFactory(new PropertyValueFactory<>("columna"));
+        datos.add(new Errores("Semantico", "Una razon x", 10, 10));
+
+        linea.prefWidthProperty().bind(tabla.widthProperty().multiply(0.1));
+        columna.prefWidthProperty().bind(tabla.widthProperty().multiply(0.1));
+        tipo.prefWidthProperty().bind(tabla.widthProperty().multiply(0.15));
+        razon.prefWidthProperty().bind(tabla.widthProperty().multiply(0.65));
+        tabla.getColumns().addAll(linea, columna, tipo, razon);
+        tabla.setItems(datos);
+        Servidor s = new Servidor();
+        s.setDaemon(true);
+        s.start();
     }
 
     private void rellenar_canciones_lista(String text) {
@@ -433,28 +441,188 @@ public class TextoControlador implements Initializable {
     }
 
     @FXML
-    private void revisar() throws IOException, Exception {
-        //System.out.println(codeArea.getText());
-        parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
-        par.parse();
-        //escribir_binario();
-        Programa program = par.programa;
-        iniciar(program);
-        //leer(par.sumando);
-        //Lexer n = new Lexer(new StringReader(codeArea.getText()));
-        //escribir(n);
+    private void modificar_lista() {
+        Lista temp_lista = new Lista();
+        for (int i = 0; i < lis.size(); i++) {
+            if (lis.get(i).getId().equalsIgnoreCase(lista_escogida)) {
+                temp_lista = lis.get(i);
+            }
+        }
+        String codigo = "{\n\tlista:\n\t{\n\t\tnombre: \"" + temp_lista.getId() + "\",\n\t\tcircular: " + temp_lista.isCircular() + ",\n\t\trandom: " + temp_lista.isRandom();
+        if (temp_lista.getCanciones() != null) {
+            if (!temp_lista.getCanciones().isEmpty()) {
+                codigo += ",\n\t\tpistas: " + Arrays.toString(temp_lista.getCanciones().toArray()) + "\n\t}\n}";
+            } else {
+                codigo += "\n\t}\n}";
+            }
+        } else {
+            codigo += "\n\t}\n}";
+        }
+        codeArea1.replaceText(codigo);
+        cambiar_a_tab(2);
     }
 
     @FXML
+    private void revisar() throws IOException, Exception {
+        listado_errores.clear();
+        error_actual = 0;
+        parser par = new parser(new Lexer(new StringReader(codeArea.getText())));
+        par.parse();
+        if (par.errores.isEmpty()) {
+            Programa program = par.programa;
+            iniciar2(program);
+        } else {
+            for (int i = 0; i < par.errores.size(); i++) {
+                listado_errores.add(par.errores.get(i));
+            }
+            iniciar_area_error(false);
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("Ha ocurrido un error, se te mostrara la tab de errores");
+            datos.set(0, listado_errores.get(0));
+            numero_error.setText("error " + 1 + " de " + listado_errores.size());
+            a.show();
+            cambiar_a_tab(3);
+        }
+    }
+
+    int temp_recurrencias = 0;
+
+    @FXML
     private void revisarLista() throws IOException, Exception {
-        //System.out.println(codeArea.getText());
+        listado_errores.clear();
+        error_actual = 0;
         parserLista par = new parserLista(new LexerLista(new StringReader(codeArea1.getText())));
         par.parse();
-        Lista l = par.la_lista;
-        data.add(l);
-        lis.add(l);
-        escribir_binario_lista();
-        rellenar_listas();
+        if (par.lista_errores.isEmpty()) {
+            Lista l = par.la_lista;
+            ArrayList<String> t_no = new ArrayList<>();
+            int te = 0;
+            int te2 = 0;
+            if (l.getCanciones() != null) {
+                while (te < l.getCanciones().size() && te2 < l.getCanciones().size()) {
+                    String com = l.getCanciones().get(te2);
+                    boolean existe = false;
+                    for (int i = 0; i < cans.size(); i++) {
+                        if (com.equalsIgnoreCase(cans.get(i).getId())) {
+                            te++;
+                            existe = true;
+                            break;
+                        }
+                    }
+                    if (!existe) {
+                        t_no.add(com);
+                    }
+                    te2++;
+                }
+                if (te == te2) {
+                    temp_recurrencias = 0;
+                    System.out.println(lis.size());
+                    for (int i = 0; i < lis.size(); i++) {
+                        if (lis.get(i).getId().contains(l.getId())) {
+                            temp_recurrencias++;
+                        }
+                    }
+                    if (temp_recurrencias != 0) {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Recurrencia en nombre de lista");
+                        alert.setContentText("Guardar cambiandole el nombre a " + l.getId() + "" + (temp_recurrencias + 1));
+                        ButtonType okButton = new ButtonType("Si", ButtonBar.ButtonData.YES);
+                        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+                        alert.getButtonTypes().setAll(okButton, noButton);
+                        alert.showAndWait().ifPresent(type -> {
+                            if (type == okButton) {
+                                l.setId(l.getId() + (temp_recurrencias + 1));
+                                data.add(l);
+                                lis.add(l);
+                                escribir_binario_lista();
+                                rellenar_listas();
+                                Alert a = new Alert(AlertType.INFORMATION);
+                                a.setContentText("Fue agregada la lista");
+                                a.show();
+                                cambiar_a_tab(0);
+                            } else if (type == noButton) {
+                                System.out.println("weno no");
+                            } else {
+                                System.out.println("weno saber");
+                            }
+                        });
+                    } else {
+                        data.add(l);
+                        lis.add(l);
+                        escribir_binario_lista();
+                        rellenar_listas();
+                        Alert a = new Alert(AlertType.INFORMATION);
+                        a.setContentText("Fue agregada la lista");
+                        a.show();
+                        cambiar_a_tab(0);
+                    }
+                } else {
+                    Alert a = new Alert(AlertType.ERROR);
+                    a.setContentText("Ha ocurrido un error, se te mostrara la tab de erorres");
+                    a.show();
+                    listado_errores = new ArrayList<>();
+                    listado_errores.add(new Errores("Semantico", "La lista tiene canciones que no existen " + Arrays.toString(t_no.toArray()) + "", 0, 0));
+                    datos.set(0, listado_errores.get(0));
+                    numero_error.setText("error " + 1 + " de " + listado_errores.size());
+                    iniciar_area_error(true);
+                    cambiar_a_tab(3);
+                }
+            } else {
+                data.add(l);
+                lis.add(l);
+                escribir_binario_lista();
+                rellenar_listas();
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Fue agregada la lista sin pistas");
+                a.show();
+                cambiar_a_tab(0);
+            }
+        } else {
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("Ha ocurrido un error, se te mostrara la tab de errores");
+            a.show();
+            listado_errores = par.lista_errores;
+            datos.set(0, listado_errores.get(0));
+            numero_error.setText("error " + 1 + " de " + listado_errores.size());
+            iniciar_area_error(true);
+            cambiar_a_tab(3);
+        }
+    }
+
+    /**
+     * Método que muestra los errores con un editor de codigo y una tabla
+     *
+     * @param isLista
+     */
+    private void iniciar_area_error(boolean isLista) {
+        if (isLista) {
+            CodeLista cl = new CodeLista();
+            codeAreaError = cl.obtener();
+            codeAreaError.replaceText(codeArea1.getText());
+            if (listado_errores.get(0).getLinea() - 1 > 0) {
+                codeAreaError.moveTo(codeAreaError.position(listado_errores.get(0).getLinea() - 1, 0).toOffset());
+            } else {
+                codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+            }
+            codeAreaError.setBackground(new Background(new BackgroundFill(Paint.valueOf("lightgray"), CornerRadii.EMPTY, Insets.EMPTY)));
+            donde_error.setText("Linea: " + (codeAreaError.getCurrentParagraph() + 1) + " Columna: " + codeAreaError.getCaretColumn());
+            area_error.getChildren().add(new VirtualizedScrollPane<>(codeAreaError));
+        } else {
+            CodePista cl = new CodePista();
+            codeAreaError = cl.obtener();
+            codeAreaError.replaceText(codeArea.getText());
+            if (listado_errores.get(0).getLinea() - 1 > 0) {
+                codeAreaError.moveTo(codeAreaError.position(listado_errores.get(0).getLinea() - 1, 0).toOffset());
+            } else {
+                codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+            }
+            codeAreaError.setBackground(new Background(new BackgroundFill(Paint.valueOf("lightgray"), CornerRadii.EMPTY, Insets.EMPTY)));
+            donde_error.setText("Linea: " + (codeAreaError.getCurrentParagraph() + 1) + " Columna: " + codeAreaError.getCaretColumn());
+            area_error.getChildren().add(new VirtualizedScrollPane<>(codeAreaError));
+        }
+        codeAreaError.getStylesheets().add(getClass().getResource("codeAreaError.css").toExternalForm());
+        codeAreaError.setDisable(false);
+        codeAreaError.setEditable(false);
     }
 
     @FXML
@@ -470,11 +638,17 @@ public class TextoControlador implements Initializable {
         }
     }
 
+    /**
+     * Inicia la ejecución del codigo encontrado
+     *
+     * @param p El programa encontrado
+     */
     private void iniciar(Programa p) {
         Simbolos tabla = new Simbolos();
-        tabla.agregar_sistema("$consola", "$consola", consola);
         agregarPistas(tabla);
         tabla.agregar_sistema("$consola", "$consola", consola);
+        List<Object> ls = new LinkedList<>();
+        tabla.agregar(new Simbolo("$errores", "$errores", null, ls, 0));
         String res = p.interpretar_unica_cancion(tabla);
         if (res.equalsIgnoreCase("mas")) {
             Alert a = new Alert(AlertType.WARNING);
@@ -484,20 +658,154 @@ public class TextoControlador implements Initializable {
             Simbolo msg = tabla.obtener("$mensaje");
             Simbolo pista = tabla.obtener("$pistas");
             Pista ultima = (Pista) pista.getDatos().get(pista.getDatos().size() - 1);
-            cans.add(new Cancion(ultima.getId(), ultima.obtener_duracion(), ultima.getRep(), codeArea.getText()));
-            escribir_binario();
-            if (ultima.getRep() != null) {
-                Alert a = new Alert(AlertType.CONFIRMATION);
-                a.setContentText("Canción agregada correctamente");
-                a.show();
-                rellenar_canciones();
-                empezar_reproduccion(pista);
+            for (int i = 0; i < cans.size(); i++) {
+                if (cans.get(i).getId().equalsIgnoreCase(ultima.getId())) {
+                    //cans.get(i).setTexto(codeArea.getText());
+                    //cans.get(i).setReproductor(ultima.getRep());
+                    //cans.get(i).setDuracion(ultima.obtener_duracion());
+                    break;
+                }
+            }
+            if (comprobar_unica_pista(ultima.getId()) != -1) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Sobreescribir pista");
+                alert.setContentText("Sobreescribir la pista " + ultima.getId() + " ?");
+                ButtonType okButton = new ButtonType("Si", ButtonBar.ButtonData.YES);
+                ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+                alert.getButtonTypes().setAll(okButton, noButton);
+                alert.showAndWait().ifPresent(type -> {
+                    if (type == okButton) {
+                        cans.get(comprobar_unica_pista(ultima.getId())).setReproductor(ultima.getRep());
+                        cans.get(comprobar_unica_pista(ultima.getId())).setTexto(codeArea.getText());
+                        cans.get(comprobar_unica_pista(ultima.getId())).setDuracion(ultima.obtener_duracion());
+                        escribir_binario();
+                        rellenar_canciones();
+                        cambiar_a_tab(0);
+                        if (ultima.getRep() != null) {
+                            Alert a = new Alert(AlertType.INFORMATION);
+                            a.setContentText("Pista modificada y reproduciendo");
+                            a.show();
+                            empezar_reproduccion(pista);
+                        } else {
+                            Alert a = new Alert(AlertType.INFORMATION);
+                            a.setContentText("Pista modificada, dado que no tiene metodo principal, no se reproduce nada");
+                            a.show();
+                        }
+                    } else if (type == noButton) {
+                        Alert a = new Alert(AlertType.INFORMATION);
+                        a.setContentText("No se realizó ningún cambio");
+                        a.show();
+                    } else {
+                        System.out.println("weno saber");
+                    }
+                });
             } else {
-                Alert a = new Alert(AlertType.CONFIRMATION);
-                a.setContentText("Canción agregada correctamente, pero no tiene reproduccion");
-                a.show();
+                cans.add(new Cancion(ultima.getId(), ultima.obtener_duracion(), ultima.getRep(), codeArea.getText()));
+                escribir_binario();
+                rellenar_canciones();
+                cambiar_a_tab(0);
+                if (ultima.getRep() != null) {
+                    Alert a = new Alert(AlertType.INFORMATION);
+                    a.setContentText("Pista creada y reproduciendo");
+                    a.show();
+                    empezar_reproduccion(pista);
+                } else {
+                    Alert a = new Alert(AlertType.INFORMATION);
+                    a.setContentText("Pista creada, dado que no tiene metodo principal, no se reproduce nada");
+                    a.show();
+                }
             }
         }
+    }
+
+    private void iniciar2(Programa p) {
+        Simbolos table = new Simbolos();
+        agregarPistas2(table);
+        List<Object> ls = new LinkedList<>();
+        table.agregar(new Simbolo("$errores", "$errores", null, ls, 0));
+        table.agregar_sistema("$consola", "$consola", consola);
+        table.agregar(new Simbolo("$pista", "$pista", null, new LinkedList<>(), 0));
+        String res = p.interpretar2(table);
+        Simbolo errs = table.obtener("$errores");
+        if (errs.getDatos().isEmpty()) {
+            if (res.equalsIgnoreCase("mas")) {
+                Alert a = new Alert(AlertType.WARNING);
+                a.setContentText("El editor está destinado solo a soportar una pista por ocasión");
+                a.show();
+            } else {
+                Simbolo pista = table.obtener("$pista");
+                Pista ultima = (Pista) pista.getDatos().get(0);
+                if (comprobar_unica_pista(ultima.getId()) != -1) {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Sobreescribir pista");
+                    alert.setContentText("Sobreescribir la pista " + ultima.getId() + " ?");
+                    ButtonType okButton = new ButtonType("Si", ButtonBar.ButtonData.YES);
+                    ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+                    alert.getButtonTypes().setAll(okButton, noButton);
+                    alert.showAndWait().ifPresent(type -> {
+                        if (type == okButton) {
+                            cans.get(comprobar_unica_pista(ultima.getId())).setReproductor(ultima.getRep());
+                            cans.get(comprobar_unica_pista(ultima.getId())).setTexto(codeArea.getText());
+                            cans.get(comprobar_unica_pista(ultima.getId())).setDuracion(ultima.obtener_duracion());
+                            escribir_binario();
+                            rellenar_canciones();
+                            cambiar_a_tab(0);
+                            if (ultima.getRep() != null) {
+                                Alert a = new Alert(AlertType.INFORMATION);
+                                a.setContentText("Pista modificada y reproduciendo");
+                                a.show();
+                                empezar_reproduccion(pista);
+                            } else {
+                                Alert a = new Alert(AlertType.INFORMATION);
+                                a.setContentText("Pista modificada, dado que no tiene metodo principal, no se reproduce nada");
+                                a.show();
+                            }
+                        } else if (type == noButton) {
+                            Alert a = new Alert(AlertType.INFORMATION);
+                            a.setContentText("No se realizó ningún cambio");
+                            a.show();
+                        } else {
+                            System.out.println("weno saber");
+                        }
+                    });
+                } else {
+                    cans.add(new Cancion(ultima.getId(), ultima.obtener_duracion(), ultima.getRep(), codeArea.getText()));
+                    escribir_binario();
+                    rellenar_canciones();
+                    cambiar_a_tab(0);
+                    if (ultima.getRep() != null) {
+                        Alert a = new Alert(AlertType.INFORMATION);
+                        a.setContentText("Pista creada y reproduciendo");
+                        a.show();
+                        empezar_reproduccion(pista);
+                    } else {
+                        Alert a = new Alert(AlertType.INFORMATION);
+                        a.setContentText("Pista creada, dado que no tiene metodo principal, no se reproduce nada");
+                        a.show();
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < errs.getDatos().size(); i++) {
+                listado_errores.add((Errores) errs.getDatos().get(i));
+            }
+            iniciar_area_error(false);
+            Alert a = new Alert(AlertType.ERROR);
+            a.setContentText("Ha ocurrido un error, se te mostrara la tab de errores");
+            datos.set(0, listado_errores.get(0));
+            numero_error.setText("error " + 1 + " de " + listado_errores.size());
+            a.show();
+            cambiar_a_tab(3);
+        }
+    }
+
+    private int comprobar_unica_pista(String texto) {
+        for (int i = 0; i < cans.size(); i++) {
+            if (cans.get(i).getId().equalsIgnoreCase(texto)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void agregarPistas(Simbolos tabla) {
@@ -511,9 +819,9 @@ public class TextoControlador implements Initializable {
             try {
                 p.parse();
                 Programa pa = p.programa;
-                System.out.println("acá creo que acumula pero no sé");
                 pa.interpretar(tabla, true);
                 Simbolo pistass = tabla.obtener("$pistas");
+                tabla.agregar_sistema("$consola", "$consola", consola);
                 tabla.removeAll(tabla);
                 System.out.println("termina");
                 tabla.agregar(pistass);
@@ -522,6 +830,21 @@ public class TextoControlador implements Initializable {
             }
         } else {
             tabla.agregar(new Simbolo("$pistas", "$pistas", null, objetos, 0));
+        }
+    }
+
+    private void agregarPistas2(Simbolos tabla) {
+        ArrayList<Object> lis_pistas = new ArrayList<>();
+        tabla.agregar(new Simbolo("$keep", "$keep", null, lis_pistas, 0));
+        for (Cancion pi : cans) {
+            parser pasd = new parser(new Lexer(new StringReader(pi.getTexto())));
+            try {
+                pasd.parse();
+            } catch (Exception ex) {
+                System.out.println("problema con el agregarPistas2");
+            }
+            Programa pepe = pasd.programa;
+            pepe.obtener_keeps(tabla);
         }
     }
 
@@ -634,7 +957,7 @@ public class TextoControlador implements Initializable {
         if (re != null) {
             actual = re;
             if (actual.getCanales() != null) {
-                repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+                repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
                 myChart.getData().clear();
                 int nuevo2 = actual.max() * 50;
                 int nuevo3 = nuevo2 / 1000;
@@ -670,7 +993,7 @@ public class TextoControlador implements Initializable {
     @FXML
     private void iniciar2() {
         if (iniciando) {
-            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+            repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
             myChart.getData().clear();
             nuevo = new Task(myChart, progreso, pasado);
             nuevo.setDaemon(true);
@@ -678,13 +1001,13 @@ public class TextoControlador implements Initializable {
             iniciando = false;
         } else {
             if (reproduciendo) {
-                repro.setImage(new Image(App.class.getResource("play.png").toExternalForm()));
+                repro.setImage(new Image(App.class.getResource("reproducir.png").toExternalForm()));
                 parar.setVisible(true);
                 nuevo.suspenderhilo();
                 System.out.println("hola");
                 reproduciendo = !reproduciendo;
             } else {
-                repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+                repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
                 parar.setVisible(false);
                 nuevo.renaudarhilo();
                 reproduciendo = !reproduciendo;
@@ -694,7 +1017,7 @@ public class TextoControlador implements Initializable {
 
     @FXML
     private void parar() {
-        repro.setImage(new Image(App.class.getResource("play.png").toExternalForm()));
+        repro.setImage(new Image(App.class.getResource("reproducir.png").toExternalForm()));
         nuevo.pausarhilo();
         iniciando = true;
         parar.setVisible(false);
@@ -708,14 +1031,14 @@ public class TextoControlador implements Initializable {
         Reproduccion r = new Reproduccion();
         boolean pasa = false;
         for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equals(lista_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
+            if (data_cancion.get(i).getId().equals(cancion_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
                 r = data_cancion.get(i).getReproductor();
                 pasa = true;
                 break;
             }
         }
         if (pasa) {
-            repro.setImage(new Image(App.class.getResource("pause.png").toExternalForm()));
+            repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
             myChart.getData().clear();
             int nuevo2 = r.max() * 50;
             int nuevo3 = nuevo2 / 1000;
@@ -740,20 +1063,24 @@ public class TextoControlador implements Initializable {
         int pos = -1;
         boolean pasa = false;
         for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equals(lista_escogida)) {
+            if (data_cancion.get(i).getId().equals(cancion_escogida)) {
                 pos = i;
                 break;
             }
         }
         if (pos != -1) {
             codeArea.replaceText(data_cancion.get(pos).getTexto());
-            SingleSelectionModel<Tab> selectionModel = tabs.getSelectionModel();
-            selectionModel.select(1);
+            cambiar_a_tab(1);
         } else {
             Alert a = new Alert(AlertType.INFORMATION);
             a.setContentText("Canción seleccionada sin método main");
             a.show();
         }
+    }
+
+    private void cambiar_a_tab(int tab) {
+        SingleSelectionModel<Tab> selectionModel = tabs.getSelectionModel();
+        selectionModel.select(tab);
     }
 
     private void llenar_canciones() {
@@ -796,7 +1123,7 @@ public class TextoControlador implements Initializable {
     private void eliminar_pista() {
         int pos = -1;
         for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equalsIgnoreCase(lista_escogida)) {
+            if (data_cancion.get(i).getId().equalsIgnoreCase(cancion_escogida)) {
                 pos = i;
                 break;
             }
@@ -805,6 +1132,23 @@ public class TextoControlador implements Initializable {
             data_cancion.remove(pos);
             cans.remove(pos);
             escribir_binario();
+            String nombre = "";
+            for (int i = 0; i < lis.size(); i++) {
+                if (lis.get(i).getCanciones() != null) {
+                    if (lis.get(i).getCanciones().contains(cancion_escogida)) {
+                        for (int j = 0; j < lis.get(i).getCanciones().size(); j++) {
+                            if (lis.get(i).getCanciones().get(j).equalsIgnoreCase(cancion_escogida)) {
+                                lis.get(i).getCanciones().remove(j);
+                                nombre = lis.get(i).getId();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            escribir_binario_lista();
+            rellenar_listas();
+            rellenar_canciones_lista(nombre);
         } else if (pos == 0) {
             if (cans.size() > 1) {
                 data_cancion.remove(pos);
@@ -816,10 +1160,113 @@ public class TextoControlador implements Initializable {
                 cans.remove(pos);
                 escribir_binario();
             }
+            String nombre = "";
+            for (int i = 0; i < lis.size(); i++) {
+                if (lis.get(i).getCanciones() != null) {
+                    if (lis.get(i).getCanciones().contains(cancion_escogida)) {
+                        for (int j = 0; j < lis.get(i).getCanciones().size(); j++) {
+                            if (lis.get(i).getCanciones().get(j).equalsIgnoreCase(cancion_escogida)) {
+                                lis.get(i).getCanciones().remove(j);
+                                nombre = lis.get(i).getId();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            escribir_binario_lista();
+            rellenar_listas();
+            rellenar_canciones_lista(nombre);
         } else {
             Alert a = new Alert(AlertType.INFORMATION);
             a.setContentText("Elige primero una canción a eliminar");
             a.show();
+        }
+    }
+
+    @FXML
+    private void eliminar_lista() {
+        int pos = -1;
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getId().equalsIgnoreCase(lista_escogida)) {
+                pos = i;
+                break;
+            }
+        }
+        if (pos > 0) {
+            data.remove(pos);
+            lis.remove(pos);
+            escribir_binario_lista();
+        } else if (pos == 0) {
+            if (data.size() > 1) {
+                data.remove(pos);
+                lis.remove(pos);
+                escribir_binario_lista();
+            } else {
+                data.add(new Lista("No has creado ninguna lista", null, false, false));
+                data.remove(0);
+                lis.remove(pos);
+                escribir_binario_lista();
+            }
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Elige primero una lista a eliminar");
+            a.show();
+        }
+        data_lista_cancion.clear();
+    }
+
+    @FXML
+    private void anterior_error() {
+        if (!listado_errores.isEmpty()) {
+            if (error_actual == 0) {
+                error_actual = listado_errores.size() - 1;
+                datos.set(0, listado_errores.get(error_actual));
+                numero_error.setText("error " + (error_actual + 1) + " de " + listado_errores.size());
+                donde_error.setText("Linea: " + listado_errores.get(error_actual).getLinea() + " Columna: " + listado_errores.get(error_actual).getColumna());
+                if (listado_errores.get(error_actual).getLinea() - 1 > 0) {
+                    codeAreaError.moveTo(codeAreaError.position(listado_errores.get(error_actual).getLinea() - 1, 0).toOffset());
+                } else {
+                    codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+                }
+            } else {
+                error_actual--;
+                datos.set(0, listado_errores.get(error_actual));
+                numero_error.setText("error " + (error_actual + 1) + " de " + listado_errores.size());
+                donde_error.setText("Linea: " + listado_errores.get(error_actual).getLinea() + " Columna: " + listado_errores.get(error_actual).getColumna());
+                if (listado_errores.get(error_actual).getLinea() - 1 > 0) {
+                    codeAreaError.moveTo(codeAreaError.position(listado_errores.get(error_actual).getLinea() - 1, 0).toOffset());
+                } else {
+                    codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+                }
+            }
+        }
+    }
+
+    @FXML
+    private void siguiente_error() {
+        if (!listado_errores.isEmpty()) {
+            if (error_actual == listado_errores.size() - 1) {
+                error_actual = 0;
+                datos.set(0, listado_errores.get(error_actual));
+                numero_error.setText("error " + (error_actual + 1) + " de " + listado_errores.size());
+                donde_error.setText("Linea: " + listado_errores.get(error_actual).getLinea() + " Columna: " + listado_errores.get(error_actual).getColumna());
+                if (listado_errores.get(error_actual).getLinea() - 1 > 0) {
+                    codeAreaError.moveTo(codeAreaError.position(listado_errores.get(error_actual).getLinea() - 1, 0).toOffset());
+                } else {
+                    codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+                }
+            } else {
+                error_actual++;
+                datos.set(0, listado_errores.get(error_actual));
+                numero_error.setText("error " + (error_actual + 1) + " de " + listado_errores.size());
+                donde_error.setText("Linea: " + listado_errores.get(error_actual).getLinea() + " Columna: " + listado_errores.get(error_actual).getColumna());
+                if (listado_errores.get(error_actual).getLinea() - 1 > 0) {
+                    codeAreaError.moveTo(codeAreaError.position(listado_errores.get(error_actual).getLinea() - 1, 0).toOffset());
+                } else {
+                    codeAreaError.moveTo(codeAreaError.position(0, 0).toOffset());
+                }
+            }
         }
     }
 }

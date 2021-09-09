@@ -11,6 +11,7 @@ C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Retorno.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Asigna.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Metodos_Nativos\Ordenar.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Analizador\LexerSolicitud.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Tablas\Asignar.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Programa.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Metodo_Retorno.java
@@ -38,14 +39,19 @@ C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Expresion.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\com\mycompany\practica1\Task.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Analizador\sym.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\com\mycompany\practica1\Test.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Termino.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Caso.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Para.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Notas.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Analizador\symSolicitud.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\com\mycompany\practica1\Lista.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Analizador\LexerLista.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Metodos_Nativos\Reproducir.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Primitivo.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Instruccion.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Analizador\parserSolicitud.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Solicitud.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\com\mycompany\practica1\ArrowFactory.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Canal.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Metodos_Nativos\Esperar.java
@@ -53,3 +59,4 @@ C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Pista.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Asignacion.java
 C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\ParametroEnviar.java
+C:\Users\willi\OneDrive\Escritorio\Proyectos a2021s6\Organizacion de Lenguajes y Compiladores\Practica1\src\main\java\Interprete\Keep.java

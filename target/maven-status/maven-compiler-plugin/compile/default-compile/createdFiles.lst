@@ -3,10 +3,11 @@ Interprete\Canal.class
 Interprete\Tipos.class
 Interprete\Reproduccion.class
 com\mycompany\practica1\TextoControlador$2$1$1.class
-com\mycompany\practica1\TextoControlador$3$1$1.class
+Analizador\parserSolicitud$CUP$parserSolicitud$actions.class
 Interprete\Parametro.class
 Analizador\Lexer.class
 com\mycompany\practica1\TextoControlador$3$1.class
+Analizador\parserSolicitud.class
 Tablas\Simbolo.class
 com\mycompany\practica1\App.class
 Tablas\Asignar.class

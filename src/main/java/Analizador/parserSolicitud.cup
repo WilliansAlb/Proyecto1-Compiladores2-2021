@@ -1,0 +1,164 @@
+package Analizador;
+import Interprete.Errores;
+import Interprete.Solicitud;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.XMLElement;
+import com.mycompany.practica1.Lista;
+import java.util.ArrayList;
+
+parser code
+{:
+
+    public ArrayList<Errores> lista_errores = new ArrayList<>();
+    public Solicitud soli = new Solicitud();
+    
+    public void syntax_error(Symbol cur_token) {
+        String esperados = "";
+        for (int i = 0; i < expected_token_ids().size(); i++) {
+            System.out.println(expected_token_ids().get(i) + "no se");
+            esperados += symbl_name_from_id(expected_token_ids().get(i)) + "-";
+        }
+        System.out.print(esperados + ", pero se encontro " + cur_token.value + " en la linea" + cur_token.right + " y en la columna" + cur_token.left);
+        if (expected_token_ids().isEmpty()) {
+            lista_errores.add(new Errores("Sintactico", "No se esperaba " + cur_token.value, cur_token.left + 1, cur_token.right + 1));
+        } else {
+            lista_errores.add(new Errores("Sintactico", "Se esperaba " + esperados + ", pero se encontro " + cur_token.value, cur_token.left + 1, cur_token.right + 1));
+        }
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        System.out.println("reportfatal "+message+info);
+    }
+    
+    public void report_fatal_error(Symbol cur) {
+        System.out.println("unrecovered_syntax_error");
+    }
+
+    public void imp(String texto){
+        System.out.println(texto);
+    }
+
+:};
+
+terminal SOLICITUD, TIPO, LISTA, PISTA, PISTANUEVA, DATOS, CANAL, NOTA, DURACION,
+    OCTAVA, NOTAS, NUMERO, MENOR_Q, MAYOR_Q, FIN, STRING, ID, ERRORLEX, NOMBRE, SIN;
+
+non terminal inicio, listas, atributos, atributo, solicitudes, solicitud, parametros, tipo, nombre, datos, dato, listado_datos, data;
+non terminal String notas,nota, tipos;
+non terminal Integer canal,duracion,octava;
+start with inicio;
+
+inicio::=
+    solicitudes
+;
+
+solicitudes::=
+    solicitudes solicitud
+|   solicitud
+;
+
+solicitud::=
+    MENOR_Q SOLICITUD MAYOR_Q parametros FIN SOLICITUD MAYOR_Q
+;
+
+parametros::=
+    tipo nombre data
+|   tipo
+;
+
+data::=
+|   datos
+;
+
+tipo::=
+    MENOR_Q TIPO MAYOR_Q tipos:e1 FIN TIPO MAYOR_Q
+        {:
+            if (!soli.agregarTipo(e1)){
+                lista_errores.add(new Errores("Sintactico", "El atributo tipo ya se encuentra definido", e1left + 1, e1right + 1));
+            }
+        :}
+;
+
+tipos::=
+    PISTANUEVA
+        {:
+            RESULT = "pistanueva";
+        :}
+|   PISTA
+        {:
+            RESULT = "pista";
+        :}
+|   LISTA
+        {:
+            RESULT = "lista";
+        :}
+;
+
+nombre::=
+    MENOR_Q NOMBRE MAYOR_Q STRING:e1 FIN NOMBRE MAYOR_Q
+        {:
+            if (!soli.agregarNombre(e1.toString())){
+                lista_errores.add(new Errores("Sintactico", "El atributo nombre ya se encuentra definido", e1left + 1, e1right + 1));
+            }
+        :}
+;
+
+datos::=
+    datos dato
+|   dato
+;
+
+dato::=
+    MENOR_Q DATOS MAYOR_Q listado_datos FIN DATOS MAYOR_Q
+;
+
+listado_datos::=
+    listado_datos atributo
+|   atributo
+;
+
+atributo::=
+    canal:e1 nota:e2 octava:e3 duracion:e4
+        {:
+            soli.agregarNota(e2,e1,e3,e4);
+        :}
+;
+
+canal::=
+    MENOR_Q CANAL MAYOR_Q NUMERO:e1 FIN CANAL MAYOR_Q
+        {:
+            RESULT = Integer.parseInt(e1.toString());
+        :}
+;
+
+octava::=
+    MENOR_Q OCTAVA MAYOR_Q NUMERO:e1 FIN OCTAVA MAYOR_Q
+        {:
+            RESULT = Integer.parseInt(e1.toString());
+        :}
+;
+
+duracion::=
+    MENOR_Q DURACION MAYOR_Q NUMERO:e1 FIN DURACION MAYOR_Q
+        {:
+            RESULT = Integer.parseInt(e1.toString());
+        :}
+;
+
+nota::=
+    MENOR_Q NOTA MAYOR_Q notas:e1 FIN NOTA MAYOR_Q
+        {:
+            RESULT = e1;
+        :}
+;
+
+notas::=
+    NOTAS:e1
+        {:
+            RESULT = e1.toString();
+        :}
+|   SIN:e1
+        {:
+            RESULT = e1.toString();
+        :}
+;

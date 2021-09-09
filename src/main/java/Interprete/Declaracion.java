@@ -115,7 +115,10 @@ public class Declaracion extends Instruccion implements Serializable{
                         if (a.asignar(tipo)) {
                             valores.add(a.getValor());
                         } else {
-                            System.out.println(a.getValor());
+                            if (a.getTipo().equalsIgnoreCase("excepcion")){
+                                System.out.println("en declaracion");
+                                tabla.agregar_error("Semantico", a.getValor().toString(), a.getLinea()+1, a.getColumna()+1);
+                            }
                             solo_valores = false;
                         }
                     } else {

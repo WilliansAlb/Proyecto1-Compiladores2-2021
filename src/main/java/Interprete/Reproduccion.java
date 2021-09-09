@@ -22,9 +22,7 @@ import jm.util.Play;
  */
 public class Reproduccion implements Serializable {
 
-    private static Score s = new Score("CPhrase class example");
     private List<Canal> canales;
-    private static Part p = new Part("Piano", 0, 0);
     private String id;
 
     public Reproduccion(List<Canal> canales, String id) {

@@ -1,0 +1,53 @@
+
+.paragraph-text .text{
+    -fx-fill: black;
+}
+
+.keyword {
+    -fx-fill: blue !important;
+}
+.semicolon {
+    -fx-font-weight: bold;
+}
+.paren {
+    -fx-fill: black !important;
+    -fx-font-weight: bold;
+}
+.bracket {
+    -fx-fill: black !important;
+    -fx-font-weight: bold;
+}
+.brace {
+    -fx-fill: black !important;
+    -fx-font-weight: bold;
+}
+.string {
+    -fx-fill: orange !important;
+    -fx-font-weight: bold;
+}
+
+.number {
+    -fx-fill: purple !important;
+    -fx-font-weight: bold;
+}
+
+.id {
+    -fx-fill: green !important;
+    -fx-font-weight: bold;
+}
+
+.char{
+    -fx-fill: orange !important;
+    -fx-font-weight: bold;
+}
+
+.comment {
+    -fx-fill: grey !important;
+}
+
+.paragraph-box:has-caret {
+    -fx-background-color: #ff6969;
+}
+.styled-text-area .selection {
+    -fx-fill: #ff6969;
+}

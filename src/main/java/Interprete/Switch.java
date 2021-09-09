@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author willi
  */
-public class Switch extends Instruccion implements Serializable{
+public class Switch extends Instruccion implements Serializable {
 
     private String id;
     private List<Caso> casos;
@@ -22,7 +22,7 @@ public class Switch extends Instruccion implements Serializable{
     private int linea;
     private int columna;
 
-    public Switch(String id, List<Caso> casos, List<Instruccion> defecto, int linea, int columna) {
+    public Switch(String id, List<Caso> casos, List<Instruccion> defecto, int columna, int linea) {
         this.id = id;
         this.casos = casos;
         this.defecto = defecto;
@@ -39,10 +39,22 @@ public class Switch extends Instruccion implements Serializable{
                 if (defecto1 instanceof ContinuarSalir) {
                     ContinuarSalir cs = (ContinuarSalir) defecto1;
                     if (!cs.isContinuar()) {
+                        tabla.eliminar_ambito();
                         return;
                     }
-                } else {
+                } else if (defecto1 instanceof Retorno) {
                     defecto1.interpretar(tabla);
+                    tabla.eliminar_ambito();
+                    return;
+                } else {
+                    if (defecto1 != null) {
+                        defecto1.interpretar(tabla);
+                    }
+                    if (tabla.tieneRetorno()) {
+                        System.out.println("sube el retorno");
+                        tabla.eliminar_ambito();
+                        return;
+                    }
                 }
             }
             tabla.eliminar_ambito();
@@ -58,17 +70,29 @@ public class Switch extends Instruccion implements Serializable{
                                 if (inst instanceof ContinuarSalir) {
                                     ContinuarSalir cs = (ContinuarSalir) inst;
                                     if (!cs.isContinuar()) {
+                                        tabla.eliminar_ambito();
                                         return;
                                     }
-                                } else {
+                                } else if (inst instanceof Retorno) {
                                     inst.interpretar(tabla);
+                                    tabla.eliminar_ambito();
+                                    return;
+                                } else {
+                                    if (inst != null) {
+                                        inst.interpretar(tabla);
+                                    }
+                                    if (tabla.tieneRetorno()) {
+                                        System.out.println("sube el retorno");
+                                        tabla.eliminar_ambito();
+                                        return;
+                                    }
                                 }
                             }
                             sale = false;
                             tabla.eliminar_ambito();
                         }
                     } else {
-                        System.out.println("Problema: no puedes comparar ese tipo de dato");
+                        tabla.agregar_error("Semantico", "No puedes comparar estos valores", linea + 1, columna + 1);
                         break;
                     }
                 } else {
@@ -77,10 +101,22 @@ public class Switch extends Instruccion implements Serializable{
                         if (inst instanceof ContinuarSalir) {
                             ContinuarSalir cs = (ContinuarSalir) inst;
                             if (!cs.isContinuar()) {
+                                tabla.eliminar_ambito();
                                 return;
                             }
-                        } else {
+                        } else if (inst instanceof Retorno) {
                             inst.interpretar(tabla);
+                            tabla.eliminar_ambito();
+                            return;
+                        } else {
+                            if (inst != null) {
+                                inst.interpretar(tabla);
+                            }
+                            if (tabla.tieneRetorno()) {
+                                System.out.println("sube el retorno");
+                                tabla.eliminar_ambito();
+                                return;
+                            }
                         }
                     }
                     tabla.eliminar_ambito();
@@ -92,10 +128,22 @@ public class Switch extends Instruccion implements Serializable{
                     if (defecto1 instanceof ContinuarSalir) {
                         ContinuarSalir cs = (ContinuarSalir) defecto1;
                         if (!cs.isContinuar()) {
+                            tabla.eliminar_ambito();
                             return;
                         }
-                    } else {
+                    } else if (defecto1 instanceof Retorno) {
                         defecto1.interpretar(tabla);
+                        tabla.eliminar_ambito();
+                        return;
+                    } else {
+                        if (defecto1 != null) {
+                            defecto1.interpretar(tabla);
+                        }
+                        if (tabla.tieneRetorno()) {
+                            System.out.println("sube el retorno");
+                            tabla.eliminar_ambito();
+                            return;
+                        }
                     }
                 }
                 tabla.eliminar_ambito();

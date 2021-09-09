@@ -65,10 +65,9 @@ public class Mensaje extends Instruccion {
                 String agregar = (tabla.obtener("$mensaje").getDatos().get(0).toString().isEmpty()) ? "" : tabla.obtener("$mensaje").getDatos().get(0).toString() + "\n";
                 agregar += s.getValor().toString();
                 tabla.obtener("$mensaje").getDatos().set(0, agregar);
-                /**
                 Platform.runLater(() -> {
                     ((TextArea) tabla.obtener("$consola").getDatos().get(0)).setText(tabla.obtener("$mensaje").getDatos().get(0).toString());
-                });*/
+                });
             }
         }
     }

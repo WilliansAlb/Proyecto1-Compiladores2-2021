@@ -14,7 +14,7 @@ import java_cup.runtime.Symbol;
  *
  * @author willi
  */
-public class Metodo_Retorno extends Termino implements Serializable{
+public class Metodo_Retorno extends Termino implements Serializable {
 
     private Llamada llamada;
 
@@ -25,9 +25,13 @@ public class Metodo_Retorno extends Termino implements Serializable{
     public Termino interpretar(Simbolos tabla) {
         llamada.interpretar(tabla);
         if (llamada.retorno != null) {
-            return new Primitivo(llamada.retorno_tipo,llamada.getLinea(), llamada.getColumna(), llamada.retorno);
+            return new Primitivo(llamada.retorno_tipo, llamada.getLinea(), llamada.getColumna(), llamada.retorno);
         } else {
-            return new Primitivo("excepcion", llamada.getLinea(), llamada.getColumna(), "Este método no devuelve ningun valor");
+            if (!llamada.existe) {
+                return new Primitivo("excepcion", llamada.getLinea(), llamada.getColumna(), "El método "+llamada.getId()+" no existe");
+            } else {
+                return new Primitivo("excepcion", llamada.getLinea(), llamada.getColumna(), "Este método no devuelve ningun valor");
+            }
         }
     }
 

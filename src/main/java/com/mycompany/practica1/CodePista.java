@@ -58,6 +58,44 @@ public class CodePista {
     private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
     private static final String CHAR_PATTERN = "'([^\'\\\\]|\\\\.)*'";
     private static final String COMMENT_PATTERN = ">>[^\n]*" + "|" + "<--*[\\s\\S]*?--*>";  // for visible paragraph processing (line by line)
+private static final String COMENTARIOS = ">>prueba comentario de linea\n"
+            + ">>prueba comentario de linea\n"
+            + "<- prueba comentario\n"
+            + "de lineas a ver si funciona\n"
+            + "->\n"
+            + "PISTA komm EXTIENDE Neon, Genesis\n"
+            + "	var entero a = 10\n"
+            + "	keep var entero a09 = 22\n"
+            + "	var cadena ca = \"hola\"\n"
+            + "	Principal()\n"
+            + "		a = 23\n"
+            + "		si (a<5)\n"
+            + "			var entero a3 = a+10\n"
+            + "			var entero a4 = 2\n"
+            + "			var entero a5 = 5\n"
+            + "		sino si (true)\n"
+            + "			var entero a34 = 34\n"
+            + "			var entero a104 = 34\n"
+            + "			var entero a32 = true\n"
+            + "			si (a32>0)\n"
+            + "				var entero a65 = 5\n"
+            + "				a = 25\n"
+            + "				var entero a219 = 10\n"
+            + "			var entero a70 = a65\n"
+            + "		Reproducir(re,2,1000,3)\n"
+            + "		Reproducir(fa,5,2000,2)\n"
+            + "		Reproducir(mi,2,2000,1)\n"
+            + "		switch(ca)\n"
+            + "			caso \"ho\"\n"
+            + "				Mensaje(\"hola perro esto pasa\")\n"
+            + "			caso \"hola\"\n"
+            + "				Mensaje(\"Correcto sin salida\")\n"
+            + "			caso \"hello\"\n"
+            + "				Mensaje(\"Otro más\")\n"
+            + "				salir\n"
+            + "			default\n"
+            + "				Mensaje(\"No tendría que pasar\")\n"
+            + "				Mensaje(\"No tendría que pasar2\")";
 
     private static final Pattern PATTERN = Pattern.compile(
             "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
@@ -96,6 +134,7 @@ public class CodePista {
             return hbox;
         };
         n.setParagraphGraphicFactory(graphicFactory);
+        n.replaceText(COMENTARIOS);
         return n;
     }
     
