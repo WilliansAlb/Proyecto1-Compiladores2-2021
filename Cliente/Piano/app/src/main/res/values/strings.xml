@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Piano</string>
+    <string name="title1">Ingresa tu solicitud</string>
+    <string name="send1">ENVIA TU SOLICITUD</string>
+    <string name="title2">RESPUESTA DEL SERVIDOR</string>
+    <string name="pista">PISTA:</string>
+    <string name="canal">CANAL:</string>
+    <string name="octava">OCTAVA:</string>
+    <string name="regresar">REGRESAR A SOLICITUD:</string>
+    <string name="nameApp">Music</string>
+    <string name="prompt_solicitud">ESCRIBE ACÁ TU SOLICITUD</string>
+    <string name="solicitud">SOLICITUD</string>
+</resources>

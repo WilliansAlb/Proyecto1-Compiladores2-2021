@@ -92,8 +92,9 @@ public class Task extends Thread {
                     }
                     for (int i = 0; i < reproduce.getCanales().size(); i++) {
                         int re = reproduce.getCanales().get(i).nota(segundos);
-                        double res = (Math.abs(re) > 0) ? (Math.pow(2, ((Math.abs(re) - 69) / 12)) * 440) : 0;
-                        this.seriees.get(i).getData().add(new Data<>("" + segundos + 1, res));
+                        double res = (Math.abs(re) > 0) ? ((double)(((double)Math.pow(2, ((double)(Math.abs(re) - 69) / 12))) * 440)) : 0;
+                        double re2 = (Math.abs(re) > 0) ? Math.round(res*100.0)/100.0 : 0.00;
+                        this.seriees.get(i).getData().add(new Data<>("" + segundos + 1, re2));
                         if (re > 0) {
                             n.noteOn(re);
                         }

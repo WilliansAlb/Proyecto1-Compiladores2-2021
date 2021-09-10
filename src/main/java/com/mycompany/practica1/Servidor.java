@@ -27,6 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TextArea;
 
 /**
  *
@@ -39,9 +43,14 @@ public class Servidor extends Thread {
     DataInputStream in;
     DataOutputStream out;
     final int PUERTO = 5000;
+    public ObservableList<Cancion> data_cancion;
 
     public Servidor() {
 
+    }
+
+    public Servidor(ObservableList<Cancion> data_cancion) {
+        this.data_cancion = data_cancion;
     }
 
     @Override
@@ -70,7 +79,7 @@ public class Servidor extends Thread {
     }
 
     public String retorno(String texto) {
-        parserSolicitud par = new parserSolicitud(new LexerSolicitud(new StringReader(TEXTO)));
+        parserSolicitud par = new parserSolicitud(new LexerSolicitud(new StringReader(texto)));
         try {
             par.parse();
             Solicitud s = par.soli;
@@ -112,13 +121,17 @@ public class Servidor extends Thread {
                     } else {
                         ArrayList<Lista> listemp = obtener();
                         if (listemp != null) {
-                            String retorno = "<listas>\n";
-                            for (int i = 0; i < listemp.size(); i++) {
-                                int tem = (listemp.get(i).getCanciones() != null) ? listemp.get(i).getCanciones().size() : 0;
-                                retorno += "< lista nombre = \"" + listemp.get(i).getId() + "\" pistas = " + tem + " >\n";
+                            if (!listemp.isEmpty()) {
+                                String retorno = "<listas>\n";
+                                for (int i = 0; i < listemp.size(); i++) {
+                                    int tem = (listemp.get(i).getCanciones() != null) ? listemp.get(i).getCanciones().size() : 0;
+                                    retorno += "< lista nombre = \"" + listemp.get(i).getId() + "\" pistas = " + tem + " >\n";
+                                }
+                                retorno += "</listas>";
+                                return retorno;
+                            } else {
+                                return "< mensaje texto = \"Aún no se han creado listas\" />";
                             }
-                            retorno += "</listas>";
-                            return retorno;
                         } else {
                             String retorno = "< mensaje texto = \"Aún no se han creado listas\" />";
                             return retorno;
@@ -183,7 +196,9 @@ public class Servidor extends Thread {
                                             }
                                             definitivaRepeticion.add(conteo);
                                             for (int k = 0; k < definitivaNota.size(); k++) {
-                                                retorno += "\n\t\t< nota duracion = " + (definitivaRepeticion.get(k) * 50) + " frecuencia" + definitivaNota.get(k) + " >";
+                                                double res = (Math.abs(definitivaNota.get(k)) > 0) ? ((double) (((double) Math.pow(2, ((double) (Math.abs(definitivaNota.get(k)) - 69) / 12))) * 440)) : 0;
+                                                double re2 = Math.round(res * 100.0) / 100.0;
+                                                retorno += "\n\t\t< nota duracion = " + (definitivaRepeticion.get(k) * 50) + " frecuencia " + re2 + " >";
                                             }
                                             retorno += " \n\t< canal />";
                                         }
@@ -201,13 +216,17 @@ public class Servidor extends Thread {
                     } else {
                         ArrayList<Cancion> canstemp = obtener_canciones();
                         if (canstemp != null) {
-                            String retorno = "<pistas>\n";
-                            for (int i = 0; i < canstemp.size(); i++) {
-                                long duracion = (canstemp.get(i).getReproductor() != null) ? canstemp.get(i).getReproductor().max() * 50 : 0;
-                                retorno += "< pista nombre = \"" + canstemp.get(i).getId() + "\" duracion = " + duracion + " >\n";
+                            if (!canstemp.isEmpty()) {
+                                String retorno = "<pistas>\n";
+                                for (int i = 0; i < canstemp.size(); i++) {
+                                    long duracion = (canstemp.get(i).getReproductor() != null) ? canstemp.get(i).getReproductor().max() * 50 : 0;
+                                    retorno += "< pista nombre = \"" + canstemp.get(i).getId() + "\" duracion = " + duracion + " >\n";
+                                }
+                                retorno += "</pistas>";
+                                return retorno;
+                            } else {
+                                return "< mensaje texto = \"Aún no se han creado pistas\" />";
                             }
-                            retorno += "</pistas>";
-                            return retorno;
                         } else {
                             String retorno = "< mensaje texto = \"Aún no se han creado pistas\" />";
                             return retorno;
@@ -220,12 +239,16 @@ public class Servidor extends Thread {
                         int minutos = (int) (nuevo3 / 60);
                         int sec = (int) (nuevo3 % 60);
                         String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+                        s.getR().setId(s.getNombre());
                         Cancion nueva = new Cancion(s.getNombre(), tiempo_pasado, s.getR(), ">>Fue creada en el piano de la app movil");
                         ArrayList<Cancion> canstemp = obtener_canciones();
                         if (canstemp == null) {
                             canstemp = new ArrayList<>();
                         }
                         canstemp.add(nueva);
+                        Platform.runLater(() -> {
+                            data_cancion.add(nueva);
+                        });
                         String retorno = "< respuesta texto = \"No se creo bien el archivo\" />";
                         File archivo = new File("src/main/resources/pistas.dat");
                         try {

@@ -413,7 +413,7 @@ public class TextoControlador implements Initializable {
         razon.prefWidthProperty().bind(tabla.widthProperty().multiply(0.65));
         tabla.getColumns().addAll(linea, columna, tipo, razon);
         tabla.setItems(datos);
-        Servidor s = new Servidor();
+        Servidor s = new Servidor(data_cancion);
         s.setDaemon(true);
         s.start();
     }
@@ -837,14 +837,16 @@ public class TextoControlador implements Initializable {
         ArrayList<Object> lis_pistas = new ArrayList<>();
         tabla.agregar(new Simbolo("$keep", "$keep", null, lis_pistas, 0));
         for (Cancion pi : cans) {
-            parser pasd = new parser(new Lexer(new StringReader(pi.getTexto())));
-            try {
-                pasd.parse();
-            } catch (Exception ex) {
-                System.out.println("problema con el agregarPistas2");
+            if (!pi.getTexto().equalsIgnoreCase(">>Fue creada en el piano de la app movil")) {
+                parser pasd = new parser(new Lexer(new StringReader(pi.getTexto())));
+                try {
+                    pasd.parse();
+                } catch (Exception ex) {
+                    System.out.println("problema con el agregarPistas2");
+                }
+                Programa pepe = pasd.programa;
+                pepe.obtener_keeps(tabla);
             }
-            Programa pepe = pasd.programa;
-            pepe.obtener_keeps(tabla);
         }
     }
 

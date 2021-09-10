@@ -20,7 +20,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         scene = new Scene(FXMLLoader.load(getClass().getResource("secondary.fxml")), 1900, 980);
         scene.getStylesheets().add(App.class.getResource("java-keywords.css").toExternalForm());
-        stage.getIcons().add(new Image(App.class.getResource("icono.png").toExternalForm()));
+        stage.getIcons().add(new Image(App.class.getResource("music-note.png").toExternalForm()));
         stage.setTitle("Music");
         stage.setScene(scene);
         stage.show();
