@@ -156,8 +156,6 @@ public class TextoControlador implements Initializable {
     @FXML
     public TextArea consola;
     @FXML
-    public TextArea consola1;
-    @FXML
     public ImageView repro;
     @FXML
     public ImageView parar_img;
@@ -240,8 +238,6 @@ public class TextoControlador implements Initializable {
         codeArea1.setBackground(new Background(new BackgroundFill(Paint.valueOf("lightgray"), CornerRadii.EMPTY, Insets.EMPTY)));
         consola.setVisible(false);
         consola.managedProperty().bind(consola.visibleProperty());
-        consola1.setVisible(false);
-        consola1.managedProperty().bind(consola1.visibleProperty());
         parar.setVisible(false);
         parar.managedProperty().bind(parar.visibleProperty());
         data.clear();

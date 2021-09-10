@@ -276,26 +276,10 @@
                                                 <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
-                                          <Button fx:id="btn_consola1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" styleClass="blue" text="VER CONSOLA" textAlignment="CENTER">
-                                             <graphic>
-                                                <ImageView fx:id="con1" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true" styleClass="blue">
-                                                   <image>
-                                                      <Image url="@ver.png" />
-                                                   </image>
-                                                </ImageView>
-                                             </graphic>
-                                             <HBox.margin>
-                                                <Insets left="10.0" />
-                                             </HBox.margin>
-                                             <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                             </cursor>
-                                          </Button>
                                        </children>
                                     </HBox>
                                     <StackPane fx:id="area1" prefHeight="645.0" prefWidth="693.0" VBox.vgrow="ALWAYS" />
                                     <TextField fx:id="donde1" VBox.vgrow="ALWAYS" />
-                                    <TextArea fx:id="consola1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="192.0" prefWidth="693.0" promptText="Consola" VBox.vgrow="ALWAYS" />
                                  </children>
                               </VBox>
                            </content>
