@@ -1,0 +1,58 @@
+<-
+	Archivo de prueba
+	Proyecto 1 - Organización de Lenguajes y Compiladores 2
+->
+
+Pista comeAsYouAre
+
+	principal()
+		>>String come = "E5i E5i F5i F#5q A5i F#5i F5i F#5i F#5i F5i E5i B5i E5i B5q E5i E5i F5i F#5q A5i F#5i F5i F#5i F#5i F5i E5i B5i E5i B5q E5i E5i F5i F#5q A5i F#5i F5i F#5i F#5i F5i E5i B5i E5i B5q";
+
+
+		para(entero i = 0; i < 3; i++)
+			Reproducir(Mi, 5, 250, 1)
+			Reproducir(Mi, 5, 250, 1)
+			Reproducir(Fa, 5, 250, 1)
+			Reproducir(Fa#, 5, 500, 1)
+			Reproducir(La, 5, 250, 1)
+			Reproducir(Fa#, 5, 250, 1)
+			Reproducir(Fa, 5, 250, 1)
+			Reproducir(Fa#, 5, 250, 1)
+			Reproducir(Fa#, 5, 250, 1)
+			Reproducir(Fa, 5, 250, 1)
+			Reproducir(Mi, 5, 250, 1)
+			Reproducir(Si, 5, 250, 1)
+			Reproducir(Mi, 5, 250, 1)
+			Reproducir(Si, 5, 500, 1)
+
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Fa#, 5, 500, 9)
+		Reproducir(La, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Si, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Si, 5, 500, 9)
+
+		esperar(4000, 9)
+
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Fa#, 5, 500, 9)
+		Reproducir(La, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa#, 5, 250, 9)
+		Reproducir(Fa, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Si, 5, 250, 9)
+		Reproducir(Mi, 5, 250, 9)
+		Reproducir(Si, 5, 500, 9)

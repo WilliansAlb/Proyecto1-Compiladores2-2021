@@ -19,12 +19,14 @@ import Interprete.Termino;
 import Tablas.Simbolo;
 import Tablas.Simbolos;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -105,6 +107,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
@@ -499,7 +503,7 @@ public class TextoControlador implements Initializable {
                     String com = l.getCanciones().get(te2);
                     boolean existe = false;
                     for (int i = 0; i < cans.size(); i++) {
-                        if (com.equalsIgnoreCase(cans.get(i).getId())) {
+                        if (com.equals(cans.get(i).getId())) {
                             te++;
                             existe = true;
                             break;
@@ -512,34 +516,29 @@ public class TextoControlador implements Initializable {
                 }
                 if (te == te2) {
                     temp_recurrencias = 0;
-                    System.out.println(lis.size());
                     for (int i = 0; i < lis.size(); i++) {
-                        if (lis.get(i).getId().contains(l.getId())) {
-                            temp_recurrencias++;
+                        if (lis.get(i).getId().equals(l.getId())) {
+                            temp_recurrencias = i;
+                            break;
                         }
                     }
                     if (temp_recurrencias != 0) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                        alert.setTitle("Recurrencia en nombre de lista");
-                        alert.setContentText("Guardar cambiandole el nombre a " + l.getId() + "" + (temp_recurrencias + 1));
+                        alert.setTitle("Ya existe esta lista");
+                        alert.setContentText("Sobreescribir la lista " + l.getId() + "?");
                         ButtonType okButton = new ButtonType("Si", ButtonBar.ButtonData.YES);
                         ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
                         alert.getButtonTypes().setAll(okButton, noButton);
                         alert.showAndWait().ifPresent(type -> {
                             if (type == okButton) {
-                                l.setId(l.getId() + (temp_recurrencias + 1));
-                                data.add(l);
-                                lis.add(l);
+                                data.set(temp_recurrencias, l);
+                                lis.set(temp_recurrencias, l);
                                 escribir_binario_lista();
                                 rellenar_listas();
                                 Alert a = new Alert(AlertType.INFORMATION);
-                                a.setContentText("Fue agregada la lista");
+                                a.setContentText("Fue sobreescrita la lista");
                                 a.show();
                                 cambiar_a_tab(0);
-                            } else if (type == noButton) {
-                                System.out.println("weno no");
-                            } else {
-                                System.out.println("weno saber");
                             }
                         });
                     } else {
@@ -564,14 +563,42 @@ public class TextoControlador implements Initializable {
                     cambiar_a_tab(3);
                 }
             } else {
-                data.add(l);
-                lis.add(l);
-                escribir_binario_lista();
-                rellenar_listas();
-                Alert a = new Alert(AlertType.INFORMATION);
-                a.setContentText("Fue agregada la lista sin pistas");
-                a.show();
-                cambiar_a_tab(0);
+                temp_recurrencias = 0;
+                for (int i = 0; i < lis.size(); i++) {
+                    if (lis.get(i).getId().equals(l.getId())) {
+                        temp_recurrencias = i;
+                        break;
+                    }
+                }
+                if (temp_recurrencias != 0) {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Ya existe esta lista");
+                    alert.setContentText("Sobreescribir la lista " + l.getId() + "?");
+                    ButtonType okButton = new ButtonType("Si", ButtonBar.ButtonData.YES);
+                    ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+                    alert.getButtonTypes().setAll(okButton, noButton);
+                    alert.showAndWait().ifPresent(type -> {
+                        if (type == okButton) {
+                            data.set(temp_recurrencias, l);
+                            lis.set(temp_recurrencias, l);
+                            escribir_binario_lista();
+                            rellenar_listas();
+                            Alert a = new Alert(AlertType.INFORMATION);
+                            a.setContentText("Fue sobreescrita la lista");
+                            a.show();
+                            cambiar_a_tab(0);
+                        }
+                    });
+                } else {
+                    data.add(l);
+                    lis.add(l);
+                    escribir_binario_lista();
+                    rellenar_listas();
+                    Alert a = new Alert(AlertType.INFORMATION);
+                    a.setContentText("Fue agregada la lista sin pistas");
+                    a.show();
+                    cambiar_a_tab(0);
+                }
             }
         } else {
             Alert a = new Alert(AlertType.ERROR);
@@ -797,7 +824,7 @@ public class TextoControlador implements Initializable {
 
     private int comprobar_unica_pista(String texto) {
         for (int i = 0; i < cans.size(); i++) {
-            if (cans.get(i).getId().equalsIgnoreCase(texto)) {
+            if (cans.get(i).getId().equals(texto)) {
                 return i;
             }
         }
@@ -956,6 +983,7 @@ public class TextoControlador implements Initializable {
             actual = re;
             if (actual.getCanales() != null) {
                 repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
+                cancion_escogida = actual.getId();
                 myChart.getData().clear();
                 int nuevo2 = actual.max() * 50;
                 int nuevo3 = nuevo2 / 1000;
@@ -990,26 +1018,39 @@ public class TextoControlador implements Initializable {
 
     @FXML
     private void iniciar2() {
-        if (iniciando) {
-            repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
-            myChart.getData().clear();
-            nuevo = new Task(myChart, progreso, pasado);
-            nuevo.setDaemon(true);
-            nuevo.start();
-            iniciando = false;
-        } else {
-            if (reproduciendo) {
-                repro.setImage(new Image(App.class.getResource("reproducir.png").toExternalForm()));
-                parar.setVisible(true);
-                nuevo.suspenderhilo();
-                System.out.println("hola");
-                reproduciendo = !reproduciendo;
+        if (!cancion_escogida.isEmpty()) {
+            if (iniciando) {
+                Reproduccion r = obtener_actual();
+                if (r != null) {
+                    repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
+                    cancion.setText(r.getId());
+                    myChart.getData().clear();
+                    nuevo = new Task(myChart, progreso, pasado, r);
+                    nuevo.setDaemon(true);
+                    nuevo.start();
+                    iniciando = false;
+                } else {
+                    Alert a = new Alert(AlertType.INFORMATION);
+                    a.setContentText("La canción elegida no tiene metodo principal, por lo tanto no se reproduce nada");
+                    a.show();
+                }
             } else {
-                repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
-                parar.setVisible(false);
-                nuevo.renaudarhilo();
-                reproduciendo = !reproduciendo;
+                if (reproduciendo) {
+                    repro.setImage(new Image(App.class.getResource("reproducir.png").toExternalForm()));
+                    parar.setVisible(true);
+                    nuevo.suspenderhilo();
+                    reproduciendo = !reproduciendo;
+                } else {
+                    repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
+                    parar.setVisible(false);
+                    nuevo.renaudarhilo();
+                    reproduciendo = !reproduciendo;
+                }
             }
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Elige una canción");
+            a.show();
         }
     }
 
@@ -1028,38 +1069,56 @@ public class TextoControlador implements Initializable {
     private void play_seleccion() {
         Reproduccion r = new Reproduccion();
         boolean pasa = false;
-        for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equals(cancion_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
-                r = data_cancion.get(i).getReproductor();
-                pasa = true;
-                break;
+        if (!cancion_escogida.isEmpty()) {
+            for (int i = 0; i < data_cancion.size(); i++) {
+                if (data_cancion.get(i).getId().equals(cancion_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
+                    r = data_cancion.get(i).getReproductor();
+                    pasa = true;
+                    break;
+                }
             }
-        }
-        if (pasa) {
-            repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
-            myChart.getData().clear();
-            int nuevo2 = r.max() * 50;
-            int nuevo3 = nuevo2 / 1000;
-            int minutos = (int) (nuevo3 / 60);
-            int sec = (int) (nuevo3 % 60);
-            String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
-            faltante.setText(tiempo_pasado);
-            cancion.setText(r.getId());
-            nuevo = new Task(myChart, progreso, pasado, r);
-            nuevo.setDaemon(true);
-            nuevo.start();
-            iniciando = false;
+            if (pasa) {
+                repro.setImage(new Image(App.class.getResource("pausar.png").toExternalForm()));
+                myChart.getData().clear();
+                int nuevo2 = r.max() * 50;
+                int nuevo3 = nuevo2 / 1000;
+                int minutos = (int) (nuevo3 / 60);
+                int sec = (int) (nuevo3 % 60);
+                String tiempo_pasado = (sec > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
+                faltante.setText(tiempo_pasado);
+                cancion.setText(r.getId());
+                nuevo = new Task(myChart, progreso, pasado, r);
+                nuevo.setDaemon(true);
+                nuevo.start();
+                iniciando = false;
+            } else {
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Canción seleccionada sin método main");
+                a.show();
+            }
         } else {
             Alert a = new Alert(AlertType.INFORMATION);
-            a.setContentText("Canción seleccionada sin método main");
+            a.setContentText("Elige una canción primero");
             a.show();
         }
+    }
+
+    private Reproduccion obtener_actual() {
+        Reproduccion r = new Reproduccion();
+        boolean pasa = false;
+        if (!cancion_escogida.isEmpty()) {
+            for (int i = 0; i < data_cancion.size(); i++) {
+                if (data_cancion.get(i).getId().equals(cancion_escogida) && !data_cancion.get(i).getDuracion().equalsIgnoreCase("--:--")) {
+                    return data_cancion.get(i).getReproductor();
+                }
+            }
+        }
+        return null;
     }
 
     @FXML
     private void modificar() {
         int pos = -1;
-        boolean pasa = false;
         for (int i = 0; i < data_cancion.size(); i++) {
             if (data_cancion.get(i).getId().equals(cancion_escogida)) {
                 pos = i;
@@ -1074,6 +1133,118 @@ public class TextoControlador implements Initializable {
             a.setContentText("Canción seleccionada sin método main");
             a.show();
         }
+    }
+
+    @FXML
+    private void abrir_archivo() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Abrir archivo de texto");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Archivos de texto", "*.txt"));
+        File archivo = fileChooser.showOpenDialog(cancion.getContextMenu());
+        FileReader fr = null;
+        BufferedReader br = null;
+        if (archivo != null) {
+            try {
+                fr = new FileReader(archivo);
+                br = new BufferedReader(fr);
+
+                // Lectura del fichero
+                String linea;
+                String texto_completo = "";
+                while ((linea = br.readLine()) != null) {
+                    texto_completo += linea + "\n";
+                }
+                codeArea.replaceText(texto_completo.substring(0, texto_completo.length() - 1));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @FXML
+    private void guardar_archivo() {
+        if (!codeArea.getText().isEmpty()) {
+            try {
+                FileWriter myWriter = new FileWriter("predefinido.txt");
+                myWriter.write(codeArea.getText());
+                myWriter.close();
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Se ha escrito correctamente el archivo predefinido.txt");
+                a.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Se ha escrito correctamente el archivo predefinido.txt");
+                a.show();
+            }
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Escribe antes de guardar");
+            a.show();
+        }
+    }
+
+    @FXML
+    private void limpiar_texto() {
+        codeArea.replaceText("");
+    }
+
+    @FXML
+    private void abrir_archivo2() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Abrir archivo de texto");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Archivos de texto", "*.txt"));
+        File archivo = fileChooser.showOpenDialog(cancion.getContextMenu());
+        FileReader fr = null;
+        BufferedReader br = null;
+        if (archivo != null) {
+            try {
+                fr = new FileReader(archivo);
+                br = new BufferedReader(fr);
+
+                // Lectura del fichero
+                String linea;
+                String texto_completo = "";
+                while ((linea = br.readLine()) != null) {
+                    texto_completo += linea + "\n";
+                }
+                codeArea1.replaceText(texto_completo.substring(0, texto_completo.length() - 1));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(TextoControlador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @FXML
+    private void guardar_archivo2() {
+        if (!codeArea1.getText().isEmpty()) {
+            try {
+                FileWriter myWriter = new FileWriter("predefinido_lista.txt");
+                myWriter.write(codeArea1.getText());
+                myWriter.close();
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Se ha escrito correctamente el archivo predefinido_lista.txt");
+                a.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Alert a = new Alert(AlertType.INFORMATION);
+                a.setContentText("Se ha escrito correctamente el archivo predefinido_lista.txt");
+                a.show();
+            }
+        } else {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setContentText("Escribe antes de guardar");
+            a.show();
+        }
+    }
+
+    @FXML
+    private void limpiar_texto2() {
+        codeArea1.replaceText("");
     }
 
     private void cambiar_a_tab(int tab) {
@@ -1121,7 +1292,7 @@ public class TextoControlador implements Initializable {
     private void eliminar_pista() {
         int pos = -1;
         for (int i = 0; i < data_cancion.size(); i++) {
-            if (data_cancion.get(i).getId().equalsIgnoreCase(cancion_escogida)) {
+            if (data_cancion.get(i).getId().equals(cancion_escogida)) {
                 pos = i;
                 break;
             }
@@ -1135,7 +1306,7 @@ public class TextoControlador implements Initializable {
                 if (lis.get(i).getCanciones() != null) {
                     if (lis.get(i).getCanciones().contains(cancion_escogida)) {
                         for (int j = 0; j < lis.get(i).getCanciones().size(); j++) {
-                            if (lis.get(i).getCanciones().get(j).equalsIgnoreCase(cancion_escogida)) {
+                            if (lis.get(i).getCanciones().get(j).equals(cancion_escogida)) {
                                 lis.get(i).getCanciones().remove(j);
                                 nombre = lis.get(i).getId();
                                 break;
@@ -1163,7 +1334,7 @@ public class TextoControlador implements Initializable {
                 if (lis.get(i).getCanciones() != null) {
                     if (lis.get(i).getCanciones().contains(cancion_escogida)) {
                         for (int j = 0; j < lis.get(i).getCanciones().size(); j++) {
-                            if (lis.get(i).getCanciones().get(j).equalsIgnoreCase(cancion_escogida)) {
+                            if (lis.get(i).getCanciones().get(j).equals(cancion_escogida)) {
                                 lis.get(i).getCanciones().remove(j);
                                 nombre = lis.get(i).getId();
                                 break;
@@ -1186,7 +1357,7 @@ public class TextoControlador implements Initializable {
     private void eliminar_lista() {
         int pos = -1;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equalsIgnoreCase(lista_escogida)) {
+            if (data.get(i).getId().equals(lista_escogida)) {
                 pos = i;
                 break;
             }

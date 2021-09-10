@@ -210,7 +210,49 @@
                                             </Label>
                                     <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
                                        <children>
-                                                  <Button fx:id="btn_revisar" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" styleClass="blue" text="INTERPRETAR" textAlignment="CENTER">
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" layoutX="194.0" layoutY="10.0" mnemonicParsing="false" onAction="#abrir_archivo" styleClass="blue" text="ABRIR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@020-import.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" layoutX="195.0" layoutY="10.0" mnemonicParsing="false" onAction="#guardar_archivo" styleClass="blue" text="GUARDAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@029-save.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </Button>
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" layoutX="452.0" layoutY="10.0" mnemonicParsing="false" onAction="#limpiar_texto" styleClass="blue" text="LIMPIAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@012-remove.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </Button>
+                                                  <Button fx:id="btn_revisar" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisar" styleClass="blue" text="REVISAR" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -222,7 +264,7 @@
                                                 <Cursor fx:constant="HAND" />
                                              </cursor>
                                           </Button>
-                                          <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" styleClass="blue" text="VER CONSOLA" textAlignment="CENTER">
+                                          <Button fx:id="btn_consola" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#ver_consola" style="-fx-font-size: 10px;" styleClass="blue" text="VER CONSOLA" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fx:id="con" fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -231,7 +273,7 @@
                                                 </ImageView>
                                              </graphic>
                                              <HBox.margin>
-                                                <Insets left="10.0" />
+                                                <Insets />
                                              </HBox.margin>
                                              <cursor>
                                                 <Cursor fx:constant="HAND" />
@@ -264,6 +306,42 @@
                                     </Label>
                                     <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="0.0" prefWidth="693.0" VBox.vgrow="NEVER">
                                        <children>
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#abrir_archivo2" styleClass="blue" text="ABRIR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@020-import.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </Button>
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#guardar_archivo2" styleClass="blue" text="GUARDAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@029-save.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </Button>
+                                          <Button alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#limpiar_texto2" styleClass="blue" text="LIMPIAR" textAlignment="CENTER">
+                                             <graphic>
+                                                <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@012-remove.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </Button>
                                           <Button fx:id="btn_revisar1" alignment="CENTER" ellipsisString="Interpretar" mnemonicParsing="false" onAction="#revisarLista" styleClass="blue" text="INTERPRETAR" textAlignment="CENTER">
                                              <graphic>
                                                 <ImageView fitHeight="33.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">

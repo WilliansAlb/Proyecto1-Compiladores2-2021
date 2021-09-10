@@ -44,6 +44,7 @@ public class Servidor extends Thread {
     DataOutputStream out;
     final int PUERTO = 5000;
     public ObservableList<Cancion> data_cancion;
+    int m = 0;
 
     public Servidor() {
 
@@ -242,25 +243,47 @@ public class Servidor extends Thread {
                         s.getR().setId(s.getNombre());
                         Cancion nueva = new Cancion(s.getNombre(), tiempo_pasado, s.getR(), ">>Fue creada en el piano de la app movil");
                         ArrayList<Cancion> canstemp = obtener_canciones();
+                        String retorno = "< respuesta texto = \"No se creo bien el archivo\" />";
                         if (canstemp == null) {
                             canstemp = new ArrayList<>();
+                            canstemp.add(nueva);
+                            Platform.runLater(() -> {
+                                data_cancion.add(nueva);
+                            });
+                            retorno = "< respuesta texto = \"Canción creada correctamente\" />";
+                        } else {
+                            m = -1;
+                            for (int i = 0; i < canstemp.size(); i++) {
+                                if (canstemp.get(i).getId().equals(s.getNombre())) {
+                                    m = i;
+                                    break;
+                                }
+                            }
+                            if (m != -1) {
+                                canstemp.set(m, nueva);
+                                Platform.runLater(() -> {
+                                    data_cancion.set(m, nueva);
+                                });
+                                retorno = "< respuesta texto = \"Dado que la canción ya existia, fue modificada correctamente\" />";
+                            } else {
+                                canstemp.add(nueva);
+                                Platform.runLater(() -> {
+                                    data_cancion.add(nueva);
+                                });
+                                retorno = "< respuesta texto = \"Canción creada correctamente\" />";
+                            }
                         }
-                        canstemp.add(nueva);
-                        Platform.runLater(() -> {
-                            data_cancion.add(nueva);
-                        });
-                        String retorno = "< respuesta texto = \"No se creo bien el archivo\" />";
                         File archivo = new File("src/main/resources/pistas.dat");
                         try {
                             FileOutputStream fos = new FileOutputStream(archivo);
                             ObjectOutputStream escribir = new ObjectOutputStream(fos);
                             escribir.writeObject(canstemp);
-                            retorno = "< respuesta texto = \"Canción creada correctamente\" />";
                             escribir.close();
                             fos.close();
                         } catch (Exception e) {
                             System.out.println("Error al escribir en el archivo. "
                                     + e.getMessage());
+                            retorno = "< respuesta texto = \"Error al escribir el archivo binario\" />";
                         }
                         return retorno;
                     } else {

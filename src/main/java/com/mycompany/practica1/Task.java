@@ -137,62 +137,8 @@ public class Task extends Thread {
                 }
             });
             kill();
-        } else {
-            while (isActive) {
-                System.out.println("Ha pasado: " + segundos + " segundos de la cancion");
-                Platform.runLater(() -> {
-                    if (segundos == 0) {
-                        progreso.setProgress(segundos / 60);
-                        for (int i = 0; i < 5; i++) {
-                            Series<String, Number> series2 = new Series<>();
-                            seriees.add(series2);
-                            this.chart.getData().add(series2);
-                            this.seriees.get(i).getData().add(new Data<>("" + 0, 0));
-                        }
-                        //this.series.getData().add(new Data<>("" + conteo++, 0));
-                    }
-                    if (segundos > 40) {
-                        //this.series.getData().remove(0);
-                    }
-                    Random n = new Random(System.currentTimeMillis());
-                    int n1 = n.nextInt(5);
-                    int[] nm = {32, 440, 1051, 138, 880};
-                    // Add a new number to the linechart
-                    //this.series.getData().add(new Data<>("" + segundos, nm[n1]));
-                    for (int i = 0; i < 5; i++) {
-                        this.seriees.get(i).getData().add(new Data<>("" + segundos + 1, nm[n1] + i * 400));
-                    }
-                });
-                n.setInstrument(12);
-                n.noteOn(30);
-                n.noteOn(100);
-                try {
-                    // Simulate heavy processing stuff
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                segundos++;
-                Platform.runLater(() -> {
-                    progreso.setProgress(segundos / 60);
-                    int minutos = (int) (segundos / 60);
-                    int sec = (int) (segundos % 60);
-                    String tiempo_pasado = (segundos > 9) ? minutos + ":" + sec : minutos + ":0" + sec;
-                    pasado.setText(tiempo_pasado);
-                });
-                synchronized (this) {
-                    while (suspender) {
-                        try {
-                            wait();
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(Task.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    if (pausar) {
-                        break;
-                    }
-                }
-            }
+            isActive = true;
+            segundos = 0;
         }
     }
 
@@ -207,6 +153,7 @@ public class Task extends Thread {
 
     //Suspender un hilo
     synchronized void suspenderhilo() {
+        n.allNotesOff();
         suspender = true;
     }
 

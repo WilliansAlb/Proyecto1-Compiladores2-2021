@@ -1,0 +1,20 @@
+>>prueba comentario de linea
+>>prueba comentario de linea
+<- prueba comentario
+de lineas a ver si funciona
+->
+PISTA komm EXTIENDE Neon, Genesis
+	var entero a = 10
+	keep var entero a09 = 22
+	var cadena ca = "hola"
+	Principal()
+		a = a + Reproducir(do,3,1000,9)+ Reproducir(re,5,2000,10)
+		Esperar(100,9)
+		Reproducir(mi,6,100,9)
+		Reproducir(re,2,100,10)
+		Esperar(100,9)
+		Reproducir(mi,6,100,9)
+		Reproducir(re,3,100,10)
+		mientras(a09<25)
+			a09 = a09 + 1
+			Reproducir(la,6,500,1)
