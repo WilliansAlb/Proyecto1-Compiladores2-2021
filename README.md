@@ -1,8 +1,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/WilliansAlb/Proyecto1-Compiladores2-2021/blob/master/src/main/resources/com/mycompany/practica1/icono.png">
+    <img src="https://github.com/WilliansAlb/Proyecto1-Compiladores2-2021/blob/master/src/main/resources/com/mycompany/practica1/icono.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">MUSICOMPI</h3>
